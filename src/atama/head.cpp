@@ -20,9 +20,11 @@
 
 #include <aruku/walking.hpp>
 #include <atama/head.hpp>
+#include <kansei/imu.hpp>
 
 #include <cmath>
 #include <fstream>
+#include <memory>
 #include <string>
 #include <sstream>
 
@@ -31,8 +33,11 @@
 namespace atama
 {
 
-Head::Head()
+Head::Head(std::shared_ptr<aruku::Walking> walking, std::shared_ptr<kansei::Imu> imu)
 {
+  walking = walking;
+  imu = imu;
+
   is_started = false;
   pan_only = false;
   tilt_only = false;
@@ -462,13 +467,19 @@ double Head::calculate_tilt_from_pan_distance(double pan, double distance)
 
 void Head::look_to_position(double position_x, double position_y)
 {
-  float dx = position_x - current_position[0];
-  float dy = position_y - current_position[1];
+  float dx = position_x - walking->POSITION_X;
+  float dy = position_y - walking->POSITION_Y;
 
-  float pan = current_orientation - (alg::direction(dx, dy) * alg::rad2Deg());
+  float pan = imu->get_yaw() - (alg::direction(dx, dy) * alg::rad2Deg());
   float tilt = calculate_tilt_from_pan_distance(alg::distance(dx, dy));
 
   move_by_angle(pan - pan_center, tilt);
+}
+
+void Head::set_pan_tilt_angle(double pan, double tilt)
+{
+  current_pan_angle = pan;
+  current_tilt_angle = tilt;
 }
 
 }  // namespace atama

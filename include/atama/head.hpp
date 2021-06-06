@@ -21,6 +21,9 @@
 #ifndef ATAMA__HEAD_HPP_
 #define ATAMA__HEAD_HPP_
 
+#include <aruku/walking.hpp>
+#include <kansei/imu.hpp>
+
 #include <memory>
 #include <vector>
 
@@ -41,7 +44,7 @@ public:
 
   int marathon_index;
 
-  Head();
+  Head(std::shared_ptr<aruku::Walking> walking, std::shared_ptr<kansei::Imu> imu);
 
   void start() {is_started = true;}
   void stop() {is_started = false; scan_init = false;}
@@ -107,12 +110,7 @@ public:
   void look_to_position(double position_x, double position_y);
 
   // REQUIRED
-  void set_pan_tilt_angle(double pan, double tilt)
-  {
-    current_pan_angle = pan, current_tilt_angle = tilt;
-  }
-  void set_orientation(double orientation) {current_orientation = orientation;}
-  void set_current_position(double x, double y) {current_position[0] = x, current_position[1] = y;}
+  void set_pan_tilt_angle(double pan, double tilt);
 
   std::vector<tachimawari::Joint> get_joints() {return joints;}
 
@@ -168,12 +166,13 @@ private:
   int scan_position;
   int scan_direction;
 
-  double current_orientation;
-  double current_position[2];
   double current_pan_angle;
   double current_tilt_angle;
 
   std::vector<tachimawari::Joint> joints;
+
+  std::shared_ptr<kansei::Imu> imu;
+  std::shared_ptr<aruku::Walking> walking;
 };
 
 }  // namespace atama
