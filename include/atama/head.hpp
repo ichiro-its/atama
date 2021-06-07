@@ -52,12 +52,6 @@ public:
   void initialize();
   void process();
 
-  double get_top_limit_angle() {return top_limit;}
-  double get_bottom_limit_angle() {return bottom_limit;}
-
-  double get_top_limit_angle() {return top_limit;}
-  double get_bottom_limit_angle() {return bottom_limit;}
-
   // void joint_enable() { m_Joint.SetEnableHead_only(true, true); }
   // void joint_disable() { m_Joint.SetEnableBody(false); }
 

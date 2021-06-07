@@ -172,7 +172,7 @@ void Head::move_tracking()
 
 void Head::process()
 {
-  for (int i = 0; i < joints.size(); i++) {
+  for (int i = 0; i < static_cast<int>(joints.size()); i++) {
     joints[i].set_pid_gain(20.0, 3.0, 2.0);
   }
 
