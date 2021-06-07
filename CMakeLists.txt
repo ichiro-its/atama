@@ -15,7 +15,6 @@ endif()
 
 find_package(ament_cmake REQUIRED)
 find_package(aruku REQUIRED)
-find_package(atama REQUIRED)
 find_package(framework_common REQUIRED)
 find_package(kansei REQUIRED)
 
@@ -28,7 +27,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 ament_target_dependencies(${PROJECT_NAME}
   aruku
-  atama
   framework_common
   kansei)
 
@@ -47,7 +45,6 @@ endif()
 
 ament_export_dependencies(
   aruku
-  atama
   framework_common
   kansei)
 ament_export_include_directories("include")
