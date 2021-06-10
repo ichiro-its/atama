@@ -34,8 +34,8 @@
     "tilt_offset": 0
   },
   "Limit": {
-    "right_limit": -120,
-    "left_limit": 120,
+    "right_limit": -100,
+    "left_limit": 100,
     "bottom_limit": -80,
     "top_limit": 30
   },

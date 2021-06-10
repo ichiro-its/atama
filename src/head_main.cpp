@@ -103,16 +103,28 @@ int main(int argc, char * argv[])
       std::cout << "ball_position_x = " << ball_position_x << std::endl;
       std::cout << "ball_position_y = " << ball_position_y << std::endl;
 
-      head->track_ball(ball_position_x, ball_position_y, pan, tilt, center_x, center_y);
-      std::cout << pan << " " << tilt << std::endl;
-      head->move_by_angle(pan, tilt);
-      head->process();
-      message.clear_actuator_request();
-      for (auto joint : head->get_joints()) {
-        message.add_motor_position_in_radian(joint.get_joint_name(), joint.get_goal_position());
-        std::cout << joint.get_joint_name() << " " << joint.get_goal_position() << std::endl;
+      if (ball_position_x == 0 && ball_position_y == 0) {
+        std::cout << "bola hilang" << std::endl;
+        head->move_scan_ball_down();
+
+        std::cout << pan << " " << tilt << std::endl;
+        head->process();
+        message.clear_actuator_request();
+        for (auto joint : head->get_joints()) {
+          message.add_motor_position_in_degree(joint.get_joint_name(), joint.get_goal_position());
+          std::cout << joint.get_joint_name() << " " << joint.get_goal_position() << std::endl;
+        }
+      } else if (ball_position_x != 0 || ball_position_y != 0) {
+        head->track_ball(ball_position_x, ball_position_y, pan, tilt, center_x, center_y);
+        head->move_by_angle(pan, tilt);
+        std::cout << pan << " " << tilt << std::endl;
+        head->process();
+        message.clear_actuator_request();
+        for (auto joint : head->get_joints()) {
+          message.add_motor_position_in_radian(joint.get_joint_name(), joint.get_goal_position());
+          std::cout << joint.get_joint_name() << " " << joint.get_goal_position() << std::endl;
+        }
       }
-      // }
       client.send(*message.get_actuator_request());
     } catch (const std::runtime_error & exc) {
       std::cerr << "Runtime error: " << exc.what() << std::endl;

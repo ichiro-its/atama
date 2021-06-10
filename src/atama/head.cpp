@@ -555,26 +555,24 @@ void Head::track_ball(
   double ball_position_x, double ball_position_y, double & pan,
   double & tilt, double center_x, double center_y)
 {
-  if (ball_position_x != 0 || ball_position_y != 0) {
-    if (center_x == ball_position_x || abs(center_x - ball_position_x) <= 30) {
-      std::cout << "tidak gerak horizontal" << std::endl;
-    } else if (center_x > ball_position_x) {
-      std::cout << "gerak kiri" << std::endl;
-      pan += 0.02;
-    } else if (center_x < ball_position_x) {
-      std::cout << "gerak kanan" << std::endl;
-      pan -= 0.02;
-    }
+  if (center_x == ball_position_x || abs(center_x - ball_position_x) <= 30) {
+    std::cout << "tidak gerak horizontal" << std::endl;
+  } else if (center_x > ball_position_x) {
+    std::cout << "gerak kiri" << std::endl;
+    pan += 0.02;
+  } else if (center_x < ball_position_x) {
+    std::cout << "gerak kanan" << std::endl;
+    pan -= 0.02;
+  }
 
-    if (center_y == ball_position_y || abs(center_y - ball_position_y) <= 40) {
-      std::cout << "tidak gerak vertical" << std::endl;
-    } else if (center_y < ball_position_y) {
-      std::cout << "gerak bawah" << std::endl;
-      tilt -= 0.02;
-    } else if (center_y > ball_position_y) {
-      std::cout << "gerak atas" << std::endl;
-      tilt += 0.02;
-    }
+  if (center_y == ball_position_y || abs(center_y - ball_position_y) <= 40) {
+    std::cout << "tidak gerak vertical" << std::endl;
+  } else if (center_y < ball_position_y) {
+    std::cout << "gerak bawah" << std::endl;
+    tilt -= 0.02;
+  } else if (center_y > ball_position_y) {
+    std::cout << "gerak atas" << std::endl;
+    tilt += 0.02;
   }
 }
 
