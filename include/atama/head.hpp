@@ -23,6 +23,7 @@
 
 #include <aruku/walking.hpp>
 #include <kansei/imu.hpp>
+#include <robocup_client/robocup_client.hpp>
 
 #include <memory>
 #include <vector>
@@ -52,11 +53,11 @@ public:
   void initialize();
   void process();
 
-  double get_top_limit_angle() {return top_limit;}
-  double get_bottom_limit_angle() {return bottom_limit;}
+  // double get_top_limit_angle() {return top_limit;}
+  // double get_bottom_limit_angle() {return bottom_limit;}
 
-  double get_top_limit_angle() {return top_limit;}
-  double get_bottom_limit_angle() {return bottom_limit;}
+  // double get_top_limit_angle() {return top_limit;}
+  // double get_bottom_limit_angle() {return bottom_limit;}
 
   // void joint_enable() { m_Joint.SetEnableHead_only(true, true); }
   // void joint_disable() { m_Joint.SetEnableBody(false); }
@@ -108,6 +109,12 @@ public:
   double calculate_tilt_from_pan_distance(double pan, double distance);
 
   void look_to_position(double position_x, double position_y);
+
+  void load_data();
+
+  void track_ball(
+    double ball_position_x, double ball_position_y, double & pan,
+    double & tilt, double center_x, double center_y);
 
   // REQUIRED
   void set_pan_tilt_angle(double pan, double tilt);

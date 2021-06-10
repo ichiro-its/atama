@@ -22,6 +22,8 @@
 #include <atama/head.hpp>
 #include <kansei/imu.hpp>
 
+#include <nlohmann/json.hpp>
+
 #include <cmath>
 #include <fstream>
 #include <memory>
@@ -87,9 +89,8 @@ void Head::initialize()
 void Head::move_by_angle(double pan_angle, double tilt_angle)
 {
   stop();
-
-  pan_angle = pan_center + alg::clampValue(pan_angle, right_limit, left_limit);
-  tilt_angle = tilt_center + alg::clampValue(tilt_angle, bottom_limit, top_limit);
+  this->pan_angle = pan_angle;
+  this->tilt_angle = tilt_angle;
 }
 
 void Head::move_tracking(double pan, double tilt)
@@ -480,6 +481,101 @@ void Head::set_pan_tilt_angle(double pan, double tilt)
 {
   current_pan_angle = pan;
   current_tilt_angle = tilt;
+}
+
+void Head::load_data()
+{
+  std::string file_name =
+    "/home/nathanael/ICHIRO/src/atama/config/atama.json";
+  std::ifstream file(file_name);
+  nlohmann::json walking_data = nlohmann::json::parse(file);
+
+  for (auto &[key, val] : walking_data.items()) {
+    if (key == "Center") {
+      try {
+        val.at("pan_center").get_to(pan_center);
+        val.at("tilt_center").get_to(tilt_center);
+      } catch (nlohmann::json::parse_error & ex) {
+        std::cerr << "parse error at byte " << ex.byte << std::endl;
+      }
+    } else if (key == "Offset") {
+      try {
+        val.at("pan_offset").get_to(pan_offset);
+        val.at("tilt_offset").get_to(tilt_offset);
+      } catch (nlohmann::json::parse_error & ex) {
+        std::cerr << "parse error at byte " << ex.byte << std::endl;
+      }
+    } else if (key == "Limit") {
+      try {
+        val.at("left_limit").get_to(left_limit);
+        val.at("right_limit").get_to(right_limit);
+        val.at("top_limit").get_to(top_limit);
+        val.at("bottom_limit").get_to(bottom_limit);
+      } catch (nlohmann::json::parse_error & ex) {
+        std::cerr << "parse error at byte " << ex.byte << std::endl;
+      }
+    } else if (key == "Gain") {
+      try {
+        val.at("pan_p_gain").get_to(pan_p_gain);
+        val.at("pan_d_gain").get_to(pan_d_gain);
+        val.at("tilt_p_gain").get_to(tilt_p_gain);
+        val.at("tilt_d_gain").get_to(tilt_d_gain);
+      } catch (nlohmann::json::parse_error & ex) {
+        std::cerr << "parse error at byte " << ex.byte << std::endl;
+      }
+    } else if (key == "PanTiltToDistance") {
+      try {
+        for (int i = 6; i >= 0; i--) {
+          for (int j = 0; j <= i; j++) {
+            char buffer[32];
+            snprintf(buffer, sizeof(buffer), "pan_%d_tilt_%d", (i - j), j);
+            val.at(buffer).get_to(pan_tilt_to_distance_[i - j][j]);
+          }
+        }
+      } catch (nlohmann::json::parse_error & ex) {
+        std::cerr << "parse error at byte " << ex.byte << std::endl;
+      }
+    } else if (key == "PanDistanceToTilt") {
+      try {
+        for (int i = 4; i >= 0; i--) {
+          for (int j = 0; j <= i; j++) {
+            char buffer[32];
+            snprintf(buffer, sizeof(buffer), "pan_%d_distance_%d", (i - j), j);
+            val.at(buffer).get_to(pan_distance_to_tilt_[i - j][j]);
+          }
+        }
+      } catch (nlohmann::json::parse_error & ex) {
+        std::cerr << "parse error at byte " << ex.byte << std::endl;
+      }
+    }
+  }
+}
+
+void Head::track_ball(
+  double ball_position_x, double ball_position_y, double & pan,
+  double & tilt, double center_x, double center_y)
+{
+  if (ball_position_x != 0 || ball_position_y != 0) {
+    if (center_x == ball_position_x || abs(center_x - ball_position_x) <= 30) {
+      std::cout << "tidak gerak horizontal" << std::endl;
+    } else if (center_x > ball_position_x) {
+      std::cout << "gerak kiri" << std::endl;
+      pan += 0.02;
+    } else if (center_x < ball_position_x) {
+      std::cout << "gerak kanan" << std::endl;
+      pan -= 0.02;
+    }
+
+    if (center_y == ball_position_y || abs(center_y - ball_position_y) <= 40) {
+      std::cout << "tidak gerak vertical" << std::endl;
+    } else if (center_y < ball_position_y) {
+      std::cout << "gerak bawah" << std::endl;
+      tilt -= 0.02;
+    } else if (center_y > ball_position_y) {
+      std::cout << "gerak atas" << std::endl;
+      tilt += 0.02;
+    }
+  }
 }
 
 }  // namespace atama
