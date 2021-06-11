@@ -50,8 +50,8 @@ int main(int argc, char * argv[])
 
   robocup_client::MessageHandler message;
   message.add_sensor_time_step("Camera", 16);
-  message.add_sensor_time_step("neck_yaw_s", 16);
-  message.add_sensor_time_step("neck_pitch_s", 16);
+  message.add_sensor_time_step("neck_yaw_s", 8);
+  message.add_sensor_time_step("neck_pitch_s", 8);
   client.send(*message.get_actuator_request());
 
   auto imu = std::make_shared<kansei::Imu>();
@@ -61,11 +61,14 @@ int main(int argc, char * argv[])
   auto head = std::make_shared<atama::Head>(walking, imu);
   head->start();
 
-  CameraMeasurement camera;
+  auto camera = std::make_shared<CameraMeasurement>();
   cv::Mat frame, frame_hsv, field_mask;
-  float ball_position_x, ball_position_y;
-  std::uint32_t center_x, center_y;
-  double pan = 0.0, tilt = 0.0;
+  keisan::Point2 ball_pos;
+  float view_h_angle, view_v_angle;
+  // float ball_position_x, ball_position_y;
+  // std::uint32_t center_x, center_y;
+  // double pan = 0.0, tilt = 0.0;
+  ninshiki_opencv::Detector detector;
 
   while (client.get_tcp_socket()->is_connected()) {
     try {
@@ -83,10 +86,7 @@ int main(int argc, char * argv[])
 
       // Get Ball Position
       if (sensors.get()->cameras_size() > 0) {
-        camera = sensors.get()->cameras(0);
-        center_x = camera.width() / 2;
-        center_y = camera.height() / 2;
-        ninshiki_opencv::Detector detector;
+        *camera = sensors.get()->cameras(0);
         cv::Mat temp = detector.get_image(sensors);
 
         frame = temp.clone();
@@ -94,36 +94,27 @@ int main(int argc, char * argv[])
         cv::cvtColor(frame, frame_hsv, cv::COLOR_BGR2HSV);
 
         detector.vision_process(frame_hsv, frame);
-        ball_position_x = detector.get_ball_pos_x();
-        ball_position_y = detector.get_ball_pos_y();
+
+        ball_pos = keisan::Point2(detector.get_ball_pos_x(), detector.get_ball_pos_y());
       }
 
-      std::cout << "center_x = " << center_x << std::endl;
-      std::cout << "center_y = " << center_y << std::endl;
-      std::cout << "ball_position_x = " << ball_position_x << std::endl;
-      std::cout << "ball_position_y = " << ball_position_y << std::endl;
+      std::cout << "ball_position_x = " << ball_pos.x << std::endl;
+      std::cout << "ball_position_y = " << ball_pos.y << std::endl;
 
-      if (ball_position_x == 0 && ball_position_y == 0) {
-        std::cout << "bola hilang" << std::endl;
+      if (ball_pos.x == 0 && ball_pos.y == 0) {
+        std::cout << "ball is lost" << std::endl;
         head->move_scan_ball_down();
-
-        std::cout << pan << " " << tilt << std::endl;
-        head->process();
-        message.clear_actuator_request();
-        for (auto joint : head->get_joints()) {
-          message.add_motor_position_in_degree(joint.get_joint_name(), joint.get_goal_position());
-          std::cout << joint.get_joint_name() << " " << joint.get_goal_position() << std::endl;
-        }
-      } else if (ball_position_x != 0 || ball_position_y != 0) {
-        head->track_ball(ball_position_x, ball_position_y, pan, tilt, center_x, center_y);
-        head->move_by_angle(pan, tilt);
-        std::cout << pan << " " << tilt << std::endl;
-        head->process();
-        message.clear_actuator_request();
-        for (auto joint : head->get_joints()) {
-          message.add_motor_position_in_radian(joint.get_joint_name(), joint.get_goal_position());
-          std::cout << joint.get_joint_name() << " " << joint.get_goal_position() << std::endl;
-        }
+      } else if (ball_pos.x != 0 || ball_pos.y != 0) {
+        std::cout << "track ball" << std::endl;
+        head->track_ball(head, camera, ball_pos);
+      }
+      head->process();
+      std::cout << "pan = " << head->get_pan_angle() << " tilt = " << head->get_tilt_angle() <<
+        std::endl;
+      message.clear_actuator_request();
+      for (auto joint : head->get_joints()) {
+        message.add_motor_position_in_degree(joint.get_joint_name(), joint.get_goal_position());
+        std::cout << joint.get_joint_name() << " " << joint.get_goal_position() << std::endl;
       }
       client.send(*message.get_actuator_request());
     } catch (const std::runtime_error & exc) {

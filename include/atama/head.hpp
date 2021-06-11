@@ -23,6 +23,7 @@
 
 #include <aruku/walking.hpp>
 #include <kansei/imu.hpp>
+#include <keisan/geometry/point_2.hpp>
 #include <robocup_client/robocup_client.hpp>
 
 #include <memory>
@@ -52,12 +53,7 @@ public:
 
   void initialize();
   void process();
-
-  // double get_top_limit_angle() {return top_limit;}
-  // double get_bottom_limit_angle() {return bottom_limit;}
-
-  // double get_top_limit_angle() {return top_limit;}
-  // double get_bottom_limit_angle() {return bottom_limit;}
+  void init_tracking();
 
   // void joint_enable() { m_Joint.SetEnableHead_only(true, true); }
   // void joint_disable() { m_Joint.SetEnableBody(false); }
@@ -113,8 +109,8 @@ public:
   void load_data();
 
   void track_ball(
-    double ball_position_x, double ball_position_y, double & pan,
-    double & tilt, double center_x, double center_y);
+    std::shared_ptr<Head> head, std::shared_ptr<CameraMeasurement> camera,
+    keisan::Point2 pos);
 
   // REQUIRED
   void set_pan_tilt_angle(double pan, double tilt);
@@ -136,6 +132,8 @@ private:
 
   double pan_offset;
   double tilt_offset;
+  double offset_x;
+  double offset_y;
 
   double left_limit;
   double right_limit;
@@ -175,6 +173,13 @@ private:
 
   double current_pan_angle;
   double current_tilt_angle;
+
+  int no_ball_count;
+  int ball_count;
+  static const int no_ball_max_count = 1;
+  static const int ball_max_count = 8;
+
+  keisan::Point2 ball_position;
 
   std::vector<tachimawari::Joint> joints;
 

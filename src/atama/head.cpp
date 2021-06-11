@@ -57,6 +57,9 @@ Head::Head(std::shared_ptr<aruku::Walking> walking, std::shared_ptr<kansei::Imu>
 
   scan_speed = 0.5;
 
+  no_ball_count = 0;
+  ball_count = 0;
+
   for (auto id : {"neck_yaw", "neck_pitch"}) {
     tachimawari::Joint joint(id);
     joints.push_back(joint);
@@ -86,11 +89,20 @@ void Head::initialize()
   tilt_error_difference = 0;
 }
 
+void Head::init_tracking()
+{
+  pan_error = 0;
+  pan_error_difference = 0;
+
+  tilt_error = 0;
+  tilt_error_difference = 0;
+}
+
 void Head::move_by_angle(double pan_angle, double tilt_angle)
 {
   stop();
-  this->pan_angle = pan_angle;
-  this->tilt_angle = tilt_angle;
+  this->pan_angle = pan_center + alg::clampValue(pan_angle, right_limit, left_limit);
+  this->tilt_angle = tilt_center + alg::clampValue(tilt_angle, bottom_limit, top_limit);
 }
 
 void Head::move_tracking(double pan, double tilt)
@@ -135,10 +147,10 @@ void Head::move_tracking()
     pan_angle = current_pan_angle;
   } else {
     double p_offset = pan_error * pan_p_gain;
-    p_offset *= p_offset;
-    if (pan_error < 0) {
-      p_offset = -p_offset;
-    }
+    // p_offset *= p_offset;
+    // if (pan_error < 0) {
+    //   p_offset = -p_offset;
+    // }
 
     double d_offset = pan_error_difference * pan_d_gain;
     d_offset *= d_offset;
@@ -153,22 +165,24 @@ void Head::move_tracking()
     tilt_angle = current_tilt_angle;
   } else {
     double p_offset = tilt_error * tilt_p_gain;
-    p_offset *= p_offset;
-    if (tilt_error < 0) {
-      p_offset = -p_offset;
-    }
+    // p_offset *= p_offset;
+    // if (tilt_error < 0) {
+    //   p_offset = -p_offset;
+    // }
 
     double d_offset = tilt_error_difference * tilt_d_gain;
     d_offset *= d_offset;
     if (tilt_error_difference < 0) {
       d_offset = -d_offset;
     }
-
     tilt_angle += (p_offset + d_offset);
   }
 
+  std::cout << "+++++ " << pan_angle << std::endl;
   pan_angle = pan_center + alg::clampValue(pan_angle - pan_center, right_limit, left_limit);
   tilt_angle = tilt_center + alg::clampValue(tilt_angle - tilt_center, bottom_limit, top_limit);
+  std::cout << "pan move_tracking = " << pan_angle << " tilt move_tracking = " << tilt_angle <<
+    std::endl;
 }
 
 void Head::process()
@@ -502,6 +516,8 @@ void Head::load_data()
       try {
         val.at("pan_offset").get_to(pan_offset);
         val.at("tilt_offset").get_to(tilt_offset);
+        val.at("offset_x").get_to(offset_x);
+        val.at("offset_y").get_to(offset_y);
       } catch (nlohmann::json::parse_error & ex) {
         std::cerr << "parse error at byte " << ex.byte << std::endl;
       }
@@ -552,27 +568,32 @@ void Head::load_data()
 }
 
 void Head::track_ball(
-  double ball_position_x, double ball_position_y, double & pan,
-  double & tilt, double center_x, double center_y)
+  std::shared_ptr<Head> head, std::shared_ptr<CameraMeasurement> camera,
+  keisan::Point2 pos)
 {
-  if (center_x == ball_position_x || abs(center_x - ball_position_x) <= 30) {
-    std::cout << "tidak gerak horizontal" << std::endl;
-  } else if (center_x > ball_position_x) {
-    std::cout << "gerak kiri" << std::endl;
-    pan += 0.02;
-  } else if (center_x < ball_position_x) {
-    std::cout << "gerak kanan" << std::endl;
-    pan -= 0.02;
-  }
-
-  if (center_y == ball_position_y || abs(center_y - ball_position_y) <= 40) {
-    std::cout << "tidak gerak vertical" << std::endl;
-  } else if (center_y < ball_position_y) {
-    std::cout << "gerak bawah" << std::endl;
-    tilt -= 0.02;
-  } else if (center_y > ball_position_y) {
-    std::cout << "gerak atas" << std::endl;
-    tilt += 0.02;
+  if (pos.x == 0 || pos.y == 0) {
+    ball_position.x = -1;
+    ball_position.x = -1;
+    ball_count = 0;
+    if (no_ball_count < no_ball_max_count) {
+      head->move_tracking();
+      no_ball_count++;
+    } else {
+      head->init_tracking();
+    }
+  } else {
+    no_ball_count = 0;
+    if (ball_count < ball_max_count) {
+      ball_count++;
+    } else {
+      keisan::Point2 center = keisan::Point2(camera->width() / 2, camera->height() / 2);
+      keisan::Point2 offset = pos - center;
+      offset *= -1;
+      offset.x *= offset_x;
+      offset.y *= offset_y;
+      ball_position = offset;
+      head->move_tracking(ball_position.x, ball_position.y);
+    }
   }
 }
 
