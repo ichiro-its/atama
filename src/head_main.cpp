@@ -38,10 +38,14 @@ int main(int argc, char * argv[])
   if (argc < 3) {
     std::cerr << "Please specify the host and the port!" << std::endl;
     return 0;
+  } else if (argc < 4) {
+    std::cerr << "Please specify the ball_cascade.xml location!" << std::endl;
+    return 0;
   }
 
   std::string host = argv[1];
   int port = std::stoi(argv[2]);
+  std::string file_name = argv[3];
   robocup_client::RobotClient client(host, port);
   if (!client.connect()) {
     std::cerr << "Failed to connect to server on port " << client.get_port() << "!" << std::endl;
@@ -59,15 +63,13 @@ int main(int argc, char * argv[])
   auto walking = std::make_shared<aruku::Walking>(imu);
 
   auto head = std::make_shared<atama::Head>(walking, imu);
-  head->start();
+  head->initialize();
 
   auto camera = std::make_shared<CameraMeasurement>();
   cv::Mat frame, frame_hsv, field_mask;
   keisan::Point2 ball_pos;
   float view_h_angle, view_v_angle;
-  // float ball_position_x, ball_position_y;
-  // std::uint32_t center_x, center_y;
-  // double pan = 0.0, tilt = 0.0;
+
   ninshiki_opencv::Detector detector;
 
   while (client.get_tcp_socket()->is_connected()) {
@@ -75,14 +77,8 @@ int main(int argc, char * argv[])
       client.send(*message.get_actuator_request());
       auto sensors = client.receive();
 
-      // Set current pan and current tilt
-      if (sensors.get()->position_sensors_size() > 0) {
-        double pan = sensors.get()->position_sensors(0).value();
-        double tilt = sensors.get()->position_sensors(1).value();
-        head->set_pan_tilt_angle(pan, tilt);
-        head->initialize();
-        head->load_data();
-      }
+      // Load data
+      head->load_data(file_name);
 
       // Get Ball Position
       if (sensors.get()->cameras_size() > 0) {
@@ -95,26 +91,27 @@ int main(int argc, char * argv[])
 
         detector.vision_process(frame_hsv, frame);
 
+        float diagonal = alg::distance(camera->width(), camera->height());
+        int field_of_view = 78;
+        float depth = (diagonal / 2) / tan(field_of_view * alg::deg2Rad() / 2);
+
+        view_h_angle = 2 * atan2(camera->width() / 2, depth) * alg::rad2Deg();
+        view_v_angle = 2 * atan2(camera->height() / 2, depth) * alg::rad2Deg();
+
         ball_pos = keisan::Point2(detector.get_ball_pos_x(), detector.get_ball_pos_y());
       }
-
-      std::cout << "ball_position_x = " << ball_pos.x << std::endl;
-      std::cout << "ball_position_y = " << ball_pos.y << std::endl;
 
       if (ball_pos.x == 0 && ball_pos.y == 0) {
         std::cout << "ball is lost" << std::endl;
         head->move_scan_ball_down();
       } else if (ball_pos.x != 0 || ball_pos.y != 0) {
         std::cout << "track ball" << std::endl;
-        head->track_ball(head, camera, ball_pos);
+        head->track_ball(head, camera, ball_pos, view_v_angle, view_h_angle);
       }
       head->process();
-      std::cout << "pan = " << head->get_pan_angle() << " tilt = " << head->get_tilt_angle() <<
-        std::endl;
       message.clear_actuator_request();
       for (auto joint : head->get_joints()) {
         message.add_motor_position_in_degree(joint.get_joint_name(), joint.get_goal_position());
-        std::cout << joint.get_joint_name() << " " << joint.get_goal_position() << std::endl;
       }
       client.send(*message.get_actuator_request());
     } catch (const std::runtime_error & exc) {

@@ -27,6 +27,7 @@
 #include <robocup_client/robocup_client.hpp>
 
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace atama
@@ -48,8 +49,8 @@ public:
 
   Head(std::shared_ptr<aruku::Walking> walking, std::shared_ptr<kansei::Imu> imu);
 
-  void start() {is_started = true;}
-  void stop() {is_started = false; scan_init = false;}
+  void start_scan() {is_started_scanning = true;}
+  void stop_scan() {is_started_scanning = false; scan_init = false;}
 
   void initialize();
   void process();
@@ -106,11 +107,11 @@ public:
 
   void look_to_position(double position_x, double position_y);
 
-  void load_data();
+  void load_data(std::string file_name);
 
   void track_ball(
     std::shared_ptr<Head> head, std::shared_ptr<CameraMeasurement> camera,
-    keisan::Point2 pos);
+    keisan::Point2 pos, float view_v_angle, float view_h_angle);
 
   // REQUIRED
   void set_pan_tilt_angle(double pan, double tilt);
@@ -120,7 +121,7 @@ public:
 private:
   bool init_scanning();
 
-  bool is_started;
+  bool is_started_scanning;
   bool pan_only;
   bool tilt_only;
 
