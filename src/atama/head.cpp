@@ -165,10 +165,10 @@ void Head::move_tracking()
     tilt_angle = current_tilt_angle;
   } else {
     double p_offset = tilt_error * tilt_p_gain;
-    // p_offset *= p_offset;
-    // if (tilt_error < 0) {
-    //   p_offset = -p_offset;
-    // }
+    p_offset *= p_offset;
+    if (tilt_error < 0) {
+      p_offset = -p_offset;
+    }
 
     double d_offset = tilt_error_difference * tilt_d_gain;
     d_offset *= d_offset;
@@ -178,7 +178,6 @@ void Head::move_tracking()
     tilt_angle += (p_offset + d_offset);
   }
 
-  std::cout << "+++++ " << pan_angle << std::endl;
   pan_angle = pan_center + alg::clampValue(pan_angle - pan_center, right_limit, left_limit);
   tilt_angle = tilt_center + alg::clampValue(tilt_angle - tilt_center, bottom_limit, top_limit);
   std::cout << "pan move_tracking = " << pan_angle << " tilt move_tracking = " << tilt_angle <<
@@ -203,7 +202,7 @@ void Head::process()
             scan_top_limit = 0.0;
             scan_bottom_limit = -75.0;
 
-            scan_speed = 0.2;
+            scan_speed = 0.6;
 
             scan_pan_angle = get_pan_angle();
             scan_tilt_angle = get_tilt_angle();
@@ -500,7 +499,7 @@ void Head::set_pan_tilt_angle(double pan, double tilt)
 void Head::load_data()
 {
   std::string file_name =
-    "/home/nathanael/ICHIRO/src/atama/config/atama.json";
+    "/home/nathanael/ICHIRO/src/atama/config/head.json";
   std::ifstream file(file_name);
   nlohmann::json walking_data = nlohmann::json::parse(file);
 
@@ -592,7 +591,9 @@ void Head::track_ball(
       offset.x *= offset_x;
       offset.y *= offset_y;
       ball_position = offset;
-      head->move_tracking(ball_position.x, ball_position.y);
+      std::cout << offset.x << "+++++" << offset_y << std::endl;
+      head->move_by_angle(ball_position.x, ball_position.y);
+      // head->move_tracking(ball_position.x, ball_position.y);
     }
   }
 }
