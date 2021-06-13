@@ -110,7 +110,7 @@ public:
   void load_data(std::string file_name);
 
   void track_ball(
-    std::shared_ptr<Head> head, std::shared_ptr<CameraMeasurement> camera,
+    std::shared_ptr<CameraMeasurement> camera,
     keisan::Point2 pos, float view_v_angle, float view_h_angle);
 
   // REQUIRED

@@ -483,7 +483,7 @@ void Head::load_data(std::string file_name)
 }
 
 void Head::track_ball(
-  std::shared_ptr<Head> head, std::shared_ptr<CameraMeasurement> camera,
+  std::shared_ptr<CameraMeasurement> camera,
   keisan::Point2 pos, float view_v_angle, float view_h_angle)
 {
   stop_scan();
@@ -492,10 +492,10 @@ void Head::track_ball(
     ball_position.x = -1;
     ball_count = 0;
     if (no_ball_count < no_ball_max_count) {
-      head->move_tracking();
+      move_tracking();
       no_ball_count++;
     } else {
-      head->init_tracking();
+      init_tracking();
     }
   } else {
     no_ball_count = 0;
@@ -509,7 +509,7 @@ void Head::track_ball(
       offset.y *= (view_h_angle / camera->height());
 
       ball_position = offset;
-      head->move_tracking(ball_position.x, ball_position.y);
+      move_tracking(ball_position.x, ball_position.y);
     }
   }
 }

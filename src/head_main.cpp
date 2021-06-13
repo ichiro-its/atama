@@ -106,7 +106,7 @@ int main(int argc, char * argv[])
         head->move_scan_ball_down();
       } else if (ball_pos.x != 0 || ball_pos.y != 0) {
         std::cout << "track ball" << std::endl;
-        head->track_ball(head, camera, ball_pos, view_v_angle, view_h_angle);
+        head->track_ball(camera, ball_pos, view_v_angle, view_h_angle);
       }
       head->process();
       message.clear_actuator_request();
