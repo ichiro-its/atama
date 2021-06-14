@@ -8,18 +8,46 @@ endif()
 
 # Default to C++14
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
+  set(CMAKE_CXX_STANDARD 17)
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
+  add_compile_options(-Wall -Wextra -Wpedantic -fPIC)
 endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(aruku REQUIRED)
+find_package(kansei REQUIRED)
+find_package(ninshiki_opencv REQUIRED)
+find_package(robocup_client REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
+
+add_library(${PROJECT_NAME} SHARED
+  "src/atama/head.cpp")
+
+target_include_directories(${PROJECT_NAME} PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>)
+
+ament_target_dependencies(${PROJECT_NAME}
+  aruku kansei ninshiki_opencv robocup_client)
+
+install(DIRECTORY "include" DESTINATION ".")
+
+install(TARGETS ${PROJECT_NAME}
+  EXPORT export_${PROJECT_NAME}
+  ARCHIVE DESTINATION "lib"
+  LIBRARY DESTINATION "lib"
+  RUNTIME DESTINATION "bin")
+
+add_executable(main "src/head_main.cpp")
+target_link_libraries(main ${PROJECT_NAME})
+
+install(TARGETS main
+  DESTINATION "lib/${PROJECT_NAME}")
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -32,4 +60,7 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
+ament_export_dependencies(aruku kansei ninshiki_opencv robocup_client)
+ament_export_include_directories("include")
+ament_export_libraries(${PROJECT_NAME})
 ament_package()

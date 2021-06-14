@@ -1,0 +1,69 @@
+{
+  "PanTiltToDistance": {
+    "pan_4_tilt_2": 5.210259442e-09,
+    "pan_3_tilt_3": 3.003947968e-09,
+    "pan_3_tilt_1": 1.460699928e-05,
+    "pan_1_tilt_5": 6.816034402e-09,
+    "pan_0_tilt_4": 0.001038157898,
+    "pan_1_tilt_2": -0.001106552733,
+    "pan_5_tilt_1": -6.565426025e-10,
+    "pan_4_tilt_0": 6.89264079e-06,
+    "pan_5_tilt_0": 1.00182753e-08,
+    "pan_0_tilt_6": 1.232264115e-07,
+    "pan_4_tilt_1": -2.066300351e-07,
+    "pan_6_tilt_0": -4.410747914e-10,
+    "pan_2_tilt_4": 5.03513342e-08,
+    "pan_0_tilt_0": 23.29877379,
+    "pan_2_tilt_3": -4.135434807e-06,
+    "pan_3_tilt_2": -2.843364424e-07,
+    "pan_1_tilt_3": 6.136680159000001e-05,
+    "pan_1_tilt_4": -1.101682294e-06,
+    "pan_0_tilt_5": -1.885309407e-05,
+    "pan_2_tilt_2": 8.846286174e-05,
+    "pan_0_tilt_3": -0.02358820314,
+    "pan_3_tilt_0": -0.0001651130201,
+    "pan_1_tilt_1": -0.0146124816,
+    "pan_2_tilt_1": 1.332082477e-05,
+    "pan_2_tilt_0": -0.01831426377,
+    "pan_0_tilt_2": 0.18267461,
+    "pan_0_tilt_1": 1.127008823,
+    "pan_1_tilt_0": 0.3093351489
+  },
+  "Offset": {
+    "pan_offset": 0,
+    "tilt_offset": 0
+  },
+  "Limit": {
+    "right_limit": -100,
+    "left_limit": 100,
+    "bottom_limit": -75,
+    "top_limit": 30
+  },
+  "Gain": {
+    "pan_d_gain": 0,
+    "tilt_d_gain": 0,
+    "pan_p_gain": 0.05,
+    "tilt_p_gain": 0.05
+  },
+  "Center": {
+  "pan_center": 0,
+  "tilt_center": 0
+  },
+  "PanDistanceToTilt": {
+    "pan_1_distance_1": -0.003021888273,
+    "pan_0_distance_2": -0.02092478237,
+    "pan_1_distance_0": 0.08740940421,
+    "pan_0_distance_1": 2.130496073,
+    "pan_0_distance_0": -40.32690856,
+    "pan_1_distance_3": -4.228681525e-07,
+    "pan_2_distance_2": 5.302981935e-07,
+    "pan_0_distance_3": 0.0001136175956,
+    "pan_3_distance_1": -2.28056223e-07,
+    "pan_3_distance_0": -5.700541137e-06,
+    "pan_4_distance_0": -7.167782744e-07,
+    "pan_2_distance_1": -7.011807716e-05,
+    "pan_1_distance_2": 5.449817457e-05,
+    "pan_2_distance_0": 0.002037715335,
+    "pan_0_distance_4": -3.421654045e-07
+  }
+}
