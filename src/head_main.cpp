@@ -45,7 +45,7 @@ int main(int argc, char * argv[])
 
   std::string host = argv[1];
   int port = std::stoi(argv[2]);
-  std::string file_name = argv[3];
+  std::string path = argv[3]  + "head/";
   robocup_client::RobotClient client(host, port);
   if (!client.connect()) {
     std::cerr << "Failed to connect to server on port " << client.get_port() << "!" << std::endl;
@@ -78,7 +78,7 @@ int main(int argc, char * argv[])
       auto sensors = client.receive();
 
       // Load data
-      head->load_data(file_name);
+      head->load_data(path);
 
       // Get Ball Position
       if (sensors.get()->cameras_size() > 0) {
