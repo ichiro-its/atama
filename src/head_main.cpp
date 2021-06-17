@@ -89,7 +89,7 @@ int main(int argc, char * argv[])
         frame_hsv = temp.clone();
         cv::cvtColor(frame, frame_hsv, cv::COLOR_BGR2HSV);
 
-        detector.vision_process(frame_hsv, frame);
+        detector.vision_process(sensors, frame_hsv, frame);
 
         float diagonal = alg::distance(camera->width(), camera->height());
         int field_of_view = 78;
