@@ -418,7 +418,7 @@ void Head::set_pan_tilt_angle(double pan, double tilt)
 
 void Head::load_data(std::string file_name)
 {
-  std::ifstream file(file_name);
+  std::ifstream file(file_name + "head" + "/head.json");
   nlohmann::json walking_data = nlohmann::json::parse(file);
 
   for (auto &[key, val] : walking_data.items()) {
@@ -489,7 +489,7 @@ void Head::track_ball(
   stop_scan();
   if (pos.x == 0 || pos.y == 0) {
     ball_position.x = -1;
-    ball_position.x = -1;
+    ball_position.y = -1;
     ball_count = 0;
     if (no_ball_count < no_ball_max_count) {
       move_tracking();
