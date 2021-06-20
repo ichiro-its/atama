@@ -59,11 +59,15 @@ int main(int argc, char * argv[])
   client.send(*message.get_actuator_request());
 
   auto imu = std::make_shared<kansei::Imu>();
+  imu->load_data(path);
 
   auto walking = std::make_shared<aruku::Walking>(imu);
+  walking->initialize();
+  walking->load_data(path);
 
   auto head = std::make_shared<atama::Head>(walking, imu);
   head->initialize();
+  head->load_data(path);
 
   auto camera = std::make_shared<CameraMeasurement>();
   cv::Mat frame, frame_hsv, field_mask;
@@ -72,13 +76,11 @@ int main(int argc, char * argv[])
 
   ninshiki_opencv::Detector detector;
 
+  std::cout << "enter" << std::endl;
+
   while (client.get_tcp_socket()->is_connected()) {
     try {
-      client.send(*message.get_actuator_request());
       auto sensors = client.receive();
-
-      // Load data
-      head->load_data(path);
 
       // Get Ball Position
       if (sensors.get()->cameras_size() > 0) {
@@ -105,7 +107,7 @@ int main(int argc, char * argv[])
         std::cout << "ball is lost" << std::endl;
         head->move_scan_ball_down();
       } else if (ball_pos.x != 0 || ball_pos.y != 0) {
-        std::cout << "track ball" << std::endl;
+        std::cout << "track ball at x " << ball_pos.x << " y " << ball_pos.y << std::endl;
         head->track_ball(camera, ball_pos, view_v_angle, view_h_angle);
       }
       head->process();

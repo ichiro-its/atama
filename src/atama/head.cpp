@@ -489,7 +489,7 @@ void Head::track_ball(
   stop_scan();
   if (pos.x == 0 || pos.y == 0) {
     ball_position.x = -1;
-    ball_position.x = -1;
+    ball_position.y = -1;
     ball_count = 0;
     if (no_ball_count < no_ball_max_count) {
       move_tracking();
