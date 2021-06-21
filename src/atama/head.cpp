@@ -388,10 +388,10 @@ double Head::calculate_distance_from_tilt(double tilt)
 {
   double distance = 0.0;
 
-    for (int i = 0; i <= 4; i++) {
-      double x2 = pow((tilt + tilt_center + tilt_offset), i);
-      distance += (tilt_to_distance_[i]) * x2;
-    }
+  for (int i = 0; i <= 4; i++) {
+    double x2 = pow((tilt + tilt_center + tilt_offset), i);
+    distance += (tilt_to_distance_[i]) * x2;
+  }
 
   return (distance > 0.0) ? distance : 0.0;
 }
@@ -486,7 +486,6 @@ void Head::load_data(std::string file_name)
           val.at(buffer).get_to(tilt_to_distance_[i]);
           std::cout << buffer << ": " << tilt_to_distance_[i] << std::endl;
         }
-        
       } catch (nlohmann::json::parse_error & ex) {
         std::cerr << "parse error at byte " << ex.byte << std::endl;
       }

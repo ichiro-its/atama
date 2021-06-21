@@ -111,9 +111,10 @@ int main(int argc, char * argv[])
         head->track_ball(camera, ball_pos, view_v_angle, view_h_angle);
       }
       head->process();
-      double distance = head->calculate_distance_from_tilt(head-> get_tilt_angle());
+      double distance = head->calculate_distance_from_tilt(head->get_tilt_angle());
       std::cout << "distance: " << distance << std::endl;
-      std::cout << "pan: " << head->get_pan_angle() << " " << "tilt: " << head->get_tilt_angle() << std::endl;
+      std::cout << "pan: " << head->get_pan_angle() << " " << "tilt: " << head->get_tilt_angle() <<
+        std::endl;
 
       message.clear_actuator_request();
       for (auto joint : head->get_joints()) {
