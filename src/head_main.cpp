@@ -59,7 +59,7 @@ int main(int argc, char * argv[])
   client.send(*message.get_actuator_request());
 
   auto imu = std::make_shared<kansei::Imu>();
-  imu->set_path(path);
+  imu->load_data(path);
 
   auto walking = std::make_shared<aruku::Walking>(imu);
   walking->initialize();
@@ -111,9 +111,16 @@ int main(int argc, char * argv[])
         head->track_ball(camera, ball_pos, view_v_angle, view_h_angle);
       }
       head->process();
+      double distance = head->calculate_distance_from_tilt(head-> get_tilt_angle());
+      std::cout << "distance: " << distance << std::endl;
+      std::cout << "pan: " << head->get_pan_angle() << " " << "tilt: " << head->get_tilt_angle() << std::endl;
+
       message.clear_actuator_request();
       for (auto joint : head->get_joints()) {
         message.add_motor_position_in_degree(joint.get_joint_name(), joint.get_goal_position());
+        if (joint.get_joint_name() == "neck_yaw" || joint.get_joint_name() == "neck_pitch") {
+          std::cout << joint.get_joint_name() << ": " << joint.get_goal_position() << std::endl;
+        }
       }
       client.send(*message.get_actuator_request());
     } catch (const std::runtime_error & exc) {

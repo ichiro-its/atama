@@ -99,6 +99,11 @@ public:
     return calculate_distance_from_pan_tilt(get_pan_angle(), get_tilt_angle());
   }
   double calculate_distance_from_pan_tilt(double pan, double tilt);
+  double calculate_distance_from_tilt()
+  {
+    return calculate_distance_from_tilt(get_tilt_angle());
+  }
+  double calculate_distance_from_tilt(double tilt);
   double calculate_tilt_from_pan_distance(double distance)
   {
     return calculate_tilt_from_pan_distance(get_pan_angle(), distance);
@@ -147,6 +152,7 @@ private:
   double tilt_d_gain;
 
   double pan_tilt_to_distance_[7][7];
+  double tilt_to_distance_[5];
   double pan_distance_to_tilt_[5][5];
 
   double pan_error;
