@@ -484,7 +484,6 @@ void Head::load_data(std::string file_name)
           char buffer[32];
           snprintf(buffer, sizeof(buffer), "pan_%d_tilt_%d", 0, i);
           val.at(buffer).get_to(tilt_to_distance_[i]);
-          std::cout << buffer << ": " << tilt_to_distance_[i] << std::endl;
         }
       } catch (nlohmann::json::parse_error & ex) {
         std::cerr << "parse error at byte " << ex.byte << std::endl;
