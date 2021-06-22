@@ -384,6 +384,18 @@ double Head::calculate_distance_from_pan_tilt(double pan, double tilt)
   return (distance > 0.0) ? distance : 0.0;
 }
 
+double Head::calculate_distance_from_tilt(double tilt)
+{
+  double distance = 0.0;
+
+  for (int i = 0; i <= 4; i++) {
+    double x2 = pow((tilt + tilt_center + tilt_offset), i);
+    distance += (tilt_to_distance_[i]) * x2;
+  }
+
+  return (distance > 0.0) ? distance : 0.0;
+}
+
 double Head::calculate_tilt_from_pan_distance(double pan, double distance)
 {
   double tilt = 0.0;
@@ -462,6 +474,16 @@ void Head::load_data(std::string file_name)
             snprintf(buffer, sizeof(buffer), "pan_%d_tilt_%d", (i - j), j);
             val.at(buffer).get_to(pan_tilt_to_distance_[i - j][j]);
           }
+        }
+      } catch (nlohmann::json::parse_error & ex) {
+        std::cerr << "parse error at byte " << ex.byte << std::endl;
+      }
+    } else if (key == "TiltToDistance") {
+      try {
+        for (int i = 0; i <= 4; i++) {
+          char buffer[32];
+          snprintf(buffer, sizeof(buffer), "pan_%d_tilt_%d", 0, i);
+          val.at(buffer).get_to(tilt_to_distance_[i]);
         }
       } catch (nlohmann::json::parse_error & ex) {
         std::cerr << "parse error at byte " << ex.byte << std::endl;
