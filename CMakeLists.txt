@@ -17,6 +17,7 @@ find_package(ament_cmake REQUIRED)
 find_package(aruku REQUIRED)
 find_package(framework_common REQUIRED)
 find_package(kansei REQUIRED)
+find_package(ninshiki_opencv REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED
   "src/${PROJECT_NAME}/head.cpp")
@@ -28,25 +29,8 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 ament_target_dependencies(${PROJECT_NAME}
   aruku
   framework_common
-  kansei)
-
-install(DIRECTORY "include" DESTINATION ".")
-
-install(TARGETS ${PROJECT_NAME}
-  EXPORT export_${PROJECT_NAME}
-  ARCHIVE DESTINATION "lib"
-  LIBRARY DESTINATION "lib"
-  RUNTIME DESTINATION "bin")
-
-add_library(${PROJECT_NAME} SHARED
-  "src/atama/head.cpp")
-
-target_include_directories(${PROJECT_NAME} PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>)
-
-ament_target_dependencies(${PROJECT_NAME}
-  aruku kansei ninshiki_opencv robocup_client)
+  kansei
+  ninshiki_opencv)
 
 install(DIRECTORY "include" DESTINATION ".")
 
@@ -70,7 +54,8 @@ endif()
 ament_export_dependencies(
   aruku
   framework_common
-  kansei)
+  kansei
+  ninshiki_opencv)
 ament_export_include_directories("include")
 ament_export_libraries(${PROJECT_NAME})
 ament_package()

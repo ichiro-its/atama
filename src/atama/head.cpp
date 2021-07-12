@@ -89,15 +89,6 @@ void Head::initialize()
   tilt_error_difference = 0;
 }
 
-void Head::init_tracking()
-{
-  pan_error = 0;
-  pan_error_difference = 0;
-
-  tilt_error = 0;
-  tilt_error_difference = 0;
-}
-
 void Head::move_by_angle(double pan_angle, double tilt_angle)
 {
   stop_scan();
@@ -521,7 +512,7 @@ void Head::track_ball(
       move_tracking();
       no_ball_count++;
     } else {
-      init_tracking();
+      initialize();
     }
   } else {
     no_ball_count = 0;
