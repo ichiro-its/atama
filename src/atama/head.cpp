@@ -22,11 +22,13 @@
 #include <atama/head.hpp>
 #include <kansei/imu.hpp>
 
+#include <nlohmann/json.hpp>
+
 #include <cmath>
 #include <fstream>
 #include <memory>
-#include <string>
 #include <sstream>
+#include <string>
 
 #include "common/algebra.h"
 
@@ -38,7 +40,7 @@ Head::Head(std::shared_ptr<aruku::Walking> walking, std::shared_ptr<kansei::Imu>
   walking = walking;
   imu = imu;
 
-  is_started = false;
+  is_started_scanning = false;
   pan_only = false;
   tilt_only = false;
 
@@ -54,6 +56,9 @@ Head::Head(std::shared_ptr<aruku::Walking> walking, std::shared_ptr<kansei::Imu>
   scan_bottom_limit = -15;
 
   scan_speed = 0.5;
+
+  no_ball_count = 0;
+  ball_count = 0;
 
   for (auto id : {"neck_yaw", "neck_pitch"}) {
     tachimawari::Joint joint(id);
@@ -84,12 +89,20 @@ void Head::initialize()
   tilt_error_difference = 0;
 }
 
+void Head::init_tracking()
+{
+  pan_error = 0;
+  pan_error_difference = 0;
+
+  tilt_error = 0;
+  tilt_error_difference = 0;
+}
+
 void Head::move_by_angle(double pan_angle, double tilt_angle)
 {
-  stop();
-
-  pan_angle = pan_center + alg::clampValue(pan_angle, right_limit, left_limit);
-  tilt_angle = tilt_center + alg::clampValue(tilt_angle, bottom_limit, top_limit);
+  stop_scan();
+  this->pan_angle = pan_center + alg::clampValue(pan_angle, right_limit, left_limit);
+  this->tilt_angle = tilt_center + alg::clampValue(tilt_angle, bottom_limit, top_limit);
 }
 
 void Head::move_tracking(double pan, double tilt)
@@ -128,7 +141,7 @@ void Head::move_tracking_tilt_only(double tilt)
 
 void Head::move_tracking()
 {
-  stop();
+  stop_scan();
 
   if (tilt_only) {
     pan_angle = current_pan_angle;
@@ -162,7 +175,6 @@ void Head::move_tracking()
     if (tilt_error_difference < 0) {
       d_offset = -d_offset;
     }
-
     tilt_angle += (p_offset + d_offset);
   }
 
@@ -176,7 +188,7 @@ void Head::process()
     joints[i].set_pid_gain(20.0, 3.0, 2.0);
   }
 
-  if (is_started) {
+  if (is_started_scanning) {
     switch (scan_mode) {
       case SCAN_BALL_UP:
       case SCAN_BALL_DOWN:
@@ -188,7 +200,7 @@ void Head::process()
             scan_top_limit = 0.0;
             scan_bottom_limit = -75.0;
 
-            scan_speed = 0.2;
+            scan_speed = 0.6;
 
             scan_pan_angle = get_pan_angle();
             scan_tilt_angle = get_tilt_angle();
@@ -336,80 +348,6 @@ void Head::process()
 
           break;
         }
-
-      case SCAN_MARATHON:
-        {
-          if (init_scanning()) {
-            printf("head init\n");
-            scan_left_limit = 70.0;
-            scan_right_limit = -70.0;
-
-            scan_top_limit = 0.0;
-            scan_bottom_limit = -70.0;
-
-            scan_speed = 0.20;
-
-            scan_pan_angle = get_pan_angle();
-            scan_tilt_angle = get_tilt_angle();
-
-            scan_position = 0;
-            marathon_index = -1;
-
-            break;
-          }
-
-          switch (scan_position) {
-            case 0:
-              {
-                marathon_index = scan_position;
-                scan_tilt_angle += scan_speed;
-                scan_pan_angle = 0;
-                if (scan_tilt_angle > scan_top_limit) {
-                  scan_position = 1;
-                  scan_tilt_angle = bottom_limit;
-                }
-
-                break;
-              }
-
-            case 1:
-              {
-                marathon_index = scan_position;
-                scan_tilt_angle += scan_speed;
-                scan_pan_angle = scan_left_limit;
-                if (scan_tilt_angle > scan_top_limit) {
-                  scan_position = 2;
-                  scan_tilt_angle = bottom_limit;
-                }
-
-                break;
-              }
-
-            case 2:
-              {
-                marathon_index = scan_position;
-                scan_tilt_angle += scan_speed;
-                scan_pan_angle = scan_right_limit;
-                if (scan_tilt_angle > scan_top_limit) {
-                  scan_position = 3;
-                  scan_tilt_angle = bottom_limit;
-                }
-
-                break;
-              }
-
-            default:
-              {
-                marathon_index = scan_position;
-                scan_pan_angle = 0.0;
-                scan_tilt_angle = scan_bottom_limit;
-
-                break;
-              }
-          }
-
-          break;
-        }
     }
 
     pan_angle = pan_center + alg::clampValue(scan_pan_angle, right_limit, left_limit);
@@ -425,7 +363,7 @@ void Head::process()
 
 void Head::move_scan(int mode)
 {
-  start();
+  start_scan();
 
   if (scan_mode == mode) {
     return;
@@ -445,6 +383,18 @@ double Head::calculate_distance_from_pan_tilt(double pan, double tilt)
       double x2 = pow((tilt + tilt_center + tilt_offset), j);
       distance += (pan_tilt_to_distance_[i - j][j]) * x1 * x2;
     }
+  }
+
+  return (distance > 0.0) ? distance : 0.0;
+}
+
+double Head::calculate_distance_from_tilt(double tilt)
+{
+  double distance = 0.0;
+
+  for (int i = 0; i <= 4; i++) {
+    double x2 = pow((tilt + tilt_center + tilt_offset), i);
+    distance += (tilt_to_distance_[i]) * x2;
   }
 
   return (distance > 0.0) ? distance : 0.0;
@@ -480,6 +430,114 @@ void Head::set_pan_tilt_angle(double pan, double tilt)
 {
   current_pan_angle = pan;
   current_tilt_angle = tilt;
+}
+
+void Head::load_data(std::string file_name)
+{
+  std::ifstream file(file_name + "head/" + "head.json");
+  nlohmann::json walking_data = nlohmann::json::parse(file);
+
+  for (auto &[key, val] : walking_data.items()) {
+    if (key == "Center") {
+      try {
+        val.at("pan_center").get_to(pan_center);
+        val.at("tilt_center").get_to(tilt_center);
+      } catch (nlohmann::json::parse_error & ex) {
+        std::cerr << "parse error at byte " << ex.byte << std::endl;
+      }
+    } else if (key == "Offset") {
+      try {
+        val.at("pan_offset").get_to(pan_offset);
+        val.at("tilt_offset").get_to(tilt_offset);
+      } catch (nlohmann::json::parse_error & ex) {
+        std::cerr << "parse error at byte " << ex.byte << std::endl;
+      }
+    } else if (key == "Limit") {
+      try {
+        val.at("left_limit").get_to(left_limit);
+        val.at("right_limit").get_to(right_limit);
+        val.at("top_limit").get_to(top_limit);
+        val.at("bottom_limit").get_to(bottom_limit);
+      } catch (nlohmann::json::parse_error & ex) {
+        std::cerr << "parse error at byte " << ex.byte << std::endl;
+      }
+    } else if (key == "Gain") {
+      try {
+        val.at("pan_p_gain").get_to(pan_p_gain);
+        val.at("pan_d_gain").get_to(pan_d_gain);
+        val.at("tilt_p_gain").get_to(tilt_p_gain);
+        val.at("tilt_d_gain").get_to(tilt_d_gain);
+      } catch (nlohmann::json::parse_error & ex) {
+        std::cerr << "parse error at byte " << ex.byte << std::endl;
+      }
+    } else if (key == "PanTiltToDistance") {
+      try {
+        for (int i = 6; i >= 0; i--) {
+          for (int j = 0; j <= i; j++) {
+            char buffer[32];
+            snprintf(buffer, sizeof(buffer), "pan_%d_tilt_%d", (i - j), j);
+            val.at(buffer).get_to(pan_tilt_to_distance_[i - j][j]);
+          }
+        }
+      } catch (nlohmann::json::parse_error & ex) {
+        std::cerr << "parse error at byte " << ex.byte << std::endl;
+      }
+    } else if (key == "TiltToDistance") {
+      try {
+        for (int i = 0; i <= 4; i++) {
+          char buffer[32];
+          snprintf(buffer, sizeof(buffer), "pan_%d_tilt_%d", 0, i);
+          val.at(buffer).get_to(tilt_to_distance_[i]);
+        }
+      } catch (nlohmann::json::parse_error & ex) {
+        std::cerr << "parse error at byte " << ex.byte << std::endl;
+      }
+    } else if (key == "PanDistanceToTilt") {
+      try {
+        for (int i = 4; i >= 0; i--) {
+          for (int j = 0; j <= i; j++) {
+            char buffer[32];
+            snprintf(buffer, sizeof(buffer), "pan_%d_distance_%d", (i - j), j);
+            val.at(buffer).get_to(pan_distance_to_tilt_[i - j][j]);
+          }
+        }
+      } catch (nlohmann::json::parse_error & ex) {
+        std::cerr << "parse error at byte " << ex.byte << std::endl;
+      }
+    }
+  }
+}
+
+void Head::track_ball(
+  std::shared_ptr<CameraMeasurement> camera,
+  keisan::Point2 pos, float view_v_angle, float view_h_angle)
+{
+  stop_scan();
+  if (pos.x == 0 || pos.y == 0) {
+    ball_position.x = -1;
+    ball_position.y = -1;
+    ball_count = 0;
+    if (no_ball_count < no_ball_max_count) {
+      move_tracking();
+      no_ball_count++;
+    } else {
+      init_tracking();
+    }
+  } else {
+    no_ball_count = 0;
+    if (ball_count < ball_max_count) {
+      ball_count++;
+    } else {
+      keisan::Point2 center = keisan::Point2(camera->width() / 2, camera->height() / 2);
+      keisan::Point2 offset = pos - center;
+      offset *= -1;
+      offset.x *= (view_v_angle / camera->width());
+      offset.y *= (view_h_angle / camera->height());
+
+      ball_position = offset;
+      move_tracking(ball_position.x, ball_position.y);
+    }
+  }
 }
 
 }  // namespace atama
