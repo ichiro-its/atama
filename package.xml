@@ -3,20 +3,16 @@
 <package format="3">
   <name>atama</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="jalilpro31@gmail.com">maroqi</maintainer>
-  <license>TODO: License declaration</license>
-
+  <description>Head Package for ROS 2 Project</description>
+  <maintainer email="jalilpro31@gmail.com">Maroqi Jalil</maintainer>
+  <license>MIT License</license>
   <buildtool_depend>ament_cmake</buildtool_depend>
-
   <depend>aruku</depend>
+  <depend>framework_common</depend>
   <depend>kansei</depend>
   <depend>ninshiki_opencv</depend>
-  <depend>robocup_client</depend>
-
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
-
   <export>
     <build_type>ament_cmake</build_type>
   </export>

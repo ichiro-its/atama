@@ -54,7 +54,6 @@ public:
 
   void initialize();
   void process();
-  void init_tracking();
 
   // void joint_enable() { m_Joint.SetEnableHead_only(true, true); }
   // void joint_disable() { m_Joint.SetEnableBody(false); }
