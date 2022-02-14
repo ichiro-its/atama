@@ -18,13 +18,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef ATAMA__HEAD_HPP_
-#define ATAMA__HEAD_HPP_
+#ifndef ATAMA__HEAD__HEAD_HPP_
+#define ATAMA__HEAD__HEAD_HPP_
 
-#include <aruku/walking.hpp>
-#include <kansei/imu.hpp>
+// #include <aruku/walking.hpp>
+// #include <kansei/imu.hpp>
 #include <keisan/geometry/point_2.hpp>
-#include <robocup_client/robocup_client.hpp>
+#include <tachimawari/joint/model/joint.hpp>
+// #include <robocup_client/robocup_client.hpp>
 
 #include <memory>
 #include <string>
@@ -47,7 +48,7 @@ public:
 
   int marathon_index;
 
-  Head(std::shared_ptr<aruku::Walking> walking, std::shared_ptr<kansei::Imu> imu);
+  Head(double position_x, double position_y, float yaw);
 
   void start_scan() {is_started_scanning = true;}
   void stop_scan() {is_started_scanning = false; scan_init = false;}
@@ -113,14 +114,14 @@ public:
 
   void load_data(std::string file_name);
 
-  void track_ball(
-    std::shared_ptr<CameraMeasurement> camera,
-    keisan::Point2 pos, float view_v_angle, float view_h_angle);
+  // void track_ball(
+  //   std::shared_ptr<CameraMeasurement> camera,
+  //   keisan::Point2 pos, float view_v_angle, float view_h_angle);
 
   // REQUIRED
   void set_pan_tilt_angle(double pan, double tilt);
 
-  std::vector<tachimawari::Joint> get_joints() {return joints;}
+  std::vector<tachimawari::joint::Joint> get_joints() {return joints;}
 
 private:
   bool init_scanning();
@@ -187,12 +188,17 @@ private:
 
   keisan::Point2 ball_position;
 
-  std::vector<tachimawari::Joint> joints;
+  std::vector<tachimawari::joint::Joint> joints;
 
-  std::shared_ptr<kansei::Imu> imu;
-  std::shared_ptr<aruku::Walking> walking;
+  double position_x;
+  double position_y;
+  float yaw;
+  // std::vector<tachimawari::Joint> joints;
+
+  // std::shared_ptr<kansei::Imu> imu;
+  // std::shared_ptr<aruku::Walking> walking;
 };
 
 }  // namespace atama
 
-#endif  // ATAMA__HEAD_HPP_
+#endif  // ATAMA__HEAD__HEAD_HPP_

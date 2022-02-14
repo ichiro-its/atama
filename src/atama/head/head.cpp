@@ -18,9 +18,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <aruku/walking.hpp>
-#include <atama/head.hpp>
-#include <kansei/imu.hpp>
+// #include <aruku/walking.hpp>
+#include <atama/head/head.hpp>
+#include <common/algebra.h>
+// #include <kansei/imu.hpp>
 
 #include <nlohmann/json.hpp>
 
@@ -30,15 +31,17 @@
 #include <sstream>
 #include <string>
 
-#include "common/algebra.h"
 
 namespace atama
 {
 
-Head::Head(std::shared_ptr<aruku::Walking> walking, std::shared_ptr<kansei::Imu> imu)
+Head::Head(double position_x, double position_y, float yaw)
 {
-  walking = walking;
-  imu = imu;
+  // walking = walking;
+  // imu = imu;
+  this->position_x = position_x;
+  this->position_y = position_y;
+  this->yaw = yaw;
 
   is_started_scanning = false;
   pan_only = false;
@@ -60,8 +63,11 @@ Head::Head(std::shared_ptr<aruku::Walking> walking, std::shared_ptr<kansei::Imu>
   no_ball_count = 0;
   ball_count = 0;
 
-  for (auto id : {"neck_yaw", "neck_pitch"}) {
-    tachimawari::Joint joint(id);
+  // will do in node
+  for (std::string id : {"neck_yaw", "neck_pitch"}) {
+    uint8_t joint_id = tachimawari::joint::JointId::by_name.find(id)->second;
+    
+    tachimawari::joint::Joint joint(joint_id);
     joints.push_back(joint);
   }
 
@@ -345,11 +351,11 @@ void Head::process()
     tilt_angle = tilt_center + alg::clampValue(scan_tilt_angle, bottom_limit, top_limit);
   }
 
-  // if pan enable
-  joints[0].set_target_position(pan_angle);
-
-  // if tilt enable
-  joints[1].set_target_position(tilt_angle);
+  if (!joints.empty())
+  {
+    joints[0].set_position(pan_angle);
+    joints[1].set_position(tilt_angle);
+  }
 }
 
 void Head::move_scan(int mode)
@@ -408,10 +414,10 @@ double Head::calculate_tilt_from_pan_distance(double pan, double distance)
 
 void Head::look_to_position(double position_x, double position_y)
 {
-  float dx = position_x - walking->POSITION_X;
-  float dy = position_y - walking->POSITION_Y;
+  float dx = position_x - this->position_x;
+  float dy = position_y - this->position_y;
 
-  float pan = imu->get_yaw() - (alg::direction(dx, dy) * alg::rad2Deg());
+  float pan = yaw - (alg::direction(dx, dy) * alg::rad2Deg());
   float tilt = calculate_tilt_from_pan_distance(alg::distance(dx, dy));
 
   move_by_angle(pan - pan_center, tilt);
@@ -499,36 +505,36 @@ void Head::load_data(std::string file_name)
   }
 }
 
-void Head::track_ball(
-  std::shared_ptr<CameraMeasurement> camera,
-  keisan::Point2 pos, float view_v_angle, float view_h_angle)
-{
-  stop_scan();
-  if (pos.x == 0 || pos.y == 0) {
-    ball_position.x = -1;
-    ball_position.y = -1;
-    ball_count = 0;
-    if (no_ball_count < no_ball_max_count) {
-      move_tracking();
-      no_ball_count++;
-    } else {
-      initialize();
-    }
-  } else {
-    no_ball_count = 0;
-    if (ball_count < ball_max_count) {
-      ball_count++;
-    } else {
-      keisan::Point2 center = keisan::Point2(camera->width() / 2, camera->height() / 2);
-      keisan::Point2 offset = pos - center;
-      offset *= -1;
-      offset.x *= (view_v_angle / camera->width());
-      offset.y *= (view_h_angle / camera->height());
+// void Head::track_ball(
+//   std::shared_ptr<CameraMeasurement> camera,
+//   keisan::Point2 pos, float view_v_angle, float view_h_angle)
+// {
+//   stop_scan();
+//   if (pos.x == 0 || pos.y == 0) {
+//     ball_position.x = -1;
+//     ball_position.y = -1;
+//     ball_count = 0;
+//     if (no_ball_count < no_ball_max_count) {
+//       move_tracking();
+//       no_ball_count++;
+//     } else {
+//       initialize();
+//     }
+//   } else {
+//     no_ball_count = 0;
+//     if (ball_count < ball_max_count) {
+//       ball_count++;
+//     } else {
+//       keisan::Point2 center = keisan::Point2(camera->width() / 2, camera->height() / 2);
+//       keisan::Point2 offset = pos - center;
+//       offset *= -1;
+//       offset.x *= (view_v_angle / camera->width());
+//       offset.y *= (view_h_angle / camera->height());
 
-      ball_position = offset;
-      move_tracking(ball_position.x, ball_position.y);
-    }
-  }
-}
+//       ball_position = offset;
+//       move_tracking(ball_position.x, ball_position.y);
+//     }
+//   }
+// }
 
 }  // namespace atama
