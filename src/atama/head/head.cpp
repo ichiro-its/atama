@@ -102,7 +102,7 @@ void Head::move_by_angle(double pan_angle, double tilt_angle)
   this->tilt_angle = tilt_center + alg::clampValue(tilt_angle, bottom_limit, top_limit);
 }
 
-void Head::move_tracking(double pan, double tilt)
+void Head::tracking(double pan, double tilt)
 {
   pan_error_difference = pan - pan_error;
   pan_error = pan;
@@ -113,30 +113,30 @@ void Head::move_tracking(double pan, double tilt)
   pan_only = false;
   tilt_only = false;
 
-  move_tracking();
+  tracking();
 }
 
-void Head::move_tracking_pan_only(double pan)
+void Head::tracking_pan_only(double pan)
 {
   pan_error_difference = pan - pan_error;
   pan_error = pan;
 
   pan_only = true;
 
-  move_tracking();
+  tracking();
 }
 
-void Head::move_tracking_tilt_only(double tilt)
+void Head::tracking_tilt_only(double tilt)
 {
   tilt_error_difference = tilt - tilt_error;
   tilt_error = tilt;
 
   tilt_only = true;
 
-  move_tracking();
+  tracking();
 }
 
-void Head::move_tracking()
+void Head::tracking()
 {
   stop_scan();
 
@@ -187,8 +187,8 @@ void Head::process()
 
   if (is_started_scanning) {
     switch (scan_mode) {
-      case SCAN_BALL_UP:
-      case SCAN_BALL_DOWN:
+      case SCAN_UP:
+      case SCAN_DOWN:
         {
           if (init_scanning()) {
             scan_left_limit = 60.0;
@@ -202,7 +202,7 @@ void Head::process()
             scan_pan_angle = get_pan_angle();
             scan_tilt_angle = get_tilt_angle();
 
-            scan_position = (scan_mode == SCAN_BALL_DOWN) ? 0 : 1;
+            scan_position = (scan_mode == SCAN_DOWN) ? 0 : 1;
 
             if (pan_angle < (scan_left_limit + scan_right_limit) / 2) {
               scan_direction = 0;
@@ -358,7 +358,7 @@ void Head::process()
   }
 }
 
-void Head::move_scan(int mode)
+void Head::scan(int mode)
 {
   start_scan();
 
@@ -515,7 +515,7 @@ void Head::load_data(std::string file_name)
 //     ball_position.y = -1;
 //     ball_count = 0;
 //     if (no_ball_count < no_ball_max_count) {
-//       move_tracking();
+//       tracking();
 //       no_ball_count++;
 //     } else {
 //       initialize();
@@ -532,7 +532,7 @@ void Head::load_data(std::string file_name)
 //       offset.y *= (view_h_angle / camera->height());
 
 //       ball_position = offset;
-//       move_tracking(ball_position.x, ball_position.y);
+//       tracking(ball_position.x, ball_position.y);
 //     }
 //   }
 // }

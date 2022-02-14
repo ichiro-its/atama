@@ -39,8 +39,8 @@ class Head
 public:
   enum
   {
-    SCAN_BALL_UP                = 0,
-    SCAN_BALL_DOWN              = 1,
+    SCAN_UP                = 0,
+    SCAN_DOWN              = 1,
     SCAN_VERTICAL               = 2,
     SCAN_HORIZONTAL             = 3,
     SCAN_MARATHON               = 4
@@ -80,19 +80,19 @@ public:
 
   void move_by_angle(double pan_angle, double tilt_angle);
 
-  void move_tracking(double pan, double tilt);
-  void move_tracking_pan_only(double pan);
-  void move_tracking_tilt_only(double tilt);
-  void move_tracking();
+  void tracking(double pan, double tilt);
+  void tracking_pan_only(double pan);
+  void tracking_tilt_only(double tilt);
+  void tracking();
 
   void reinit_scan() {scan_init = false;}
 
-  void move_scan(int mode);
-  void move_scan_ball_up() {move_scan(SCAN_BALL_UP);}
-  void move_scan_ball_down() {move_scan(SCAN_BALL_DOWN);}
-  void move_scan_horizontal() {move_scan(SCAN_HORIZONTAL);}
-  void move_scan_vertical() {move_scan(SCAN_VERTICAL);}
-  void move_scan_marathon() {move_scan(SCAN_MARATHON);}
+  void scan(int mode);
+  void scan_up() {scan(SCAN_UP);}
+  void scan_down() {scan(SCAN_DOWN);}
+  void scan_horizontal() {scan(SCAN_HORIZONTAL);}
+  void scan_vertical() {scan(SCAN_VERTICAL);}
+  void scan_marathon() {scan(SCAN_MARATHON);}
 
   double calculate_distance_from_pan_tilt()
   {
@@ -193,10 +193,6 @@ private:
   double position_x;
   double position_y;
   float yaw;
-  // std::vector<tachimawari::Joint> joints;
-
-  // std::shared_ptr<kansei::Imu> imu;
-  // std::shared_ptr<aruku::Walking> walking;
 };
 
 }  // namespace atama
