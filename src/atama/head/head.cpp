@@ -18,27 +18,21 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-// #include <aruku/walking.hpp>
-#include <atama/head/head.hpp>
-#include <common/algebra.h>
-// #include <kansei/imu.hpp>
-
-#include <nlohmann/json.hpp>
-
 #include <cmath>
 #include <fstream>
 #include <memory>
+#include <nlohmann/json.hpp>
 #include <sstream>
 #include <string>
 
+#include "atama/head/head.hpp"
+#include "common/algebra.h"
 
 namespace atama
 {
 
 Head::Head(double position_x, double position_y, float yaw)
 {
-  // walking = walking;
-  // imu = imu;
   this->position_x = position_x;
   this->position_y = position_y;
   this->yaw = yaw;
@@ -62,14 +56,6 @@ Head::Head(double position_x, double position_y, float yaw)
 
   no_ball_count = 0;
   ball_count = 0;
-
-  // will do in node
-  for (std::string id : {"neck_yaw", "neck_pitch"}) {
-    uint8_t joint_id = tachimawari::joint::JointId::by_name.find(id)->second;
-    
-    tachimawari::joint::Joint joint(joint_id);
-    joints.push_back(joint);
-  }
 
   // m_Joint.Set_enableHead_only(true);
 }

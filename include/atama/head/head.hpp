@@ -21,11 +21,8 @@
 #ifndef ATAMA__HEAD__HEAD_HPP_
 #define ATAMA__HEAD__HEAD_HPP_
 
-// #include <aruku/walking.hpp>
-// #include <kansei/imu.hpp>
-#include <keisan/geometry/point_2.hpp>
-#include <tachimawari/joint/model/joint.hpp>
-// #include <robocup_client/robocup_client.hpp>
+#include "keisan/geometry/point_2.hpp"
+#include "tachimawari/joint/model/joint.hpp"
 
 #include <memory>
 #include <string>
@@ -41,9 +38,9 @@ public:
   {
     SCAN_UP                = 0,
     SCAN_DOWN              = 1,
-    SCAN_VERTICAL               = 2,
-    SCAN_HORIZONTAL             = 3,
-    SCAN_MARATHON               = 4
+    SCAN_VERTICAL          = 2,
+    SCAN_HORIZONTAL        = 3,
+    SCAN_MARATHON          = 4
   };
 
   int marathon_index;
@@ -121,6 +118,7 @@ public:
   // REQUIRED
   void set_pan_tilt_angle(double pan, double tilt);
 
+  void set_joints(std::vector<tachimawari::joint::Joint> joints) {this->joints = joints;}
   std::vector<tachimawari::joint::Joint> get_joints() {return joints;}
 
 private:
