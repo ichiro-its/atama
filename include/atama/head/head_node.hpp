@@ -37,12 +37,12 @@ class HeadNode
 public:
   HeadNode(rclcpp::Node::SharedPtr node, std::shared_ptr<Head> head);
 
-  void get_joint_data();
-
-private:
-  std::string get_node_prefix() const;
-
+  void get_joints_data();
   void publish_joints();
+private:
+  rclcpp::Node::SharedPtr node;
+
+  std::string get_node_prefix() const;
 
   std::shared_ptr<Head> head;
 

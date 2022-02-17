@@ -22,7 +22,9 @@ find_package(tachimawari REQUIRED)
 find_package(tachimawari_interfaces REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED
-  "src/${PROJECT_NAME}/head/head.cpp")
+  "src/${PROJECT_NAME}/head/head.cpp"
+  "src/${PROJECT_NAME}/head/head_node.cpp"
+  "src/${PROJECT_NAME}/node/atama_node.cpp")
 
 target_include_directories(${PROJECT_NAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -50,8 +52,14 @@ install(TARGETS ${PROJECT_NAME}
 #   $<INSTALL_INTERFACE:include>)
 # target_link_libraries(main ${PROJECT_NAME})
 
-# install(TARGETS main
-#   DESTINATION "lib/${PROJECT_NAME}")
+add_executable(atama_main "src/atama_main.cpp")
+target_include_directories(atama_main PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>)
+target_link_libraries(atama_main ${PROJECT_NAME})
+
+install(TARGETS atama_main
+  DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

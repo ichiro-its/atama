@@ -18,30 +18,38 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef ATAMA__NODE__ATAMA_NODE_HPP_
-#define ATAMA__NODE__ATAMA_NODE_HPP_
+#include <chrono>
+#include <memory>
+#include <string>
+
+#include "atama/node/atama_node.hpp"
 
 #include "atama/head/head.hpp"
 #include "atama/head/head_node.hpp"
-#include "rclcpp/rclcpp.hpp"
+
+using namespace std::chrono_literals;
 
 namespace atama
 {
 
-class AtamaNode
+AtamaNode::AtamaNode(rclcpp::Node::SharedPtr node)
+: node(node), head_node(nullptr)
 {
-public:
-  explicit AtamaNode(rclcpp::Node::SharedPtr node);
+  node_timer = node->create_wall_timer(
+    8ms,
+    [this]() {
+      if (head_node != nullptr) {
+        head_node->get_joints_data();
+        head_node->publish_joints();
+      }
+    }
+  );
+}
 
-  void set_head(std::shared_ptr<Head> head);
-
-private:
-  rclcpp::Node::SharedPtr node;
-  rclcpp::TimerBase::SharedPtr node_timer;
-
-  std::shared_ptr<HeadNode> head_node;
-};
+void AtamaNode::set_head(std::shared_ptr<Head> head)
+{
+  head_node = std::make_shared<HeadNode>(
+    node,head);
+}
 
 }  // namespace atama
-
-#endif  // ATAMA__NODE__ATAMA_NODE_HPP_

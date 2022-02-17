@@ -27,11 +27,13 @@
 #include "tachimawari_interfaces/msg/set_joints.hpp"
 #include "tachimawari_interfaces/srv/get_joints.hpp"
 
+using namespace std::chrono_literals;
+
 namespace atama
 {
 
 HeadNode::HeadNode(rclcpp::Node::SharedPtr node, std::shared_ptr<Head> head)
-: head(head)
+: node(node), head(head)
 {
   set_joints_publisher = node->create_publisher<tachimawari_interfaces::msg::SetJoints>(
     "/joint/set_joints", 10);
@@ -40,16 +42,18 @@ HeadNode::HeadNode(rclcpp::Node::SharedPtr node, std::shared_ptr<Head> head)
     "/joint/get_joints");
 }
 
-void HeadNode::get_joint_data()
+void HeadNode::get_joints_data()
 {
-    while (!get_joints_client->wait_for_service(1s)) {
+  std::cout << "get_joints_data" << std::endl;
+  while (!get_joints_client->wait_for_service(1s)) {
     if (rclcpp::ok()) {
       // service not available, waiting again...
     } else {
       // Interrupted while waiting for the service. Exiting.
-      return false;
+      return;
     }
   }
+  std::cout << "get_joints_data" << std::endl;
 
   auto result = get_joints_client->async_send_request(
     std::make_shared<tachimawari_interfaces::srv::GetJoints::Request>());
@@ -65,8 +69,7 @@ void HeadNode::get_joint_data()
 
         if (joint.id == joint_id) {
           temp_joints.push_back(
-            tachimawari::joint::Joint(joint.id, joint.position);
-          )
+            tachimawari::joint::Joint(joint.id, joint.position));
         }
       }
     }
@@ -74,12 +77,13 @@ void HeadNode::get_joint_data()
     head->set_joints(temp_joints);
   } else {
     // Failed to call service
-    return false;
+    return;
   }
 }
 
 void HeadNode::publish_joints()
 {
+  std::cout << "publish_joints" << std::endl;
   auto joints_msg = tachimawari_interfaces::msg::SetJoints();
 
   const auto & joints = head->get_joints();

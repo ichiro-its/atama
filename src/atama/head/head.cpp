@@ -57,6 +57,7 @@ Head::Head(double position_x, double position_y, float yaw)
   no_ball_count = 0;
   ball_count = 0;
 
+  joints = {};
   // m_Joint.Set_enableHead_only(true);
 }
 
@@ -417,7 +418,7 @@ void Head::set_pan_tilt_angle(double pan, double tilt)
 
 void Head::load_data(std::string file_name)
 {
-  std::ifstream file(file_name + "head/" + "head.json");
+  std::ifstream file(file_name + "/head/" + "head.json");
   nlohmann::json walking_data = nlohmann::json::parse(file);
 
   for (auto &[key, val] : walking_data.items()) {

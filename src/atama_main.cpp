@@ -18,30 +18,26 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef ATAMA__NODE__ATAMA_NODE_HPP_
-#define ATAMA__NODE__ATAMA_NODE_HPP_
+#include <memory>
 
-#include "atama/head/head.hpp"
-#include "atama/head/head_node.hpp"
 #include "rclcpp/rclcpp.hpp"
+#include "atama/node/atama_node.hpp"
+#include "atama/head/head.hpp"
 
-namespace atama
+int main(int argc, char * argv[])
 {
+  rclcpp::init(argc, argv);
 
-class AtamaNode
-{
-public:
-  explicit AtamaNode(rclcpp::Node::SharedPtr node);
+  auto node = std::make_shared<rclcpp::Node>("atama_node");
+  auto atama_node = std::make_shared<atama::AtamaNode>(node);
 
-  void set_head(std::shared_ptr<Head> head);
+  auto head = std::make_shared<atama::Head>(static_cast<double>(0.0), static_cast<double>(0.0), static_cast<float>(0.0));
+  // head->load_data("");
+  
+  atama_node->set_head(head);
 
-private:
-  rclcpp::Node::SharedPtr node;
-  rclcpp::TimerBase::SharedPtr node_timer;
+  rclcpp::spin(node);
+  rclcpp::shutdown();
 
-  std::shared_ptr<HeadNode> head_node;
-};
-
-}  // namespace atama
-
-#endif  // ATAMA__NODE__ATAMA_NODE_HPP_
+  return 0;
+}
