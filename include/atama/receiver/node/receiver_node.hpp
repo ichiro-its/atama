@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef ATAMA__HEAD__HEAD_NODE_HPP_
-#define ATAMA__HEAD__HEAD_NODE_HPP_
+#ifndef ATAMA__RECEIVER__NODE__RECEIVER_NODE_HPP_
+#define ATAMA__RECEIVER__NODE__RECEIVER_NODE_HPP_
 
 #include <memory>
 #include <string>
@@ -29,13 +29,15 @@
 #include "tachimawari_interfaces/msg/set_joints.hpp"
 #include "tachimawari_interfaces/srv/get_joints.hpp"
 
-namespace atama
+namespace atama::receiver
 {
 
-class HeadNode
+class ReceiverNode
 {
 public:
-  HeadNode(rclcpp::Node::SharedPtr node, std::shared_ptr<Head> head);
+  ReceiverNode(
+    rclcpp::Node::SharedPtr node,
+    std::shared_ptr<atama::head::Head> head);
 
   void get_joints_data();
   void publish_joints();
@@ -44,12 +46,12 @@ private:
 
   std::string get_node_prefix() const;
 
-  std::shared_ptr<Head> head;
+  std::shared_ptr<atama::head::Head> head;
 
   rclcpp::Publisher<tachimawari_interfaces::msg::SetJoints>::SharedPtr set_joints_publisher;
   rclcpp::Client<tachimawari_interfaces::srv::GetJoints>::SharedPtr get_joints_client;
 };
 
-}  // namespace atama
+}  // namespace atama::receiver
 
-#endif  // ATAMA__HEAD__HEAD_NODE_HPP_
+#endif  // ATAMA__RECEIVER__NODE__RECEIVER_NODE_HPP_

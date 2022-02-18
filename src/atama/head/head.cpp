@@ -28,7 +28,7 @@
 #include "atama/head/head.hpp"
 #include "common/algebra.h"
 
-namespace atama
+namespace atama::head
 {
 
 Head::Head(double position_x, double position_y, float yaw)

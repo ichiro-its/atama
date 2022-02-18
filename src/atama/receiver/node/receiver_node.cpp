@@ -22,17 +22,17 @@
 #include <string>
 #include <vector>
 
-#include "atama/head/head_node.hpp"
+#include "atama/receiver/node/receiver_node.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "tachimawari_interfaces/msg/set_joints.hpp"
 #include "tachimawari_interfaces/srv/get_joints.hpp"
 
 using namespace std::chrono_literals;
 
-namespace atama
+namespace atama::receiver
 {
 
-HeadNode::HeadNode(rclcpp::Node::SharedPtr node, std::shared_ptr<Head> head)
+ReceiverNode::ReceiverNode(rclcpp::Node::SharedPtr node, std::shared_ptr<atama::head::Head> head)
 : node(node), head(head)
 {
   set_joints_publisher = node->create_publisher<tachimawari_interfaces::msg::SetJoints>(
@@ -42,7 +42,7 @@ HeadNode::HeadNode(rclcpp::Node::SharedPtr node, std::shared_ptr<Head> head)
     "/joint/get_joints");
 }
 
-void HeadNode::get_joints_data()
+void ReceiverNode::get_joints_data()
 {
   std::cout << "get_joints_data" << std::endl;
   while (!get_joints_client->wait_for_service(1s)) {
@@ -81,7 +81,7 @@ void HeadNode::get_joints_data()
   }
 }
 
-void HeadNode::publish_joints()
+void ReceiverNode::publish_joints()
 {
   std::cout << "publish_joints" << std::endl;
   auto joints_msg = tachimawari_interfaces::msg::SetJoints();
@@ -98,7 +98,7 @@ void HeadNode::publish_joints()
   set_joints_publisher->publish(joints_msg);
 }
 
-std::string HeadNode::get_node_prefix() const
+std::string ReceiverNode::get_node_prefix() const
 {
   return "head";
 }

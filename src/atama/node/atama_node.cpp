@@ -22,10 +22,10 @@
 #include <memory>
 #include <string>
 
-#include "atama/node/atama_node.hpp"
 
 #include "atama/head/head.hpp"
-#include "atama/head/head_node.hpp"
+#include "atama/node/atama_node.hpp"
+#include "atama/receiver/node/receiver_node.hpp"
 
 using namespace std::chrono_literals;
 
@@ -33,23 +33,23 @@ namespace atama
 {
 
 AtamaNode::AtamaNode(rclcpp::Node::SharedPtr node)
-: node(node), head_node(nullptr)
+: node(node), receiver_node(nullptr)
 {
   node_timer = node->create_wall_timer(
     8ms,
     [this]() {
-      if (head_node != nullptr) {
-        head_node->get_joints_data();
-        head_node->publish_joints();
+      if (receiver_node != nullptr) {
+        receiver_node->get_joints_data();
+        receiver_node->publish_joints();
       }
     }
   );
 }
 
-void AtamaNode::set_head(std::shared_ptr<Head> head)
+void AtamaNode::set_head(std::shared_ptr<atama::head::Head> head)
 {
-  head_node = std::make_shared<HeadNode>(
-    node,head);
+  receiver_node = std::make_shared<atama::receiver::ReceiverNode>(
+    node, head);
 }
 
 }  // namespace atama

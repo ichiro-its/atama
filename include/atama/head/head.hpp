@@ -28,7 +28,7 @@
 #include <string>
 #include <vector>
 
-namespace atama
+namespace atama::head
 {
 
 class Head
@@ -193,6 +193,6 @@ private:
   float yaw;
 };
 
-}  // namespace atama
+}  // namespace atama::head
 
 #endif  // ATAMA__HEAD__HEAD_HPP_

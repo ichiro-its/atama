@@ -23,7 +23,7 @@ find_package(tachimawari_interfaces REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED
   "src/${PROJECT_NAME}/head/head.cpp"
-  "src/${PROJECT_NAME}/head/head_node.cpp"
+  "src/${PROJECT_NAME}/receiver/node/receiver_node.cpp"
   "src/${PROJECT_NAME}/node/atama_node.cpp")
 
 target_include_directories(${PROJECT_NAME} PUBLIC
