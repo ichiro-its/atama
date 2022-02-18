@@ -34,7 +34,7 @@ int main(int argc, char * argv[])
   auto head = std::make_shared<atama::head::Head>(static_cast<double>(0.0), static_cast<double>(0.0), static_cast<float>(0.0));
   // head->load_data("");
   
-  atama_node->set_head(head);
+  atama_node->set_receiver_node(head);
 
   rclcpp::spin(node);
   rclcpp::shutdown();

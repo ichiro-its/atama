@@ -25,6 +25,9 @@
 #include <string>
 
 #include "atama/head/head.hpp"
+#include "kansei_interfaces/msg/orientation.hpp"
+#include "ninshiki_interfaces/msg/detected_object.hpp"
+#include "ninshiki_interfaces/msg/detected_objects.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "tachimawari_interfaces/msg/set_joints.hpp"
 #include "tachimawari_interfaces/srv/get_joints.hpp"
@@ -50,6 +53,9 @@ private:
 
   rclcpp::Publisher<tachimawari_interfaces::msg::SetJoints>::SharedPtr set_joints_publisher;
   rclcpp::Client<tachimawari_interfaces::srv::GetJoints>::SharedPtr get_joints_client;
+  rclcpp::Subscription<kansei_interfaces::msg::Orientation>::SharedPtr get_orientation_subsciber;
+  rclcpp::Subscription<ninshiki_interfaces::msg::DetectedObjects>::SharedPtr get_detection_result_subsciber;
+  // minus subscriber for aruku to get position robot
 };
 
 }  // namespace atama::receiver

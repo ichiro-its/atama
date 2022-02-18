@@ -22,6 +22,8 @@
 #define ATAMA__HEAD__HEAD_HPP_
 
 #include "keisan/geometry/point_2.hpp"
+#include "ninshiki_interfaces/msg/detected_object.hpp"
+#include "ninshiki_interfaces/msg/detected_objects.hpp"
 #include "tachimawari/joint/model/joint.hpp"
 
 #include <memory>
@@ -118,8 +120,14 @@ public:
   // REQUIRED
   void set_pan_tilt_angle(double pan, double tilt);
 
-  void set_joints(std::vector<tachimawari::joint::Joint> joints) {this->joints = joints;}
+  void set_joints(std::vector<tachimawari::joint::Joint> joints) {joints = joints;}
   std::vector<tachimawari::joint::Joint> get_joints() {return joints;}
+
+  void set_detection_result(std::vector<ninshiki_interfaces::msg::DetectedObject> detection_result) {detection_result = detection_result;}
+  std::vector<ninshiki_interfaces::msg::DetectedObject> get_detection_result() {return detection_result;}
+
+  void set_yaw(float yaw) {yaw = yaw;}
+  float get_yaw() {return yaw;}
 
 private:
   bool init_scanning();
@@ -186,11 +194,12 @@ private:
 
   keisan::Point2 ball_position;
 
-  std::vector<tachimawari::joint::Joint> joints;
-
   double position_x;
   double position_y;
   float yaw;
+
+  std::vector<tachimawari::joint::Joint> joints;
+  std::vector<ninshiki_interfaces::msg::DetectedObject> detection_result;
 };
 
 }  // namespace atama::head

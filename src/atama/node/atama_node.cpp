@@ -46,7 +46,7 @@ AtamaNode::AtamaNode(rclcpp::Node::SharedPtr node)
   );
 }
 
-void AtamaNode::set_head(std::shared_ptr<atama::head::Head> head)
+void AtamaNode::set_receiver_node(std::shared_ptr<atama::head::Head> head)
 {
   receiver_node = std::make_shared<atama::receiver::ReceiverNode>(
     node, head);

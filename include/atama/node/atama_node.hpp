@@ -33,7 +33,7 @@ class AtamaNode
 public:
   explicit AtamaNode(rclcpp::Node::SharedPtr node);
 
-  void set_head(std::shared_ptr<atama::head::Head> head);
+  void set_receiver_node(std::shared_ptr<atama::head::Head> head);
 
 private:
   rclcpp::Node::SharedPtr node;

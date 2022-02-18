@@ -23,6 +23,9 @@
 #include <vector>
 
 #include "atama/receiver/node/receiver_node.hpp"
+#include "kansei_interfaces/msg/orientation.hpp"
+#include "ninshiki_interfaces/msg/detected_object.hpp"
+#include "ninshiki_interfaces/msg/detected_objects.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "tachimawari_interfaces/msg/set_joints.hpp"
 #include "tachimawari_interfaces/srv/get_joints.hpp"
@@ -40,6 +43,26 @@ ReceiverNode::ReceiverNode(rclcpp::Node::SharedPtr node, std::shared_ptr<atama::
 
   get_joints_client = node->create_client<tachimawari_interfaces::srv::GetJoints>(
     "/joint/get_joints");
+  
+  get_orientation_subsciber = node->create_subscription<kansei_interfaces::msg::Orientation>(
+    "measurement/orientation", 10,
+    [this](const kansei_interfaces::msg::Orientation::SharedPtr message) {
+      this->head->set_yaw(message->orientation[2]);
+    }
+  );
+
+  get_detection_result_subsciber = node->create_subscription<ninshiki_interfaces::msg::DetectedObjects>(
+    "ninshiki_py/detection", 10, 
+    [this](const ninshiki_interfaces::msg::DetectedObjects::SharedPtr message) {
+      std::vector<ninshiki_interfaces::msg::DetectedObject> temp_detection_result;
+
+      for (const auto & detected_object : message->detected_objects) {
+        temp_detection_result.push_back(detected_object);
+      }
+
+      this->head->set_detection_result(temp_detection_result);
+    }
+  );  
 }
 
 void ReceiverNode::get_joints_data()

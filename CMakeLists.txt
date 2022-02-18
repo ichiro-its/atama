@@ -15,7 +15,9 @@ endif()
 
 find_package(ament_cmake REQUIRED)
 find_package(framework_common REQUIRED)
+find_package(kansei_interfaces REQUIRED)
 find_package(keisan REQUIRED)
+find_package(ninshiki_interfaces REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(tachimawari REQUIRED)
@@ -32,7 +34,9 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 ament_target_dependencies(${PROJECT_NAME}
   framework_common
+  kansei_interfaces
   keisan
+  ninshiki_interfaces
   OpenCV
   rclcpp
   tachimawari
@@ -68,7 +72,9 @@ endif()
 
 ament_export_dependencies(
   framework_common
+  kansei_interfaces
   keisan
+  ninshiki_interfaces
   OpenCV
   rclcpp
   tachimawari
