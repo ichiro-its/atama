@@ -23,6 +23,7 @@
 
 #include "atama/head/head.hpp"
 #include "atama/receiver/node/receiver_node.hpp"
+#include "atama/sender/node/sender_node.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 namespace atama
@@ -34,12 +35,14 @@ public:
   explicit AtamaNode(rclcpp::Node::SharedPtr node);
 
   void set_receiver_node(std::shared_ptr<atama::head::Head> head);
+  void set_sender_node(std::shared_ptr<atama::head::Head> head);
 
 private:
   rclcpp::Node::SharedPtr node;
   rclcpp::TimerBase::SharedPtr node_timer;
 
   std::shared_ptr<atama::receiver::ReceiverNode> receiver_node;
+  std::shared_ptr<atama::sender::SenderNode> sender_node;
 };
 
 }  // namespace atama

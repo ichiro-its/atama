@@ -35,6 +35,7 @@ int main(int argc, char * argv[])
   // head->load_data("");
   
   atama_node->set_receiver_node(head);
+  atama_node->set_sender_node(head);
 
   rclcpp::spin(node);
   rclcpp::shutdown();

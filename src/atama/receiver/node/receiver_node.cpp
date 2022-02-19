@@ -27,7 +27,6 @@
 #include "ninshiki_interfaces/msg/detected_object.hpp"
 #include "ninshiki_interfaces/msg/detected_objects.hpp"
 #include "rclcpp/rclcpp.hpp"
-#include "tachimawari_interfaces/msg/set_joints.hpp"
 #include "tachimawari_interfaces/srv/get_joints.hpp"
 
 using namespace std::chrono_literals;
@@ -38,9 +37,6 @@ namespace atama::receiver
 ReceiverNode::ReceiverNode(rclcpp::Node::SharedPtr node, std::shared_ptr<atama::head::Head> head)
 : node(node), head(head)
 {
-  set_joints_publisher = node->create_publisher<tachimawari_interfaces::msg::SetJoints>(
-    "/joint/set_joints", 10);
-
   get_joints_client = node->create_client<tachimawari_interfaces::srv::GetJoints>(
     "/joint/get_joints");
   
@@ -104,26 +100,9 @@ void ReceiverNode::get_joints_data()
   }
 }
 
-void ReceiverNode::publish_joints()
-{
-  std::cout << "publish_joints" << std::endl;
-  auto joints_msg = tachimawari_interfaces::msg::SetJoints();
-
-  const auto & joints = head->get_joints();
-  auto & joint_msgs = joints_msg.joints;
-
-  joint_msgs.resize(joints.size());
-  for (size_t i = 0; i < joints.size() && i < joint_msgs.size(); ++i) {
-    joint_msgs[i].id = joints[i].get_id();
-    joint_msgs[i].position = joints[i].get_position();
-  }
-
-  set_joints_publisher->publish(joints_msg);
-}
-
 std::string ReceiverNode::get_node_prefix() const
 {
-  return "head";
+  return "receiver";
 }
 
-}  // namespace atama
+}  // namespace atama::receiver

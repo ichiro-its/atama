@@ -18,30 +18,27 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef ATAMA__RECEIVER__NODE__RECEIVER_NODE_HPP_
-#define ATAMA__RECEIVER__NODE__RECEIVER_NODE_HPP_
+#ifndef ATAMA__SENDER__NODE__SENDER_NODE_HPP_
+#define ATAMA__SENDER__NODE__SENDER_NODE_HPP_
 
 #include <memory>
 #include <string>
 
 #include "atama/head/head.hpp"
-#include "kansei_interfaces/msg/orientation.hpp"
-#include "ninshiki_interfaces/msg/detected_object.hpp"
-#include "ninshiki_interfaces/msg/detected_objects.hpp"
 #include "rclcpp/rclcpp.hpp"
-#include "tachimawari_interfaces/srv/get_joints.hpp"
+#include "tachimawari_interfaces/msg/set_joints.hpp"
 
-namespace atama::receiver
+namespace atama::sender
 {
 
-class ReceiverNode
+class SenderNode
 {
 public:
-  ReceiverNode(
+  SenderNode(
     rclcpp::Node::SharedPtr node,
     std::shared_ptr<atama::head::Head> head);
-
-  void get_joints_data();
+  
+  void publish_joints();
 private:
   rclcpp::Node::SharedPtr node;
 
@@ -49,12 +46,9 @@ private:
 
   std::shared_ptr<atama::head::Head> head;
 
-  rclcpp::Client<tachimawari_interfaces::srv::GetJoints>::SharedPtr get_joints_client;
-  rclcpp::Subscription<kansei_interfaces::msg::Orientation>::SharedPtr get_orientation_subsciber;
-  rclcpp::Subscription<ninshiki_interfaces::msg::DetectedObjects>::SharedPtr get_detection_result_subsciber;
-  // minus subscriber for aruku to get position robot
+  rclcpp::Publisher<tachimawari_interfaces::msg::SetJoints>::SharedPtr set_joints_publisher;
 };
 
-}  // namespace atama::receiver
+}  // namespace atama::sender
 
-#endif  // ATAMA__RECEIVER__NODE__RECEIVER_NODE_HPP_
+#endif  // ATAMA__SENDER__NODE__SENDER_NODE_HPP_

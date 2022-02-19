@@ -18,43 +18,46 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef ATAMA__RECEIVER__NODE__RECEIVER_NODE_HPP_
-#define ATAMA__RECEIVER__NODE__RECEIVER_NODE_HPP_
-
 #include <memory>
 #include <string>
+#include <vector>
 
-#include "atama/head/head.hpp"
-#include "kansei_interfaces/msg/orientation.hpp"
-#include "ninshiki_interfaces/msg/detected_object.hpp"
-#include "ninshiki_interfaces/msg/detected_objects.hpp"
+#include "atama/sender/node/sender_node.hpp"
 #include "rclcpp/rclcpp.hpp"
-#include "tachimawari_interfaces/srv/get_joints.hpp"
+#include "tachimawari_interfaces/msg/set_joints.hpp"
 
-namespace atama::receiver
+using namespace std::chrono_literals;
+
+namespace atama::sender
 {
 
-class ReceiverNode
+SenderNode::SenderNode(rclcpp::Node::SharedPtr node, std::shared_ptr<atama::head::Head> head)
+: node(node), head(head)
 {
-public:
-  ReceiverNode(
-    rclcpp::Node::SharedPtr node,
-    std::shared_ptr<atama::head::Head> head);
+  set_joints_publisher = node->create_publisher<tachimawari_interfaces::msg::SetJoints>(
+    "/joint/set_joints", 10);
+}
 
-  void get_joints_data();
-private:
-  rclcpp::Node::SharedPtr node;
+void SenderNode::publish_joints()
+{
+  std::cout << "publish_joints" << std::endl;
+  auto joints_msg = tachimawari_interfaces::msg::SetJoints();
 
-  std::string get_node_prefix() const;
+  const auto & joints = head->get_joints();
+  auto & joint_msgs = joints_msg.joints;
 
-  std::shared_ptr<atama::head::Head> head;
+  joint_msgs.resize(joints.size());
+  for (size_t i = 0; i < joints.size() && i < joint_msgs.size(); ++i) {
+    joint_msgs[i].id = joints[i].get_id();
+    joint_msgs[i].position = joints[i].get_position();
+  }
 
-  rclcpp::Client<tachimawari_interfaces::srv::GetJoints>::SharedPtr get_joints_client;
-  rclcpp::Subscription<kansei_interfaces::msg::Orientation>::SharedPtr get_orientation_subsciber;
-  rclcpp::Subscription<ninshiki_interfaces::msg::DetectedObjects>::SharedPtr get_detection_result_subsciber;
-  // minus subscriber for aruku to get position robot
-};
+  set_joints_publisher->publish(joints_msg);
+}
 
-}  // namespace atama::receiver
+std::string SenderNode::get_node_prefix() const
+{
+  return "sender";
+}
 
-#endif  // ATAMA__RECEIVER__NODE__RECEIVER_NODE_HPP_
+}  // namespace atama::sender
