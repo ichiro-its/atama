@@ -42,26 +42,21 @@ public:
     SCAN_DOWN              = 1,
     SCAN_VERTICAL          = 2,
     SCAN_HORIZONTAL        = 3,
-    SCAN_MARATHON          = 4
+    SCAN_MARATHON          = 4,
+    SCAN_CUSTOM            = 5
   };
 
   int marathon_index;
 
-  Head(double position_x, double position_y, float yaw);
+  Head();
 
   void start_scan() {is_started_scanning = true;}
   void stop_scan() {is_started_scanning = false; scan_init = false;}
 
   void initialize();
-  void process();
 
   // void joint_enable() { m_Joint.SetEnableHead_only(true, true); }
   // void joint_disable() { m_Joint.SetEnableBody(false); }
-
-  double get_top_limit_angle() {return top_limit;}
-  double get_bottom_limit_angle() {return bottom_limit;}
-  double get_right_limit_angle() {return right_limit;}
-  double get_left_limit_angle() {return left_limit;}
 
   double get_pan_angle() {return pan_angle - pan_center;}
   double get_tilt_angle() {return tilt_angle - tilt_center;}
@@ -87,11 +82,15 @@ public:
   void reinit_scan() {scan_init = false;}
 
   void scan(int mode);
-  void scan_up() {scan(SCAN_UP);}
-  void scan_down() {scan(SCAN_DOWN);}
-  void scan_horizontal() {scan(SCAN_HORIZONTAL);}
-  void scan_vertical() {scan(SCAN_VERTICAL);}
-  void scan_marathon() {scan(SCAN_MARATHON);}
+  void scan_up() {scan_custom(60.0, -60.0, 0.0, -75.0, SCAN_UP);}
+  void scan_down() {scan_custom(60.0, -60.0, 0.0, -75.0, SCAN_DOWN);}
+  void scan_horizontal() {scan_custom(70.0, -70.0, -30.0, -30.0, SCAN_HORIZONTAL);}
+  void scan_vertical() {scan_custom(0.0, 0.0, 0.0, -70.0, SCAN_VERTICAL);}
+  void scan_marathon() {scan_custom(70.0, -70.0, 0.0, -70.0, SCAN_MARATHON);}
+  void scan_custom(
+    double left_limit, double right_limit, 
+    double top_limit, double bottom_limit,
+    int scan_type);
 
   double calculate_distance_from_pan_tilt()
   {
@@ -109,7 +108,10 @@ public:
   }
   double calculate_tilt_from_pan_distance(double pan, double distance);
 
-  void look_to_position(double position_x, double position_y);
+  void look_to_position(
+    double goal_position_x, double goal_position_y,
+    double robot_position_x, double robot_position_y,
+    float yaw);
 
   void load_data(std::string file_name);
 
@@ -126,11 +128,9 @@ public:
   void set_detection_result(std::vector<ninshiki_interfaces::msg::DetectedObject> detection_result) {detection_result = detection_result;}
   std::vector<ninshiki_interfaces::msg::DetectedObject> get_detection_result() {return detection_result;}
 
-  void set_yaw(float yaw) {yaw = yaw;}
-  float get_yaw() {return yaw;}
-
 private:
   bool init_scanning();
+  void scan_process();
 
   bool is_started_scanning;
   bool pan_only;
@@ -193,10 +193,6 @@ private:
   static const int ball_max_count = 8;
 
   keisan::Point2 ball_position;
-
-  double position_x;
-  double position_y;
-  float yaw;
 
   std::vector<tachimawari::joint::Joint> joints;
   std::vector<ninshiki_interfaces::msg::DetectedObject> detection_result;

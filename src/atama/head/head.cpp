@@ -31,12 +31,8 @@
 namespace atama::head
 {
 
-Head::Head(double position_x, double position_y, float yaw)
+Head::Head()
 {
-  this->position_x = position_x;
-  this->position_y = position_y;
-  this->yaw = yaw;
-
   is_started_scanning = false;
   pan_only = false;
   tilt_only = false;
@@ -164,9 +160,28 @@ void Head::tracking()
 
   pan_angle = pan_center + alg::clampValue(pan_angle - pan_center, right_limit, left_limit);
   tilt_angle = tilt_center + alg::clampValue(tilt_angle - tilt_center, bottom_limit, top_limit);
+
+  // set calculation result
+  if (!joints.empty())
+  {
+    joints[0].set_position(pan_angle);
+    joints[1].set_position(tilt_angle);
+  }
 }
 
-void Head::process()
+void Head::scan(int mode)
+{
+  start_scan();
+
+  if (scan_mode == mode) {
+    return;
+  }
+
+  scan_mode = mode;
+  scan_init = false;
+}
+
+void Head::scan_process()
 {
   for (int i = 0; i < static_cast<int>(joints.size()); i++) {
     joints[i].set_pid_gain(20.0, 3.0, 2.0);
@@ -176,14 +191,9 @@ void Head::process()
     switch (scan_mode) {
       case SCAN_UP:
       case SCAN_DOWN:
+      case SCAN_CUSTOM:
         {
           if (init_scanning()) {
-            scan_left_limit = 60.0;
-            scan_right_limit = -60.0;
-
-            scan_top_limit = 0.0;
-            scan_bottom_limit = -75.0;
-
             scan_speed = 0.6;
 
             scan_pan_angle = get_pan_angle();
@@ -201,9 +211,22 @@ void Head::process()
           }
 
           switch (scan_position) {
-            case 0: scan_tilt_angle = scan_bottom_limit; break;
-            case 1: scan_tilt_angle = (scan_bottom_limit + scan_top_limit) * 0.5; break;
-            case 2: scan_tilt_angle = scan_top_limit; break;
+            case 0:
+            {
+              scan_tilt_angle = scan_bottom_limit;
+              scan_pan_angle = alg::clampValue(scan_pan_angle, scan_right_limit + 15.0, scan_left_limit - 15.0);
+              break;
+            }
+            case 1:
+            {
+              scan_tilt_angle = (scan_bottom_limit + scan_top_limit) * 0.5;
+              break;
+            }
+            case 2:
+            {
+              scan_tilt_angle = scan_top_limit;
+              break;
+            }
           }
 
           switch (scan_direction) {
@@ -234,102 +257,77 @@ void Head::process()
         }
 
       case SCAN_VERTICAL:
-        {
-          if (init_scanning()) {
-            scan_left_limit = 0.0;
-            scan_right_limit = 0.0;
-
-            scan_top_limit = 0.0;
-            scan_bottom_limit = -70.0;
-
-            scan_speed = 0.8;
-
-            scan_pan_angle = get_pan_angle();
-            scan_tilt_angle = get_tilt_angle();
-
-            if (get_tilt_angle() < (scan_bottom_limit + scan_top_limit) / 2) {
-              scan_position = 0;
-              scan_tilt_angle -= 15.0;
-            } else {
-              scan_position = 1;
-              scan_tilt_angle += 15.0;
-            }
-          }
-
-          scan_pan_angle = (scan_left_limit + scan_right_limit) / 2;
-
-          switch (scan_position) {
-            case 0:
-              {
-                scan_tilt_angle += scan_speed;
-                if (scan_tilt_angle > scan_top_limit) {
-                  scan_position = (scan_position + 1) % 2;
-                }
-
-                break;
-              }
-
-            case 1:
-              {
-                scan_tilt_angle -= scan_speed;
-                if (scan_tilt_angle < scan_bottom_limit) {
-                  scan_position = (scan_position + 1) % 2;
-                }
-
-                break;
-              }
-          }
-
-          break;
-        }
-
       case SCAN_HORIZONTAL:
         {
           if (init_scanning()) {
-            scan_left_limit = 70.0;
-            scan_right_limit = -70.0;
-
-            scan_top_limit = -30.0;
-            scan_bottom_limit = -30.0;
+            double value_change;
+            scan_speed = 0.8;
 
             scan_pan_angle = get_pan_angle();
             scan_tilt_angle = get_tilt_angle();
 
-            scan_speed = 0.8;
+            if (scan_mode == SCAN_VERTICAL) 
+              value_change = 15.0;
+            else 
+              value_change = 30.0;
 
-            if (pan_angle < (scan_left_limit + scan_right_limit) / 2) {
+            if (get_tilt_angle() < (scan_bottom_limit + scan_top_limit) / 2) {
               scan_position = 0;
-              scan_pan_angle -= 30.0;
+              scan_tilt_angle -= value_change;
             } else {
               scan_position = 1;
-              scan_pan_angle += 30.0;
+              scan_tilt_angle += value_change;
             }
           }
 
-          scan_tilt_angle = -60.0;
-
-          switch (scan_position) {
-            case 0:
-              {
-                scan_pan_angle += scan_speed;
-                if (scan_pan_angle > scan_left_limit) {
-                  scan_position = (scan_position + 1) % 2;
+          if (scan_mode == SCAN_VERTICAL)
+          {
+            scan_pan_angle = (scan_left_limit + scan_right_limit) / 2;
+            switch (scan_position) {
+              case 0:
+                {
+                  scan_tilt_angle += scan_speed;
+                  if (scan_tilt_angle > scan_top_limit) {
+                    scan_position = (scan_position + 1) % 2;
+                  }
+                  break;
                 }
 
-                break;
-              }
-
-            case 1:
-              {
-                scan_pan_angle -= scan_speed;
-                if (scan_pan_angle < scan_right_limit) {
-                  scan_position = (scan_position + 1) % 2;
+              case 1:
+                {
+                  scan_tilt_angle -= scan_speed;
+                  if (scan_tilt_angle < scan_bottom_limit) {
+                    scan_position = (scan_position + 1) % 2;
+                  }
+                  break;
                 }
-
-                break;
-              }
+            }
           }
+          else
+          {
+            scan_tilt_angle = -60.0;
+            switch (scan_position) {
+              case 0:
+                {
+                  scan_pan_angle += scan_speed;
+                  if (scan_pan_angle > scan_left_limit) {
+                    scan_position = (scan_position + 1) % 2;
+                  }
 
+                  break;
+                }
+
+              case 1:
+                {
+                  scan_pan_angle -= scan_speed;
+                  if (scan_pan_angle < scan_right_limit) {
+                    scan_position = (scan_position + 1) % 2;
+                  }
+
+                  break;
+                }
+            }
+          }
           break;
         }
     }
@@ -338,6 +336,7 @@ void Head::process()
     tilt_angle = tilt_center + alg::clampValue(scan_tilt_angle, bottom_limit, top_limit);
   }
 
+  // set calculation result
   if (!joints.empty())
   {
     joints[0].set_position(pan_angle);
@@ -345,16 +344,18 @@ void Head::process()
   }
 }
 
-void Head::scan(int mode)
+void Head::scan_custom(
+  double left_limit, double right_limit, 
+  double top_limit, double bottom_limit,
+  int scan_type = SCAN_CUSTOM)
 {
-  start_scan();
+  scan_top_limit = top_limit;
+	scan_right_limit = right_limit;
+	scan_bottom_limit = bottom_limit;
+	scan_left_limit = left_limit;
 
-  if (scan_mode == mode) {
-    return;
-  }
-
-  scan_mode = mode;
-  scan_init = false;
+  scan(scan_type);
+  scan_process();
 }
 
 double Head::calculate_distance_from_pan_tilt(double pan, double tilt)
@@ -399,10 +400,13 @@ double Head::calculate_tilt_from_pan_distance(double pan, double distance)
   return ((tilt < 15.0) ? tilt : 15.0) - tilt_center - tilt_offset;
 }
 
-void Head::look_to_position(double position_x, double position_y)
+void Head::look_to_position(
+    double goal_position_x, double goal_position_y,
+    double robot_position_x, double robot_position_y,
+    float yaw)
 {
-  float dx = position_x - this->position_x;
-  float dy = position_y - this->position_y;
+  float dx = goal_position_x - robot_position_x;
+  float dy = goal_position_y - robot_position_y;
 
   float pan = yaw - (alg::direction(dx, dy) * alg::rad2Deg());
   float tilt = calculate_tilt_from_pan_distance(alg::distance(dx, dy));
@@ -524,4 +528,4 @@ void Head::load_data(std::string file_name)
 //   }
 // }
 
-}  // namespace atama
+}  // namespace atama::head

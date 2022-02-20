@@ -43,7 +43,7 @@ ReceiverNode::ReceiverNode(rclcpp::Node::SharedPtr node, std::shared_ptr<atama::
   get_orientation_subsciber = node->create_subscription<kansei_interfaces::msg::Orientation>(
     "measurement/orientation", 10,
     [this](const kansei_interfaces::msg::Orientation::SharedPtr message) {
-      this->head->set_yaw(message->orientation[2]);
+      // this->head->set_yaw(message->orientation[2]);
     }
   );
 
