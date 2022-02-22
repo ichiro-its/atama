@@ -36,11 +36,12 @@ SenderNode::SenderNode(rclcpp::Node::SharedPtr node, std::shared_ptr<atama::head
 {
   set_joints_publisher = node->create_publisher<tachimawari_interfaces::msg::SetJoints>(
     "/joint/set_joints", 10);
+  set_pan_tilt_publisher = node->create_publisher<atama_interfaces::msg::PanTiltDistance>(
+    "/pan_tilt/set_pan_tilt", 10);
 }
 
 void SenderNode::publish_joints()
 {
-  std::cout << "publish_joints" << std::endl;
   auto joints_msg = tachimawari_interfaces::msg::SetJoints();
 
   const auto & joints = head->get_joints();
@@ -53,6 +54,18 @@ void SenderNode::publish_joints()
   }
 
   set_joints_publisher->publish(joints_msg);
+}
+
+void SenderNode::publish_pan_tilt()
+{
+  auto pan_tilt_msg = atama_interfaces::msg::PanTiltDistance();
+
+  pan_tilt_msg.pan_angle = head->get_pan_angle();
+  pan_tilt_msg.tilt_angle = head->get_tilt_angle();
+  pan_tilt_msg.distance = head->calculate_distance_from_pan_tilt(
+    head->get_pan_angle(), head->get_tilt_angle());
+
+  set_pan_tilt_publisher->publish(pan_tilt_msg);
 }
 
 std::string SenderNode::get_node_prefix() const

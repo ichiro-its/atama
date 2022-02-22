@@ -132,7 +132,6 @@ private:
   bool init_scanning();
   void scan_process();
 
-  bool is_started_scanning;
   bool pan_only;
   bool tilt_only;
 
@@ -167,8 +166,8 @@ private:
   double tilt_error;
   double tilt_error_difference;
 
+  bool is_started_scanning;
   int scan_mode;
-
   bool scan_init;
 
   double scan_pan_angle;
