@@ -38,9 +38,9 @@ AtamaNode::AtamaNode(rclcpp::Node::SharedPtr node)
       if (receiver_node != nullptr) {
         receiver_node->get_joints_data();
         
-        if (sender_node != nullptr) {
-          sender_node->publish_joints();
-        }
+        // if (sender_node != nullptr) {
+        //   sender_node->publish_joints();
+        // }
       }
     }
   );

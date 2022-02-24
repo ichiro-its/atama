@@ -25,7 +25,7 @@
 #include <string>
 
 #include "atama/head/head.hpp"
-#include "atama_interfaces/msg/pan_tilt_distance.hpp"
+#include "atama_interfaces/msg/head.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "tachimawari_interfaces/msg/set_joints.hpp"
 
@@ -40,7 +40,11 @@ public:
     std::shared_ptr<atama::head::Head> head);
   
   void publish_joints();
+  // change function name
   void publish_pan_tilt();
+
+  bool is_function_exist(std::string function_name);
+  void process();
 private:
   rclcpp::Node::SharedPtr node;
 
@@ -48,8 +52,11 @@ private:
 
   std::shared_ptr<atama::head::Head> head;
 
+  int function_id;
+
   rclcpp::Publisher<tachimawari_interfaces::msg::SetJoints>::SharedPtr set_joints_publisher;
-  rclcpp::Publisher<atama_interfaces::msg::PanTiltDistance>::SharedPtr set_pan_tilt_publisher;
+  // change variable name
+  rclcpp::Publisher<atama_interfaces::msg::Head>::SharedPtr set_pan_tilt_publisher;
 };
 
 }  // namespace atama::sender

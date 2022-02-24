@@ -26,6 +26,7 @@
 #include "ninshiki_interfaces/msg/detected_objects.hpp"
 #include "tachimawari/joint/model/joint.hpp"
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -43,8 +44,14 @@ public:
     SCAN_VERTICAL          = 2,
     SCAN_HORIZONTAL        = 3,
     SCAN_MARATHON          = 4,
-    SCAN_CUSTOM            = 5
+    SCAN_CUSTOM            = 5,
+    TRACKING               = 6,
+    TRACKING_PAN_ONLY      = 7,
+    TRACKING_TILT_ONLY     = 8,
+    MOVE_BY_ANGLE          = 9,
+    LOOK_TO_POSITION       = 10,  
   };
+  static const std::map<std::string, int> map;
 
   int marathon_index;
 
@@ -124,6 +131,7 @@ public:
 
   void set_joints(std::vector<tachimawari::joint::Joint> joints) {joints = joints;}
   std::vector<tachimawari::joint::Joint> get_joints() {return joints;}
+  bool is_joint_empty() {return joints.empty();}
 
   void set_detection_result(std::vector<ninshiki_interfaces::msg::DetectedObject> detection_result) {detection_result = detection_result;}
   std::vector<ninshiki_interfaces::msg::DetectedObject> get_detection_result() {return detection_result;}
