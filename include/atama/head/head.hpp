@@ -46,11 +46,9 @@ public:
     SCAN_HORIZONTAL        = 3,
     SCAN_MARATHON          = 4,
     SCAN_CUSTOM            = 5,
-    TRACKING               = 6,
-    TRACKING_PAN_ONLY      = 7,
-    TRACKING_TILT_ONLY     = 8,
-    MOVE_BY_ANGLE          = 9,
-    LOOK_TO_POSITION       = 10,  
+    TRACK_OBJECT           = 6,
+    MOVE_BY_ANGLE          = 7,
+    LOOK_TO_POSITION       = 8,  
   };
   static const std::map<std::string, int> map;
 

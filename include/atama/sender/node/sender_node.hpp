@@ -32,6 +32,20 @@
 namespace atama::sender
 {
 
+struct FunctionParam
+{
+  double left_limit;
+  double right_limit;
+  double top_limit;
+  double bottom_limit;
+  int scan_type;
+  std::string object_name;
+  double pan_angle;
+  double tilt_angle;
+  double goal_position_x;
+  double goal_position_y;
+};
+
 class SenderNode
 {
 public:
@@ -44,7 +58,7 @@ public:
   void publish_pan_tilt();
 
   bool is_function_exist(std::string function_name);
-  void process();
+  void process(FunctionParam function_param);
 private:
   rclcpp::Node::SharedPtr node;
 

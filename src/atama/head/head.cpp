@@ -38,9 +38,7 @@ const std::map<std::string, int> Head::map = {
   {"scan_horizontal", Head::SCAN_HORIZONTAL},
   {"scan_maraton", Head::SCAN_MARATHON},
   {"scan_custom", Head::SCAN_CUSTOM},
-  {"tracking", Head::TRACKING},
-  {"tracking_pan_only", Head::TRACKING_PAN_ONLY},
-  {"tracking_tilt_only", Head::TRACKING_TILT_ONLY},
+  {"track_object", Head::TRACK_OBJECT},
   {"move_by_angle", Head::MOVE_BY_ANGLE},
   {"look_to_position", Head::LOOK_TO_POSITION} 
 };

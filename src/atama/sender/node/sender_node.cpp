@@ -80,23 +80,40 @@ bool SenderNode::is_function_exist(std::string function_name)
   }
 }
 
-void SenderNode::process()
+void SenderNode::process(FunctionParam fp)
 {
   if (!head->is_joint_empty())
   {
     switch (function_id) {
       case atama::head::Head::SCAN_UP: {head->scan_up(); break;}
       case atama::head::Head::SCAN_DOWN: {head->scan_down(); break;}              
-      // case head->SCAN_VERTICAL: {head->scan_vertical(); break;}          
-      // case head->SCAN_HORIZONTAL: {head->scan_horizontal(); break;}        
-      // case head->SCAN_MARATHON: {head->scan_marathon(); break;}          
-      // case head->SCAN_CUSTOM: {head->scan_custom(); break;}            
-      // case head->TRACKING: {head->tracking(); break;}               
-      // case head->TRACKING_PAN_ONLY: {head->tracking_pan_only(); break;}      
-      // case head->TRACKING_TILT_ONLY: {head->tracking_tilt_only(); break;}     
-      // case head->MOVE_BY_ANGLE: {head->move_by_angle(); break;}
+      case atama::head::Head::SCAN_VERTICAL: {head->scan_vertical(); break;}          
+      case atama::head::Head::SCAN_HORIZONTAL: {head->scan_horizontal(); break;}        
+      case atama::head::Head::SCAN_MARATHON: {head->scan_marathon(); break;}          
+      case atama::head::Head::SCAN_CUSTOM:
+        {
+          head->scan_custom(
+            fp.left_limit, fp.right_limit,
+            fp.top_limit, fp.bottom_limit, 
+            fp.scan_type); 
+          break;
+        }            
+      case atama::head::Head::TRACK_OBJECT: 
+        {
+          head->track_object(fp.object_name); 
+          break;
+        }               
+      case atama::head::Head::MOVE_BY_ANGLE:
+        {
+          head->move_by_angle(fp.pan_angle, fp.tilt_angle); 
+          break;
+        }
       // for robot_position_x, robot_position_y, yaw get from receiver_node          
-      // case head->LOOK_TO_POSITION: {head->look_to_position(); break;}       
+      // case atama::head::Head::LOOK_TO_POSITION:
+      //   {
+      //     head->look_to_position();
+      //     break;
+      //   }       
     }
   }
 
