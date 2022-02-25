@@ -94,7 +94,8 @@ void SenderNode::process()
       // case head->TRACKING: {head->tracking(); break;}               
       // case head->TRACKING_PAN_ONLY: {head->tracking_pan_only(); break;}      
       // case head->TRACKING_TILT_ONLY: {head->tracking_tilt_only(); break;}     
-      // case head->MOVE_BY_ANGLE: {head->move_by_angle(); break;}          
+      // case head->MOVE_BY_ANGLE: {head->move_by_angle(); break;}
+      // for robot_position_x, robot_position_y, yaw get from receiver_node          
       // case head->LOOK_TO_POSITION: {head->look_to_position(); break;}       
     }
   }

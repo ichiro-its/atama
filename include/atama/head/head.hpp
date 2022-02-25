@@ -25,6 +25,7 @@
 #include "ninshiki_interfaces/msg/detected_object.hpp"
 #include "ninshiki_interfaces/msg/detected_objects.hpp"
 #include "tachimawari/joint/model/joint.hpp"
+#include "./common.h"
 
 #include <map>
 #include <memory>
@@ -55,7 +56,7 @@ public:
 
   int marathon_index;
 
-  Head();
+  Head(int camera_width, int camera_height);
 
   void start_scan() {is_started_scanning = true;}
   void stop_scan() {is_started_scanning = false; scan_init = false;}
@@ -104,11 +105,13 @@ public:
     return calculate_distance_from_pan_tilt(get_pan_angle(), get_tilt_angle());
   }
   double calculate_distance_from_pan_tilt(double pan, double tilt);
+
   double calculate_distance_from_tilt()
   {
     return calculate_distance_from_tilt(get_tilt_angle());
   }
   double calculate_distance_from_tilt(double tilt);
+
   double calculate_tilt_from_pan_distance(double distance)
   {
     return calculate_tilt_from_pan_distance(get_pan_angle(), distance);
@@ -122,9 +125,7 @@ public:
 
   void load_data(std::string file_name);
 
-  // void track_ball(
-  //   std::shared_ptr<CameraMeasurement> camera,
-  //   keisan::Point2 pos, float view_v_angle, float view_h_angle);
+  void track_object(std::string object_name);
 
   // REQUIRED
   void set_pan_tilt_angle(double pan, double tilt);
@@ -194,15 +195,16 @@ private:
   double current_pan_angle;
   double current_tilt_angle;
 
-  int no_ball_count;
-  int ball_count;
-  static const int no_ball_max_count = 1;
-  static const int ball_max_count = 8;
-
-  keisan::Point2 ball_position;
+  int no_object_count;
+  int object_count;
+  static const int no_object_max_count = 1;
+  static const int object_max_count = 8;
 
   std::vector<tachimawari::joint::Joint> joints;
   std::vector<ninshiki_interfaces::msg::DetectedObject> detection_result;
+
+  int camera_width;
+  int camera_height;
 };
 
 }  // namespace atama::head

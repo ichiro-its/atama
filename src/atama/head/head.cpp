@@ -45,7 +45,7 @@ const std::map<std::string, int> Head::map = {
   {"look_to_position", Head::LOOK_TO_POSITION} 
 };
 
-Head::Head()
+Head::Head(int camera_width, int camera_height)
 {
   is_started_scanning = false;
   pan_only = false;
@@ -64,10 +64,13 @@ Head::Head()
 
   scan_speed = 0.5;
 
-  no_ball_count = 0;
-  ball_count = 0;
+  no_object_count = 0;
+  object_count = 0;
 
   joints = {};
+  // camera width and camera height can parse through function
+  this->camera_width = camera_width;
+  this->camera_height = camera_height;
   // m_Joint.Set_enableHead_only(true);
 }
 
@@ -510,36 +513,59 @@ void Head::load_data(std::string file_name)
   }
 }
 
-// void Head::track_ball(
-//   std::shared_ptr<CameraMeasurement> camera,
-//   keisan::Point2 pos, float view_v_angle, float view_h_angle)
-// {
-//   stop_scan();
-//   if (pos.x == 0 || pos.y == 0) {
-//     ball_position.x = -1;
-//     ball_position.y = -1;
-//     ball_count = 0;
-//     if (no_ball_count < no_ball_max_count) {
-//       tracking();
-//       no_ball_count++;
-//     } else {
-//       initialize();
-//     }
-//   } else {
-//     no_ball_count = 0;
-//     if (ball_count < ball_max_count) {
-//       ball_count++;
-//     } else {
-//       keisan::Point2 center = keisan::Point2(camera->width() / 2, camera->height() / 2);
-//       keisan::Point2 offset = pos - center;
-//       offset *= -1;
-//       offset.x *= (view_v_angle / camera->width());
-//       offset.y *= (view_h_angle / camera->height());
+void Head::track_object(std::string object_name)
+{
+  stop_scan();
+  float diagonal = alg::distance(camera_width, camera_height);
+  int field_of_view = 78;
+  float depth = (diagonal / 2) / tan(field_of_view * alg::deg2Rad() / 2);
 
-//       ball_position = offset;
-//       tracking(ball_position.x, ball_position.y);
-//     }
-//   }
-// }
+  float view_h_angle = 2 * atan2(camera_width / 2, depth) * alg::rad2Deg();
+  float view_v_angle = 2 * atan2(camera_height / 2, depth) * alg::rad2Deg();
+  
+  // filter the object by its label
+  std::vector<ninshiki_interfaces::msg::DetectedObject> filtered_result;
+  if (!detection_result.empty())
+  {
+    for (const auto & item :detection_result)
+    {
+      if (item.label == object_name)
+        filtered_result.push_back(item);
+    }
+  }
+
+  // looking at the center of the object
+  // How if the object is more than one?
+  // We pick the first object
+  double object_center_x = static_cast<double>((filtered_result[0].left * camera_width) 
+    + (filtered_result[0].right * camera_width) / 2);
+  double object_center_y = static_cast<double>((filtered_result[0].top * camera_height)
+    + (filtered_result[0].bottom * camera_height) / 2);
+  keisan::Point2 pos = keisan::Point2(object_center_x, object_center_y);
+
+  // There is no object with the label we want
+  if (filtered_result.empty()) {
+    object_count = 0;
+    if (no_object_count < no_object_max_count) {
+      tracking();
+      no_object_count++;
+    } else {
+      initialize();
+    }
+  } else {
+    no_object_count = 0;
+    if (object_count < object_max_count) {
+      object_count++;
+    } else {
+      keisan::Point2 center = keisan::Point2(camera_width / 2, camera_height / 2);
+      keisan::Point2 offset = pos - center;
+      offset *= -1;
+      offset.x *= (view_v_angle / camera_width);
+      offset.y *= (view_h_angle / camera_height);
+
+      tracking(offset.x, offset.y);
+    }
+  }
+}
 
 }  // namespace atama::head
