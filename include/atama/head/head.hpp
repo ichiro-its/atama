@@ -82,7 +82,6 @@ public:
   double get_scan_right_limit() {return scan_right_limit;}
   double get_scan_top_limit() {return scan_top_limit;}
   double get_scan_bottom_limit() {return scan_bottom_limit;}
-  double get_scan_type() {return scan_type;}
 
   double get_pan_center() {return pan_center;}
   double get_tilt_center() {return tilt_center;}
@@ -90,11 +89,10 @@ public:
   double get_goal_position_x() {return goal_position_x;}
   double get_goal_position_y() {return goal_position_y;}
 
-  void set_scan_left_limit(double value) {scan_left_limit = value;}
-  void set_scan_right_limit(double value) {scan_right_limit = value;}
-  void set_scan_top_limit(double value) {scan_top_limit = value;}
-  void set_scan_bottom_limit(double value) {scan_bottom_limit = value;}
-  void set_scan_type(int value) {scan_type = value;}
+  void set_scan_limit(
+    double left_limit, double right_limit,
+    double top_limit, double bottom_limit
+  );
 
   void set_object_name(std::string value) {object_name = value;}
   void set_pan_angle_goal(double value) {pan_angle_goal = value;}
@@ -112,15 +110,12 @@ public:
   void reinit_scan() {scan_init = false;}
 
   void scan(int mode);
-  void scan_up() {scan_custom(60.0, -60.0, 0.0, -75.0, SCAN_UP);}
-  void scan_down() {scan_custom(60.0, -60.0, 0.0, -75.0, SCAN_DOWN);}
-  void scan_horizontal() {scan_custom(70.0, -70.0, -30.0, -30.0, SCAN_HORIZONTAL);}
-  void scan_vertical() {scan_custom(0.0, 0.0, 0.0, -70.0, SCAN_VERTICAL);}
-  void scan_marathon() {scan_custom(70.0, -70.0, 0.0, -70.0, SCAN_MARATHON);}
-  void scan_custom(
-    double left_limit, double right_limit, 
-    double top_limit, double bottom_limit,
-    int scan_type);
+  void scan_up() {set_scan_limit(60.0, -60.0, 0.0, -75.0); scan_custom(SCAN_UP);}
+  void scan_down() {set_scan_limit(60.0, -60.0, 0.0, -75.0); scan_custom(SCAN_DOWN);}
+  void scan_horizontal() {set_scan_limit(70.0, -70.0, -30.0, -30.0); scan_custom(SCAN_HORIZONTAL);}
+  void scan_vertical() {set_scan_limit(0.0, 0.0, 0.0, -70.0); scan_custom(SCAN_VERTICAL);}
+  void scan_marathon() {set_scan_limit(70.0, -70.0, 0.0, -70.0); scan_custom(SCAN_MARATHON);}
+  void scan_custom(int scan_type = SCAN_CUSTOM);
 
   double calculate_distance_from_pan_tilt()
   {
@@ -211,7 +206,6 @@ private:
   double scan_right_limit;
   double scan_top_limit;
   double scan_bottom_limit;
-  int scan_type;
 
   double scan_speed;
 

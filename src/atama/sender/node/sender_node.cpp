@@ -79,17 +79,7 @@ void SenderNode::process()
       case atama::head::Head::SCAN_VERTICAL: {head->scan_vertical(); break;}          
       case atama::head::Head::SCAN_HORIZONTAL: {head->scan_horizontal(); break;}        
       case atama::head::Head::SCAN_MARATHON: {head->scan_marathon(); break;}          
-      case atama::head::Head::SCAN_CUSTOM: 
-        {
-          head->scan_custom(
-            head->get_scan_left_limit(),
-            head->get_scan_right_limit(),
-            head->get_scan_top_limit(),
-            head->get_scan_bottom_limit(),
-            head->get_scan_type()
-          );
-        break;
-        }        
+      case atama::head::Head::SCAN_CUSTOM: {head->scan_custom(atama::head::Head::SCAN_CUSTOM); break;}        
       case atama::head::Head::TRACK_OBJECT: 
         {
           head->track_object(head->get_object_name()); 

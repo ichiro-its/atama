@@ -80,11 +80,12 @@ rclcpp_action::GoalResponse AtamaNode::handle_goal(
     switch (goal->function_id) {
       case atama::head::Head::SCAN_CUSTOM:
         {
-          head->set_scan_left_limit(goal->scan_param.left_limit);
-          head->set_scan_right_limit(goal->scan_param.right_limit);
-          head->set_scan_top_limit(goal->scan_param.top_limit);
-          head->set_scan_bottom_limit(goal->scan_param.bottom_limit);
-          head->set_scan_type(goal->scan_param.scan_type);
+          head->set_scan_limit(
+            goal->scan_param.left_limit,
+            goal->scan_param.right_limit,
+            goal->scan_param.top_limit,
+            goal->scan_param.bottom_limit
+          );
           is_function_exist = true;
           break;
         }

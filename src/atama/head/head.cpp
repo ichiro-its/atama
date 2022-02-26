@@ -184,6 +184,16 @@ void Head::scan(int mode)
   scan_init = false;
 }
 
+void Head::set_scan_limit(
+  double left_limit, double right_limit,
+  double top_limit, double bottom_limit)
+{
+  scan_left_limit = left_limit;
+  scan_right_limit = right_limit;
+  scan_top_limit = top_limit;
+  scan_bottom_limit = bottom_limit;
+}
+
 void Head::scan_process()
 {
   for (int i = 0; i < static_cast<int>(joints.size()); i++) {
@@ -347,16 +357,8 @@ void Head::scan_process()
   }
 }
 
-void Head::scan_custom(
-  double left_limit, double right_limit, 
-  double top_limit, double bottom_limit,
-  int scan_type = SCAN_CUSTOM)
+void Head::scan_custom(int scan_type)
 {
-  scan_top_limit = top_limit;
-	scan_right_limit = right_limit;
-	scan_bottom_limit = bottom_limit;
-	scan_left_limit = left_limit;
-
   scan(scan_type);
   scan_process();
 }
