@@ -21,6 +21,8 @@
 #ifndef ATAMA__NODE__ATAMA_NODE_HPP_
 #define ATAMA__NODE__ATAMA_NODE_HPP_
 
+#include <memory>
+
 #include "atama/head/head.hpp"
 #include "atama/receiver/node/receiver_node.hpp"
 #include "atama/sender/node/sender_node.hpp"
@@ -60,6 +62,8 @@ private:
   void handle_accepted(const std::shared_ptr<GoalHandleRunHead> goal_handle);
 
   rclcpp_action::Server<RunHead>::SharedPtr run_head_server;
+
+  bool done_get_joints_data;
 };
 
 }  // namespace atama

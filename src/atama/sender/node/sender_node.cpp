@@ -101,6 +101,7 @@ void SenderNode::process()
     }
   }
 
+  publish_joints();
   publish_head_data();
 }
 

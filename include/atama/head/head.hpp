@@ -21,16 +21,16 @@
 #ifndef ATAMA__HEAD__HEAD_HPP_
 #define ATAMA__HEAD__HEAD_HPP_
 
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "keisan/geometry/point_2.hpp"
 #include "ninshiki_interfaces/msg/detected_object.hpp"
 #include "ninshiki_interfaces/msg/detected_objects.hpp"
 #include "tachimawari/joint/model/joint.hpp"
 #include "./common.h"
-
-#include <map>
-#include <memory>
-#include <string>
-#include <vector>
 
 namespace atama::head
 {
@@ -48,7 +48,7 @@ public:
     SCAN_CUSTOM            = 5,
     TRACK_OBJECT           = 6,
     MOVE_BY_ANGLE          = 7,
-    LOOK_TO_POSITION       = 8,  
+    LOOK_TO_POSITION       = 8,
   };
   static const std::map<std::string, int> map;
 
@@ -151,8 +151,10 @@ public:
   std::vector<tachimawari::joint::Joint> get_joints() {return joints;}
   bool is_joint_empty() {return joints.empty();}
 
-  void set_detection_result(std::vector<ninshiki_interfaces::msg::DetectedObject> detection_result) {detection_result = detection_result;}
-  std::vector<ninshiki_interfaces::msg::DetectedObject> get_detection_result() {return detection_result;}
+  void set_detection_result(std::vector<ninshiki_interfaces::msg::DetectedObject> detection_result)
+    {detection_result = detection_result;}
+  std::vector<ninshiki_interfaces::msg::DetectedObject> get_detection_result()
+    {return detection_result;}
 
 private:
   bool init_scanning();

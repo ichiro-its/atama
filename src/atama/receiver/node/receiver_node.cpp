@@ -61,19 +61,16 @@ ReceiverNode::ReceiverNode(rclcpp::Node::SharedPtr node, std::shared_ptr<atama::
   );  
 }
 
-void ReceiverNode::get_joints_data()
+bool ReceiverNode::get_joints_data()
 {
-  std::cout << "get_joints_data" << std::endl;
   while (!get_joints_client->wait_for_service(1s)) {
     if (rclcpp::ok()) {
       // service not available, waiting again...
     } else {
       // Interrupted while waiting for the service. Exiting.
-      return;
+      return false;
     }
   }
-  std::cout << "get_joints_data" << std::endl;
-
   auto result = get_joints_client->async_send_request(
     std::make_shared<tachimawari_interfaces::srv::GetJoints::Request>());
 
@@ -94,9 +91,10 @@ void ReceiverNode::get_joints_data()
     }
 
     head->set_joints(temp_joints);
+    return true;
   } else {
     // Failed to call service
-    return;
+    return false;
   }
 }
 

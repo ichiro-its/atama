@@ -34,7 +34,8 @@ namespace atama
 {
 
 AtamaNode::AtamaNode(rclcpp::Node::SharedPtr node)
-: node(node), receiver_node(nullptr), sender_node(nullptr)
+: node(node), receiver_node(nullptr), sender_node(nullptr),
+  done_get_joints_data(false)
 {
   run_head_server = rclcpp_action::create_server<RunHead>(
     node->get_node_base_interface(),
@@ -51,11 +52,7 @@ AtamaNode::AtamaNode(rclcpp::Node::SharedPtr node)
     8ms,
     [this]() {
       if (receiver_node != nullptr) {
-        receiver_node->get_joints_data();
-        
-        // if (sender_node != nullptr) {
-        //   sender_node->publish_joints();
-        // }
+        done_get_joints_data = receiver_node->get_joints_data();
       }
     }
   );
@@ -75,6 +72,7 @@ rclcpp_action::GoalResponse AtamaNode::handle_goal(
   std::shared_ptr<const RunHead::Goal> goal)
 {
   bool is_function_exist = false;
+  sender_node->function_id = goal->function_id;
 
   if (sender_node) {
     switch (goal->function_id) {
@@ -137,42 +135,30 @@ void AtamaNode::handle_accepted(const std::shared_ptr<GoalHandleRunHead> goal_ha
   std::thread{[this](const std::shared_ptr<GoalHandleRunHead> goal_handle) {
       rclcpp::Rate rcl_rate(8ms);
 
-//       const auto goal = goal_handle->get_goal();
+      const auto goal = goal_handle->get_goal();
+      auto feedback = std::make_shared<RunHead::Feedback>();
+      auto result = std::make_shared<RunHead::Result>();
 
-//       bool is_ready = false;
-//       if (goal->action_id >= 0) {
-//         is_ready = action_node->start(goal->action_id);
-//       } else if (goal->action_name != "") {
-//         is_ready = action_node->start(goal->action_name);
-//       }
+      if (done_get_joints_data) {
+        while (rclcpp::ok()) {
+          rcl_rate.sleep();
 
-//       auto feedback = std::make_shared<RunAction::Feedback>();
-//       auto result = std::make_shared<RunAction::Result>();
+          if (goal_handle->is_canceling()) {
+            result->done_processing = false;
+            goal_handle->canceled(result);
+            return;
+          }
 
-//       if (is_ready) {
-//         while (rclcpp::ok()) {
-//           rcl_rate.sleep();
+          sender_node->process();
 
-//           if (goal_handle->is_canceling()) {
-//             result->status = CANCELED;
-//             goal_handle->canceled(result);
-//             return;
-//           }
+          goal_handle->publish_feedback(feedback);
+        }
+      }
 
-//           if (action_node->get_status() == ActionNode::PLAYING) {
-//             action_node->process(this->node->now().seconds() * 1000);
-//           } else if (action_node->get_status() == ActionNode::READY) {
-//             break;
-//           }
-
-//           goal_handle->publish_feedback(feedback);
-//         }
-//       }
-
-//       if (rclcpp::ok()) {
-//         result->status = is_ready ? SUCCEEDED : FAILED;
-//         goal_handle->succeed(result);
-//       }
+      if (rclcpp::ok()) {
+        result->done_processing = done_get_joints_data;
+        goal_handle->succeed(result);
+      }
     }, goal_handle}.join();
 }
 

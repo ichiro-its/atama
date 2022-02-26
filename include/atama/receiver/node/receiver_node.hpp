@@ -41,7 +41,7 @@ public:
     rclcpp::Node::SharedPtr node,
     std::shared_ptr<atama::head::Head> head);
 
-  void get_joints_data();
+  bool get_joints_data();
 private:
   rclcpp::Node::SharedPtr node;
 

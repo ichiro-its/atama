@@ -58,6 +58,8 @@ public:
   void publish_head_data();
 
   void process();
+  
+  int function_id;
 private:
   rclcpp::Node::SharedPtr node;
 
@@ -65,7 +67,6 @@ private:
 
   std::shared_ptr<atama::head::Head> head;
 
-  int function_id;
 
   rclcpp::Publisher<tachimawari_interfaces::msg::SetJoints>::SharedPtr set_joints_publisher;
   // change variable name
