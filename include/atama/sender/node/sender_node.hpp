@@ -55,10 +55,9 @@ public:
   
   void publish_joints();
   // change function name
-  void publish_pan_tilt();
+  void publish_head_data();
 
-  bool is_function_exist(std::string function_name);
-  void process(FunctionParam function_param);
+  void process();
 private:
   rclcpp::Node::SharedPtr node;
 
@@ -70,7 +69,7 @@ private:
 
   rclcpp::Publisher<tachimawari_interfaces::msg::SetJoints>::SharedPtr set_joints_publisher;
   // change variable name
-  rclcpp::Publisher<atama_interfaces::msg::Head>::SharedPtr set_pan_tilt_publisher;
+  rclcpp::Publisher<atama_interfaces::msg::Head>::SharedPtr set_head_publisher;
 };
 
 }  // namespace atama::sender

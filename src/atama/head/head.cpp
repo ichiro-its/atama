@@ -31,18 +31,6 @@
 namespace atama::head
 {
 
-const std::map<std::string, int> Head::map = {
-  {"scan_up", Head::SCAN_UP},
-  {"scan_down", Head::SCAN_DOWN},
-  {"scan_vertical", Head::SCAN_VERTICAL},
-  {"scan_horizontal", Head::SCAN_HORIZONTAL},
-  {"scan_maraton", Head::SCAN_MARATHON},
-  {"scan_custom", Head::SCAN_CUSTOM},
-  {"track_object", Head::TRACK_OBJECT},
-  {"move_by_angle", Head::MOVE_BY_ANGLE},
-  {"look_to_position", Head::LOOK_TO_POSITION} 
-};
-
 Head::Head(int camera_width, int camera_height)
 {
   is_started_scanning = false;

@@ -36,8 +36,8 @@ SenderNode::SenderNode(rclcpp::Node::SharedPtr node, std::shared_ptr<atama::head
 {
   set_joints_publisher = node->create_publisher<tachimawari_interfaces::msg::SetJoints>(
     "/joint/set_joints", 10);
-  set_pan_tilt_publisher = node->create_publisher<atama_interfaces::msg::Head>(
-    "/pan_tilt/set_pan_tilt", 10);
+  set_head_publisher = node->create_publisher<atama_interfaces::msg::Head>(
+    "/head_data/set_head_data", 10);
   function_id = -1;
 }
 
@@ -57,7 +57,7 @@ void SenderNode::publish_joints()
   set_joints_publisher->publish(joints_msg);
 }
 
-void SenderNode::publish_pan_tilt()
+void SenderNode::publish_head_data()
 {
   auto pan_tilt_msg = atama_interfaces::msg::Head();
 
@@ -66,21 +66,10 @@ void SenderNode::publish_pan_tilt()
   pan_tilt_msg.distance = head->calculate_distance_from_pan_tilt(
     head->get_pan_angle(), head->get_tilt_angle());
 
-  set_pan_tilt_publisher->publish(pan_tilt_msg);
+  set_head_publisher->publish(pan_tilt_msg);
 }
 
-bool SenderNode::is_function_exist(std::string function_name)
-{
-  try {
-    function_id = head->map.at(function_name);
-    return true;
-  }
-  catch(...) {
-    return false;
-  }
-}
-
-void SenderNode::process(FunctionParam fp)
+void SenderNode::process()
 {
   if (!head->is_joint_empty())
   {
@@ -90,22 +79,27 @@ void SenderNode::process(FunctionParam fp)
       case atama::head::Head::SCAN_VERTICAL: {head->scan_vertical(); break;}          
       case atama::head::Head::SCAN_HORIZONTAL: {head->scan_horizontal(); break;}        
       case atama::head::Head::SCAN_MARATHON: {head->scan_marathon(); break;}          
-      case atama::head::Head::SCAN_CUSTOM:
+      case atama::head::Head::SCAN_CUSTOM: 
         {
           head->scan_custom(
-            fp.left_limit, fp.right_limit,
-            fp.top_limit, fp.bottom_limit, 
-            fp.scan_type); 
-          break;
-        }            
+            head->get_scan_left_limit(),
+            head->get_scan_right_limit(),
+            head->get_scan_top_limit(),
+            head->get_scan_bottom_limit(),
+            head->get_scan_type()
+          );
+        break;
+        }        
       case atama::head::Head::TRACK_OBJECT: 
         {
-          head->track_object(fp.object_name); 
+          head->track_object(head->get_object_name()); 
           break;
         }               
       case atama::head::Head::MOVE_BY_ANGLE:
         {
-          head->move_by_angle(fp.pan_angle, fp.tilt_angle); 
+          head->move_by_angle(
+            head->get_pan_angle_goal(),
+            head->get_tilt_angle_goal()); 
           break;
         }
       // for robot_position_x, robot_position_y, yaw get from receiver_node          
@@ -117,7 +111,7 @@ void SenderNode::process(FunctionParam fp)
     }
   }
 
-  publish_pan_tilt();
+  publish_head_data();
 }
 
 std::string SenderNode::get_node_prefix() const

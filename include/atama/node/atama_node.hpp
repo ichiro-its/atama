@@ -24,25 +24,42 @@
 #include "atama/head/head.hpp"
 #include "atama/receiver/node/receiver_node.hpp"
 #include "atama/sender/node/sender_node.hpp"
+#include "atama_interfaces/action/run_head.hpp"
 #include "rclcpp/rclcpp.hpp"
+#include "rclcpp_action/rclcpp_action.hpp"
 
 namespace atama
 {
+
+using atama_interfaces::action::RunHead;
+using GoalHandleRunHead = rclcpp_action::ServerGoalHandle<RunHead>;
 
 class AtamaNode
 {
 public:
   explicit AtamaNode(rclcpp::Node::SharedPtr node);
 
-  void set_receiver_node(std::shared_ptr<atama::head::Head> head);
-  void set_sender_node(std::shared_ptr<atama::head::Head> head);
+  void set_receiver_and_sender_node(std::shared_ptr<atama::head::Head> head);
 
 private:
+  std::shared_ptr<atama::head::Head> head;
+
   rclcpp::Node::SharedPtr node;
   rclcpp::TimerBase::SharedPtr node_timer;
 
   std::shared_ptr<atama::receiver::ReceiverNode> receiver_node;
   std::shared_ptr<atama::sender::SenderNode> sender_node;
+
+  rclcpp_action::GoalResponse handle_goal(
+    const rclcpp_action::GoalUUID & uuid,
+    std::shared_ptr<const RunHead::Goal> goal);
+
+  rclcpp_action::CancelResponse handle_cancel(
+    const std::shared_ptr<GoalHandleRunHead> goal_handle);
+
+  void handle_accepted(const std::shared_ptr<GoalHandleRunHead> goal_handle);
+
+  rclcpp_action::Server<RunHead>::SharedPtr run_head_server;
 };
 
 }  // namespace atama

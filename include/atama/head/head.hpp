@@ -67,6 +67,9 @@ public:
   double get_pan_angle() {return pan_angle - pan_center;}
   double get_tilt_angle() {return tilt_angle - tilt_center;}
 
+  double get_pan_angle_goal() {return pan_angle_goal;}
+  double get_tilt_angle_goal() {return tilt_angle_goal;}
+
   double get_pan_error() {return pan_error;}
   double get_tilt_error() {return tilt_error;}
 
@@ -75,8 +78,29 @@ public:
   double get_top_limit() {return top_limit;}
   double get_bottom_limit() {return bottom_limit;}
 
+  double get_scan_left_limit() {return scan_left_limit;}
+  double get_scan_right_limit() {return scan_right_limit;}
+  double get_scan_top_limit() {return scan_top_limit;}
+  double get_scan_bottom_limit() {return scan_bottom_limit;}
+  double get_scan_type() {return scan_type;}
+
   double get_pan_center() {return pan_center;}
   double get_tilt_center() {return tilt_center;}
+  std::string get_object_name() {return object_name;}
+  double get_goal_position_x() {return goal_position_x;}
+  double get_goal_position_y() {return goal_position_y;}
+
+  void set_scan_left_limit(double value) {scan_left_limit = value;}
+  void set_scan_right_limit(double value) {scan_right_limit = value;}
+  void set_scan_top_limit(double value) {scan_top_limit = value;}
+  void set_scan_bottom_limit(double value) {scan_bottom_limit = value;}
+  void set_scan_type(int value) {scan_type = value;}
+
+  void set_object_name(std::string value) {object_name = value;}
+  void set_pan_angle_goal(double value) {pan_angle_goal = value;}
+  void set_tilt_angle_goal(double value) {tilt_angle_goal = value;}
+  void set_goal_position_x(double value) {goal_position_x = value;}
+  void set_goal_position_y(double value) {goal_position_y = value;}
 
   void move_by_angle(double pan_angle, double tilt_angle);
 
@@ -145,6 +169,9 @@ private:
   double pan_angle;
   double tilt_angle;
 
+  double pan_angle_goal;
+  double tilt_angle_goal;
+
   double pan_center;
   double tilt_center;
 
@@ -184,6 +211,7 @@ private:
   double scan_right_limit;
   double scan_top_limit;
   double scan_bottom_limit;
+  int scan_type;
 
   double scan_speed;
 
@@ -193,6 +221,7 @@ private:
   double current_pan_angle;
   double current_tilt_angle;
 
+  std::string object_name;
   int no_object_count;
   int object_count;
   static const int no_object_max_count = 1;
@@ -203,6 +232,9 @@ private:
 
   int camera_width;
   int camera_height;
+
+  double goal_position_x;
+  double goal_position_y;
 };
 
 }  // namespace atama::head
