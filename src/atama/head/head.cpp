@@ -57,6 +57,8 @@ Head::Head(int camera_width, int camera_height)
   // camera width and camera height can parse through function
   this->camera_width = camera_width;
   this->camera_height = camera_height;
+
+  min_time = -1;
   // m_Joint.Set_enableHead_only(true);
 }
 
@@ -83,6 +85,7 @@ void Head::initialize()
 
 void Head::move_by_angle(double pan_angle, double tilt_angle)
 {
+  function_id = Head::MOVE_BY_ANGLE;
   stop_scan();
   this->pan_angle = pan_center + alg::clampValue(pan_angle, right_limit, left_limit);
   this->tilt_angle = tilt_center + alg::clampValue(tilt_angle, bottom_limit, top_limit);
@@ -359,6 +362,10 @@ void Head::scan_process()
 
 void Head::scan_custom(int scan_type)
 {
+  if (!check_time_belief())
+    return;
+
+  function_id = scan_type;
   scan(scan_type);
   scan_process();
 }
@@ -410,6 +417,7 @@ void Head::look_to_position(
     double robot_position_x, double robot_position_y,
     float yaw)
 {
+  function_id = Head::LOOK_TO_POSITION;
   float dx = goal_position_x - robot_position_x;
   float dy = goal_position_y - robot_position_y;
 
@@ -427,82 +435,90 @@ void Head::set_pan_tilt_angle(double pan, double tilt)
 
 void Head::load_data(std::string file_name)
 {
-  std::ifstream file(file_name + "/head/" + "head.json");
-  nlohmann::json walking_data = nlohmann::json::parse(file);
+  try {
+    std::ifstream file(file_name + "/head/" + "head.json");
+    nlohmann::json walking_data = nlohmann::json::parse(file);
 
-  for (auto &[key, val] : walking_data.items()) {
-    if (key == "Center") {
-      try {
-        val.at("pan_center").get_to(pan_center);
-        val.at("tilt_center").get_to(tilt_center);
-      } catch (nlohmann::json::parse_error & ex) {
-        std::cerr << "parse error at byte " << ex.byte << std::endl;
-      }
-    } else if (key == "Offset") {
-      try {
-        val.at("pan_offset").get_to(pan_offset);
-        val.at("tilt_offset").get_to(tilt_offset);
-      } catch (nlohmann::json::parse_error & ex) {
-        std::cerr << "parse error at byte " << ex.byte << std::endl;
-      }
-    } else if (key == "Limit") {
-      try {
-        val.at("left_limit").get_to(left_limit);
-        val.at("right_limit").get_to(right_limit);
-        val.at("top_limit").get_to(top_limit);
-        val.at("bottom_limit").get_to(bottom_limit);
-      } catch (nlohmann::json::parse_error & ex) {
-        std::cerr << "parse error at byte " << ex.byte << std::endl;
-      }
-    } else if (key == "Gain") {
-      try {
-        val.at("pan_p_gain").get_to(pan_p_gain);
-        val.at("pan_d_gain").get_to(pan_d_gain);
-        val.at("tilt_p_gain").get_to(tilt_p_gain);
-        val.at("tilt_d_gain").get_to(tilt_d_gain);
-      } catch (nlohmann::json::parse_error & ex) {
-        std::cerr << "parse error at byte " << ex.byte << std::endl;
-      }
-    } else if (key == "PanTiltToDistance") {
-      try {
-        for (int i = 6; i >= 0; i--) {
-          for (int j = 0; j <= i; j++) {
-            char buffer[32];
-            snprintf(buffer, sizeof(buffer), "pan_%d_tilt_%d", (i - j), j);
-            val.at(buffer).get_to(pan_tilt_to_distance_[i - j][j]);
+    for (auto &[key, val] : walking_data.items()) {
+      if (key == "Center") {
+        try {
+          val.at("pan_center").get_to(pan_center);
+          val.at("tilt_center").get_to(tilt_center);
+        } catch (nlohmann::json::parse_error & ex) {
+          std::cerr << "parse error at byte " << ex.byte << std::endl;
+        }
+      } else if (key == "Offset") {
+        try {
+          val.at("pan_offset").get_to(pan_offset);
+          val.at("tilt_offset").get_to(tilt_offset);
+        } catch (nlohmann::json::parse_error & ex) {
+          std::cerr << "parse error at byte " << ex.byte << std::endl;
+        }
+      } else if (key == "Limit") {
+        try {
+          val.at("left_limit").get_to(left_limit);
+          val.at("right_limit").get_to(right_limit);
+          val.at("top_limit").get_to(top_limit);
+          val.at("bottom_limit").get_to(bottom_limit);
+        } catch (nlohmann::json::parse_error & ex) {
+          std::cerr << "parse error at byte " << ex.byte << std::endl;
+        }
+      } else if (key == "Gain") {
+        try {
+          val.at("pan_p_gain").get_to(pan_p_gain);
+          val.at("pan_d_gain").get_to(pan_d_gain);
+          val.at("tilt_p_gain").get_to(tilt_p_gain);
+          val.at("tilt_d_gain").get_to(tilt_d_gain);
+        } catch (nlohmann::json::parse_error & ex) {
+          std::cerr << "parse error at byte " << ex.byte << std::endl;
+        }
+      } else if (key == "PanTiltToDistance") {
+        try {
+          for (int i = 6; i >= 0; i--) {
+            for (int j = 0; j <= i; j++) {
+              char buffer[32];
+              snprintf(buffer, sizeof(buffer), "pan_%d_tilt_%d", (i - j), j);
+              val.at(buffer).get_to(pan_tilt_to_distance_[i - j][j]);
+            }
           }
+        } catch (nlohmann::json::parse_error & ex) {
+          std::cerr << "parse error at byte " << ex.byte << std::endl;
         }
-      } catch (nlohmann::json::parse_error & ex) {
-        std::cerr << "parse error at byte " << ex.byte << std::endl;
-      }
-    } else if (key == "TiltToDistance") {
-      try {
-        for (int i = 0; i <= 4; i++) {
-          char buffer[32];
-          snprintf(buffer, sizeof(buffer), "pan_%d_tilt_%d", 0, i);
-          val.at(buffer).get_to(tilt_to_distance_[i]);
-        }
-      } catch (nlohmann::json::parse_error & ex) {
-        std::cerr << "parse error at byte " << ex.byte << std::endl;
-      }
-    } else if (key == "PanDistanceToTilt") {
-      try {
-        for (int i = 4; i >= 0; i--) {
-          for (int j = 0; j <= i; j++) {
+      } else if (key == "TiltToDistance") {
+        try {
+          for (int i = 0; i <= 4; i++) {
             char buffer[32];
-            snprintf(buffer, sizeof(buffer), "pan_%d_distance_%d", (i - j), j);
-            val.at(buffer).get_to(pan_distance_to_tilt_[i - j][j]);
+            snprintf(buffer, sizeof(buffer), "pan_%d_tilt_%d", 0, i);
+            val.at(buffer).get_to(tilt_to_distance_[i]);
           }
+        } catch (nlohmann::json::parse_error & ex) {
+          std::cerr << "parse error at byte " << ex.byte << std::endl;
         }
-      } catch (nlohmann::json::parse_error & ex) {
-        std::cerr << "parse error at byte " << ex.byte << std::endl;
+      } else if (key == "PanDistanceToTilt") {
+        try {
+          for (int i = 4; i >= 0; i--) {
+            for (int j = 0; j <= i; j++) {
+              char buffer[32];
+              snprintf(buffer, sizeof(buffer), "pan_%d_distance_%d", (i - j), j);
+              val.at(buffer).get_to(pan_distance_to_tilt_[i - j][j]);
+            }
+          }
+        } catch (nlohmann::json::parse_error & ex) {
+          std::cerr << "parse error at byte " << ex.byte << std::endl;
+        }
       }
     }
+  } catch (nlohmann::json::parse_error & ex) {
+      // TODO: will be used for logging
   }
 }
 
 void Head::track_object(std::string object_name)
 {
+  if (!check_time_belief())
+    return;
+  
+  function_id = Head::TRACK_OBJECT;
   stop_scan();
   float diagonal = alg::distance(camera_width, camera_height);
   int field_of_view = 78;
@@ -554,6 +570,17 @@ void Head::track_object(std::string object_name)
       tracking(offset.x, offset.y);
     }
   }
+
+  detection_result.clear();
+}
+
+bool Head::check_time_belief()
+{
+  if (min_time == -1 || clock() > min_time) {
+    min_time = clock() + 500 * CLOCKS_PER_SEC/1000;
+    return true;
+  }
+  return false;
 }
 
 }  // namespace atama::head

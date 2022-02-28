@@ -57,9 +57,9 @@ public:
   // change function name
   void publish_head_data();
 
-  void process();
-  
-  int function_id;
+  void process(int function_id);
+  bool check_process_is_finished();
+
 private:
   rclcpp::Node::SharedPtr node;
 

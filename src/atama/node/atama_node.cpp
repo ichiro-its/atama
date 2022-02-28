@@ -72,9 +72,10 @@ rclcpp_action::GoalResponse AtamaNode::handle_goal(
   std::shared_ptr<const RunHead::Goal> goal)
 {
   bool is_function_exist = false;
-  sender_node->function_id = goal->function_id;
 
   if (sender_node) {
+    head->set_function_id(goal->function_id);
+
     switch (goal->function_id) {
       case atama::head::Head::SCAN_CUSTOM:
         {
@@ -149,14 +150,17 @@ void AtamaNode::handle_accepted(const std::shared_ptr<GoalHandleRunHead> goal_ha
             return;
           }
 
-          sender_node->process();
+          if (sender_node->check_process_is_finished())
+            break;
+          else
+            sender_node->process(goal->function_id);
 
           goal_handle->publish_feedback(feedback);
         }
       }
 
       if (rclcpp::ok()) {
-        result->done_processing = done_get_joints_data;
+        result->done_processing = true;
         goal_handle->succeed(result);
       }
     }, goal_handle}.join();

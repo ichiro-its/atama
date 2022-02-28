@@ -21,7 +21,8 @@
 #ifndef ATAMA__HEAD__HEAD_HPP_
 #define ATAMA__HEAD__HEAD_HPP_
 
-#include <map>
+#include <time.h>
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -50,7 +51,7 @@ public:
     MOVE_BY_ANGLE          = 7,
     LOOK_TO_POSITION       = 8,
   };
-  static const std::map<std::string, int> map;
+  std::vector<ninshiki_interfaces::msg::DetectedObject> detection_result;
 
   int marathon_index;
 
@@ -88,6 +89,7 @@ public:
   std::string get_object_name() {return object_name;}
   double get_goal_position_x() {return goal_position_x;}
   double get_goal_position_y() {return goal_position_y;}
+  int get_function_id() {return function_id;}
 
   void set_scan_limit(
     double left_limit, double right_limit,
@@ -99,6 +101,7 @@ public:
   void set_tilt_angle_goal(double value) {tilt_angle_goal = value;}
   void set_goal_position_x(double value) {goal_position_x = value;}
   void set_goal_position_y(double value) {goal_position_y = value;}
+  void set_function_id(int value) {function_id = value;}
 
   void move_by_angle(double pan_angle, double tilt_angle);
 
@@ -159,6 +162,7 @@ public:
 private:
   bool init_scanning();
   void scan_process();
+  bool check_time_belief();
 
   bool pan_only;
   bool tilt_only;
@@ -217,20 +221,22 @@ private:
   double current_pan_angle;
   double current_tilt_angle;
 
-  std::string object_name;
+  std::string object_name = "ball";
   int no_object_count;
   int object_count;
   static const int no_object_max_count = 1;
   static const int object_max_count = 8;
 
   std::vector<tachimawari::joint::Joint> joints;
-  std::vector<ninshiki_interfaces::msg::DetectedObject> detection_result;
 
   int camera_width;
   int camera_height;
 
   double goal_position_x;
   double goal_position_y;
+
+  int function_id;
+  clock_t min_time;
 };
 
 }  // namespace atama::head
