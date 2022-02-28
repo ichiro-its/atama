@@ -15,7 +15,6 @@ endif()
 
 find_package(ament_cmake REQUIRED)
 find_package(atama_interfaces REQUIRED)
-find_package(framework_common REQUIRED)
 find_package(kansei_interfaces REQUIRED)
 find_package(keisan REQUIRED)
 find_package(ninshiki_interfaces REQUIRED)
@@ -37,7 +36,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 ament_target_dependencies(${PROJECT_NAME}
   atama_interfaces
-  framework_common
   kansei_interfaces
   keisan
   ninshiki_interfaces
@@ -77,7 +75,6 @@ endif()
 
 ament_export_dependencies(
   atama_interfaces
-  framework_common
   kansei_interfaces
   keisan
   ninshiki_interfaces

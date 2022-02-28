@@ -21,6 +21,7 @@
 #ifndef ATAMA__HEAD__HEAD_HPP_
 #define ATAMA__HEAD__HEAD_HPP_
 
+#include <math.h>
 #include <time.h>
 
 #include <memory>
@@ -31,7 +32,6 @@
 #include "ninshiki_interfaces/msg/detected_object.hpp"
 #include "ninshiki_interfaces/msg/detected_objects.hpp"
 #include "tachimawari/joint/model/joint.hpp"
-#include "./common.h"
 
 namespace atama::head
 {

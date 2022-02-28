@@ -87,8 +87,8 @@ void Head::move_by_angle(double pan_angle, double tilt_angle)
 {
   function_id = Head::MOVE_BY_ANGLE;
   stop_scan();
-  this->pan_angle = pan_center + alg::clampValue(pan_angle, right_limit, left_limit);
-  this->tilt_angle = tilt_center + alg::clampValue(tilt_angle, bottom_limit, top_limit);
+  this->pan_angle = pan_center + keisan::clamp(pan_angle, right_limit, left_limit);
+  this->tilt_angle = tilt_center + keisan::clamp(tilt_angle, bottom_limit, top_limit);
 }
 
 void Head::tracking(double pan, double tilt)
@@ -164,8 +164,8 @@ void Head::tracking()
     tilt_angle += (p_offset + d_offset);
   }
 
-  pan_angle = pan_center + alg::clampValue(pan_angle - pan_center, right_limit, left_limit);
-  tilt_angle = tilt_center + alg::clampValue(tilt_angle - tilt_center, bottom_limit, top_limit);
+  pan_angle = pan_center + keisan::clamp(pan_angle - pan_center, right_limit, left_limit);
+  tilt_angle = tilt_center + keisan::clamp(tilt_angle - tilt_center, bottom_limit, top_limit);
 
   // set calculation result
   if (!joints.empty())
@@ -230,7 +230,7 @@ void Head::scan_process()
             case 0:
             {
               scan_tilt_angle = scan_bottom_limit;
-              scan_pan_angle = alg::clampValue(scan_pan_angle, scan_right_limit + 15.0, scan_left_limit - 15.0);
+              scan_pan_angle = keisan::clamp(scan_pan_angle, scan_right_limit + 15.0, scan_left_limit - 15.0);
               break;
             }
             case 1:
@@ -348,8 +348,8 @@ void Head::scan_process()
         }
     }
 
-    pan_angle = pan_center + alg::clampValue(scan_pan_angle, right_limit, left_limit);
-    tilt_angle = tilt_center + alg::clampValue(scan_tilt_angle, bottom_limit, top_limit);
+    pan_angle = pan_center + keisan::clamp(scan_pan_angle, right_limit, left_limit);
+    tilt_angle = tilt_center + keisan::clamp(scan_tilt_angle, bottom_limit, top_limit);
   }
 
   // set calculation result
@@ -421,8 +421,8 @@ void Head::look_to_position(
   float dx = goal_position_x - robot_position_x;
   float dy = goal_position_y - robot_position_y;
 
-  float pan = yaw - (alg::direction(dx, dy) * alg::rad2Deg());
-  float tilt = calculate_tilt_from_pan_distance(alg::distance(dx, dy));
+  float pan = yaw - keisan::make_degree(atan2(dy, dx)).normalize().degree();
+  float tilt = calculate_tilt_from_pan_distance(keisan::make_degree(atan2(dy, dx)).degree());
 
   move_by_angle(pan - pan_center, tilt);
 }
@@ -520,12 +520,13 @@ void Head::track_object(std::string object_name)
   
   function_id = Head::TRACK_OBJECT;
   stop_scan();
-  float diagonal = alg::distance(camera_width, camera_height);
-  int field_of_view = 78;
-  float depth = (diagonal / 2) / tan(field_of_view * alg::deg2Rad() / 2);
+  float diagonal = pow(camera_width * camera_width + camera_height * camera_height, 0.5);
 
-  float view_h_angle = 2 * atan2(camera_width / 2, depth) * alg::rad2Deg();
-  float view_v_angle = 2 * atan2(camera_height / 2, depth) * alg::rad2Deg();
+  int field_of_view = 78;
+  float depth = (diagonal / 2) / tan(keisan::make_degree(field_of_view).radian() / 2);
+
+  float view_h_angle = keisan::make_degree(2 * atan2(camera_width / 2, depth)).degree();
+  float view_v_angle = keisan::make_degree(2 * atan2(camera_height / 2, depth)).degree();
   
   // filter the object by its label
   std::vector<ninshiki_interfaces::msg::DetectedObject> filtered_result;
