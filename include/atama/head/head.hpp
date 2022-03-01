@@ -155,9 +155,9 @@ public:
   bool is_joint_empty() {return joints.empty();}
 
   void set_detection_result(std::vector<ninshiki_interfaces::msg::DetectedObject> detection_result)
-    {detection_result = detection_result;}
+  {detection_result = detection_result;}
   std::vector<ninshiki_interfaces::msg::DetectedObject> get_detection_result()
-    {return detection_result;}
+  {return detection_result;}
 
 private:
   bool init_scanning();

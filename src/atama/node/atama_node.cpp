@@ -150,10 +150,11 @@ void AtamaNode::handle_accepted(const std::shared_ptr<GoalHandleRunHead> goal_ha
             return;
           }
 
-          if (sender_node->check_process_is_finished())
+          if (sender_node->check_process_is_finished()) {
             break;
-          else
+          } else {
             sender_node->process(goal->function_id);
+          }
 
           goal_handle->publish_feedback(feedback);
         }

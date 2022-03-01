@@ -42,6 +42,7 @@ public:
     std::shared_ptr<atama::head::Head> head);
 
   bool get_joints_data();
+
 private:
   rclcpp::Node::SharedPtr node;
 
@@ -51,7 +52,8 @@ private:
 
   rclcpp::Client<tachimawari_interfaces::srv::GetJoints>::SharedPtr get_joints_client;
   rclcpp::Subscription<kansei_interfaces::msg::Orientation>::SharedPtr get_orientation_subsciber;
-  rclcpp::Subscription<ninshiki_interfaces::msg::DetectedObjects>::SharedPtr get_detection_result_subsciber;
+  rclcpp::Subscription<ninshiki_interfaces::msg::DetectedObjects>::SharedPtr
+    get_detection_result_subsciber;
   // minus subscriber for aruku to get position robot
 };
 
