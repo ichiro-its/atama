@@ -26,7 +26,6 @@
 #include <string>
 
 #include "atama/head/head.hpp"
-#include "common/algebra.h"
 
 namespace atama::head
 {
