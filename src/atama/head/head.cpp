@@ -516,12 +516,18 @@ void Head::track_object(std::string object_name)
   }
 
   // looking at the center of the object
-  // How if the object is more than one?
-  // We pick the first object
-  double object_center_x = (filtered_result[0].left * camera_width +
-    filtered_result[0].right * camera_width) / 2;
-  double object_center_y = (filtered_result[0].top * camera_height +
-    filtered_result[0].bottom * camera_height) / 2;
+  // We pick an object with the biggest confidence
+  double confidence = 0.0;
+  double object_center_x, object_center_y;
+  for (const auto & item : detection_result) {
+    if (item.score > confidence) {
+      confidence = item.score;
+      object_center_x = (filtered_result[0].left * camera_width +
+        filtered_result[0].right * camera_width) / 2;
+      object_center_y = (filtered_result[0].top * camera_height +
+        filtered_result[0].bottom * camera_height) / 2;
+    }
+  }
   keisan::Point2 pos = keisan::Point2(object_center_x, object_center_y);
 
   // There is no object with the label we want
