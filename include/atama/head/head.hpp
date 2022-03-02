@@ -55,7 +55,7 @@ public:
 
   int marathon_index;
 
-  Head(int camera_width, int camera_height);
+  Head();
 
   void start_scan() {is_started_scanning = true;}
   void stop_scan() {is_started_scanning = false; scan_init = false;}
@@ -220,9 +220,6 @@ private:
   static const int object_max_count = 8;
 
   std::vector<tachimawari::joint::Joint> joints;
-
-  int camera_width;
-  int camera_height;
 
   double goal_position_x;
   double goal_position_y;

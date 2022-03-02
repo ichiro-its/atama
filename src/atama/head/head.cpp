@@ -32,7 +32,7 @@
 namespace atama::head
 {
 
-Head::Head(int camera_width, int camera_height)
+Head::Head()
 {
   is_started_scanning = false;
   pan_only = false;
@@ -55,10 +55,6 @@ Head::Head(int camera_width, int camera_height)
   object_count = 0;
 
   joints = {};
-  // camera width and camera height can parse through function
-  this->camera_width = camera_width;
-  this->camera_height = camera_height;
-
   min_time = -1;
 }
 
@@ -497,13 +493,6 @@ void Head::track_object(std::string object_name)
 
   function_id = Head::TRACK_OBJECT;
   stop_scan();
-  float diagonal = pow(camera_width * camera_width + camera_height * camera_height, 0.5);
-
-  int field_of_view = 78;
-  float depth = (diagonal / 2) / tan(keisan::make_degree(field_of_view).radian() / 2);
-
-  float view_h_angle = keisan::make_degree(2 * atan2(camera_width / 2, depth)).degree();
-  float view_v_angle = keisan::make_degree(2 * atan2(camera_height / 2, depth)).degree();
 
   // filter the object by its label
   std::vector<ninshiki_interfaces::msg::DetectedObject> filtered_result;
@@ -513,22 +502,40 @@ void Head::track_object(std::string object_name)
         filtered_result.push_back(item);
       }
     }
+  } else {
+    return;
   }
 
   // looking at the center of the object
   // We pick an object with the biggest confidence
   double confidence = 0.0;
   double object_center_x, object_center_y;
-  for (const auto & item : detection_result) {
-    if (item.score > confidence) {
-      confidence = item.score;
-      object_center_x = (filtered_result[0].left * camera_width +
-        filtered_result[0].right * camera_width) / 2;
-      object_center_y = (filtered_result[0].top * camera_height +
-        filtered_result[0].bottom * camera_height) / 2;
+  int camera_width, camera_height;
+  if (!filtered_result.empty()) {
+    for (const auto & item : detection_result) {
+      if (item.score > confidence) {
+        confidence = item.score;
+        camera_width = item.img_width;
+        camera_height = item.img_height;
+
+        object_center_x = (item.left * camera_width +
+          item.right * camera_width) / 2;
+        object_center_y = (item.top * camera_height +
+          item.bottom * camera_height) / 2;
+      }
     }
+  } else {
+    return;
   }
   keisan::Point2 pos = keisan::Point2(object_center_x, object_center_y);
+
+  float diagonal = pow(camera_width * camera_width + camera_height * camera_height, 0.5);
+
+  int field_of_view = 78;
+  float depth = (diagonal / 2) / tan(keisan::make_degree(field_of_view).radian() / 2);
+
+  float view_h_angle = keisan::make_degree(2 * atan2(camera_width / 2, depth)).degree();
+  float view_v_angle = keisan::make_degree(2 * atan2(camera_height / 2, depth)).degree();
 
   // There is no object with the label we want
   if (filtered_result.empty()) {
