@@ -33,6 +33,9 @@
 
 namespace atama::receiver
 {
+using kansei_interfaces::msg::Orientation;
+using ninshiki_interfaces::msg::DetectedObjects;
+using tachimawari_interfaces::srv::GetJoints;
 
 class ReceiverNode
 {
@@ -50,9 +53,9 @@ private:
 
   std::shared_ptr<atama::head::Head> head;
 
-  rclcpp::Client<tachimawari_interfaces::srv::GetJoints>::SharedPtr get_joints_client;
-  rclcpp::Subscription<kansei_interfaces::msg::Orientation>::SharedPtr get_orientation_subsciber;
-  rclcpp::Subscription<ninshiki_interfaces::msg::DetectedObjects>::SharedPtr
+  rclcpp::Client<GetJoints>::SharedPtr get_joints_client;
+  rclcpp::Subscription<Orientation>::SharedPtr get_orientation_subsciber;
+  rclcpp::Subscription<DetectedObjects>::SharedPtr
     get_detection_result_subsciber;
   // minus subscriber for aruku to get position robot
 };

@@ -63,14 +63,16 @@ public:
 private:
   rclcpp::Node::SharedPtr node;
 
-  std::string get_node_prefix() const;
-
   std::shared_ptr<atama::head::Head> head;
 
-
   rclcpp::Publisher<tachimawari_interfaces::msg::SetJoints>::SharedPtr set_joints_publisher;
-  // change variable name
   rclcpp::Publisher<atama_interfaces::msg::Head>::SharedPtr set_head_publisher;
+
+  bool check_scan();
+  bool check_track();
+  bool check_move_by_angle();
+
+  std::string get_node_prefix() const;
 };
 
 }  // namespace atama::sender

@@ -62,9 +62,6 @@ public:
 
   void initialize();
 
-  // void joint_enable() { m_Joint.SetEnableHead_only(true, true); }
-  // void joint_disable() { m_Joint.SetEnableBody(false); }
-
   double get_pan_angle() {return pan_angle - pan_center;}
   double get_tilt_angle() {return tilt_angle - tilt_center;}
 
@@ -153,11 +150,6 @@ public:
   void set_joints(std::vector<tachimawari::joint::Joint> joints) {joints = joints;}
   std::vector<tachimawari::joint::Joint> get_joints() {return joints;}
   bool is_joint_empty() {return joints.empty();}
-
-  void set_detection_result(std::vector<ninshiki_interfaces::msg::DetectedObject> detection_result)
-  {detection_result = detection_result;}
-  std::vector<ninshiki_interfaces::msg::DetectedObject> get_detection_result()
-  {return detection_result;}
 
 private:
   bool init_scanning();

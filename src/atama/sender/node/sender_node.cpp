@@ -72,34 +72,29 @@ void SenderNode::publish_head_data()
 
 void SenderNode::process(int function_id)
 {
+  using atama::head::Head;
+
   if (!head->is_joint_empty()) {
     switch (function_id) {
-      case atama::head::Head::SCAN_UP: {head->scan_up(); break;}
-      case atama::head::Head::SCAN_DOWN: {head->scan_down(); break;}
-      case atama::head::Head::SCAN_VERTICAL: {head->scan_vertical(); break;}
-      case atama::head::Head::SCAN_HORIZONTAL: {head->scan_horizontal(); break;}
-      case atama::head::Head::SCAN_MARATHON: {head->scan_marathon(); break;}
-      case atama::head::Head::SCAN_CUSTOM: {head->scan_custom(atama::head::Head::SCAN_CUSTOM);
-          break;}
-      case atama::head::Head::TRACK_OBJECT:
-        {
-          head->track_object(head->get_object_name());
-          break;
-        }
-      case atama::head::Head::MOVE_BY_ANGLE:
-        {
-          head->move_by_angle(
-            head->get_pan_angle_goal(),
-            head->get_tilt_angle_goal());
-          break;
-        }
+      case Head::SCAN_UP: head->scan_up(); break;
+      case Head::SCAN_DOWN: head->scan_down(); break;
+      case Head::SCAN_VERTICAL: head->scan_vertical(); break;
+      case Head::SCAN_HORIZONTAL: head->scan_horizontal(); break;
+      case Head::SCAN_MARATHON: head->scan_marathon(); break;
+      case Head::SCAN_CUSTOM: head->scan_custom(Head::SCAN_CUSTOM); break;
+      case Head::TRACK_OBJECT:
+        head->track_object(head->get_object_name());
+        break;
+      case Head::MOVE_BY_ANGLE:
+        head->move_by_angle(
+          head->get_pan_angle_goal(),
+          head->get_tilt_angle_goal());
+        break;
         // TODO(nathan): implement look_to_position() after
         // robot_position_x, robot_position_y, yaw are obtained
-        // case atama::head::Head::LOOK_TO_POSITION:
-        //   {
-        //     head->look_to_position();
-        //     break;
-        //   }
+        // case Head::LOOK_TO_POSITION:
+        //   head->look_to_position();
+        //   break;
     }
   }
 
@@ -107,66 +102,67 @@ void SenderNode::process(int function_id)
   publish_head_data();
 }
 
+bool SenderNode::check_scan()
+{
+  std::vector<std::string> result_name;
+  for (const auto & name : head->detection_result) {
+    result_name.push_back(name.label);
+  }
+
+  std::vector<std::string>::iterator it;
+  it = std::find(result_name.begin(), result_name.end(), head->get_object_name());
+
+  // Object Found
+  if (it != result_name.end()) {
+    return true;
+  }
+  return false;
+}
+
+bool SenderNode::check_track()
+{
+  std::vector<std::string> result_name;
+  for (const auto & name : head->detection_result) {
+    result_name.push_back(name.label);
+  }
+
+  std::vector<std::string>::iterator it;
+  it = std::find(
+    result_name.begin(),
+    result_name.end(), head->get_object_name());
+
+  // Object Found
+  if (it != result_name.end()) {
+    return false;
+  }
+  return true;
+}
+
+bool SenderNode::check_move_by_angle()
+{
+  if (head->get_pan_angle() == head->get_pan_angle_goal() &&
+    head->get_tilt_angle() == head->get_tilt_angle_goal())
+  {
+    return true;
+  }
+}
+
 bool SenderNode::check_process_is_finished()
 {
+  using atama::head::Head;
+
   switch (head->get_function_id()) {
-    case atama::head::Head::SCAN_UP:
-    case atama::head::Head::SCAN_DOWN:
-    case atama::head::Head::SCAN_VERTICAL:
-    case atama::head::Head::SCAN_HORIZONTAL:
-    case atama::head::Head::SCAN_MARATHON:
-    case atama::head::Head::SCAN_CUSTOM:
-      {
-        std::vector<std::string> result_name;
-        for (const auto & name : head->detection_result) {
-          result_name.push_back(name.label);
-        }
-
-        std::vector<std::string>::iterator it;
-        it = std::find(
-          result_name.begin(),
-          result_name.end(), head->get_object_name());
-
-        // Object Found
-        if (it != result_name.end()) {
-          return true;
-        }
-        return false;
-
-        break;
-      }
-    case atama::head::Head::TRACK_OBJECT:
-      {
-        std::vector<std::string> result_name;
-        for (const auto & name : head->detection_result) {
-          result_name.push_back(name.label);
-        }
-
-        std::vector<std::string>::iterator it;
-        it = std::find(
-          result_name.begin(),
-          result_name.end(), head->get_object_name());
-
-        // Object Found
-        if (it != result_name.end()) {
-          return false;
-        }
-        return true;
-
-        break;
-      }
-    case atama::head::Head::MOVE_BY_ANGLE:
-      {
-        if (head->get_pan_angle() == head->get_pan_angle_goal() &&
-          head->get_tilt_angle() == head->get_tilt_angle_goal())
-        {
-          return true;
-        }
-        break;
-      }
+    case Head::SCAN_UP:
+    case Head::SCAN_DOWN:
+    case Head::SCAN_VERTICAL:
+    case Head::SCAN_HORIZONTAL:
+    case Head::SCAN_MARATHON:
+    case Head::SCAN_CUSTOM: return check_scan(); break;
+    case Head::TRACK_OBJECT: return check_track(); break;
+    case Head::MOVE_BY_ANGLE: return check_move_by_angle(); break;
       // TODO(nathan): implement look_to_position() after
       // robot_position_x, robot_position_y, yaw are obtained
-      // case atama::head::Head::LOOK_TO_POSITION:
+      // case Head::LOOK_TO_POSITION:
       //   {
       //     head->look_to_position();
       //     break;

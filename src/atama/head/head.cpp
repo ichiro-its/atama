@@ -60,7 +60,6 @@ Head::Head(int camera_width, int camera_height)
   this->camera_height = camera_height;
 
   min_time = -1;
-  // m_Joint.Set_enableHead_only(true);
 }
 
 bool Head::init_scanning()
@@ -228,47 +227,34 @@ void Head::scan_process()
 
           switch (scan_position) {
             case 0:
-              {
-                scan_tilt_angle = scan_bottom_limit;
-                scan_pan_angle = keisan::clamp(
-                  scan_pan_angle, scan_right_limit + 15.0,
-                  scan_left_limit - 15.0);
-                break;
-              }
+              scan_tilt_angle = scan_bottom_limit;
+              scan_pan_angle = keisan::clamp(
+                scan_pan_angle, scan_right_limit + 15.0,
+                scan_left_limit - 15.0);
+              break;
             case 1:
-              {
-                scan_tilt_angle = (scan_bottom_limit + scan_top_limit) * 0.5;
-                break;
-              }
+              scan_tilt_angle = (scan_bottom_limit + scan_top_limit) * 0.5;
+              break;
             case 2:
-              {
-                scan_tilt_angle = scan_top_limit;
-                break;
-              }
+              scan_tilt_angle = scan_top_limit;
+              break;
           }
 
           switch (scan_direction) {
             case 0:
-              {
-                scan_pan_angle += scan_speed;
-                if (scan_pan_angle > scan_left_limit) {
-                  scan_position = (scan_position + 1) % 3;
-                  scan_direction = 1;
-                }
-
-                break;
+              scan_pan_angle += scan_speed;
+              if (scan_pan_angle > scan_left_limit) {
+                scan_position = (scan_position + 1) % 3;
+                scan_direction = 1;
               }
-
+              break;
             case 1:
-              {
-                scan_pan_angle -= scan_speed;
-                if (scan_pan_angle < scan_right_limit) {
-                  scan_position = (scan_position + 1) % 3;
-                  scan_direction = 0;
-                }
-
-                break;
+              scan_pan_angle -= scan_speed;
+              if (scan_pan_angle < scan_right_limit) {
+                scan_position = (scan_position + 1) % 3;
+                scan_direction = 0;
               }
+              break;
           }
 
           break;
@@ -303,45 +289,35 @@ void Head::scan_process()
             scan_pan_angle = (scan_left_limit + scan_right_limit) / 2;
             switch (scan_position) {
               case 0:
-                {
-                  scan_tilt_angle += scan_speed;
-                  if (scan_tilt_angle > scan_top_limit) {
-                    scan_position = (scan_position + 1) % 2;
-                  }
-                  break;
+                scan_tilt_angle += scan_speed;
+                if (scan_tilt_angle > scan_top_limit) {
+                  scan_position = (scan_position + 1) % 2;
                 }
-
+                break;
               case 1:
-                {
-                  scan_tilt_angle -= scan_speed;
-                  if (scan_tilt_angle < scan_bottom_limit) {
-                    scan_position = (scan_position + 1) % 2;
-                  }
-                  break;
+                scan_tilt_angle -= scan_speed;
+                if (scan_tilt_angle < scan_bottom_limit) {
+                  scan_position = (scan_position + 1) % 2;
                 }
+                break;
             }
           } else {
             scan_tilt_angle = -60.0;
             switch (scan_position) {
               case 0:
-                {
-                  scan_pan_angle += scan_speed;
-                  if (scan_pan_angle > scan_left_limit) {
-                    scan_position = (scan_position + 1) % 2;
-                  }
-
-                  break;
+                scan_pan_angle += scan_speed;
+                if (scan_pan_angle > scan_left_limit) {
+                  scan_position = (scan_position + 1) % 2;
                 }
 
+                break;
               case 1:
-                {
-                  scan_pan_angle -= scan_speed;
-                  if (scan_pan_angle < scan_right_limit) {
-                    scan_position = (scan_position + 1) % 2;
-                  }
-
-                  break;
+                scan_pan_angle -= scan_speed;
+                if (scan_pan_angle < scan_right_limit) {
+                  scan_position = (scan_position + 1) % 2;
                 }
+
+                break;
             }
           }
           break;
@@ -542,10 +518,10 @@ void Head::track_object(std::string object_name)
   // looking at the center of the object
   // How if the object is more than one?
   // We pick the first object
-  double object_center_x = static_cast<double>((filtered_result[0].left * camera_width) +
-    (filtered_result[0].right * camera_width) / 2);
-  double object_center_y = static_cast<double>((filtered_result[0].top * camera_height) +
-    (filtered_result[0].bottom * camera_height) / 2);
+  double object_center_x = (filtered_result[0].left * camera_width +
+    filtered_result[0].right * camera_width) / 2;
+  double object_center_y = (filtered_result[0].top * camera_height +
+    filtered_result[0].bottom * camera_height) / 2;
   keisan::Point2 pos = keisan::Point2(object_center_x, object_center_y);
 
   // There is no object with the label we want

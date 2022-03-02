@@ -37,27 +37,32 @@ namespace atama::receiver
 ReceiverNode::ReceiverNode(rclcpp::Node::SharedPtr node, std::shared_ptr<atama::head::Head> head)
 : node(node), head(head)
 {
-  get_joints_client = node->create_client<tachimawari_interfaces::srv::GetJoints>(
+  using kansei_interfaces::msg::Orientation;
+  using ninshiki_interfaces::msg::DetectedObject;
+  using ninshiki_interfaces::msg::DetectedObjects;
+  using tachimawari_interfaces::srv::GetJoints;
+
+  get_joints_client = node->create_client<GetJoints>(
     "/joint/get_joints");
 
-  get_orientation_subsciber = node->create_subscription<kansei_interfaces::msg::Orientation>(
+  get_orientation_subsciber = node->create_subscription<Orientation>(
     "measurement/orientation", 10,
-    [this](const kansei_interfaces::msg::Orientation::SharedPtr message) {
+    [this](const Orientation::SharedPtr message) {
       // this->head->set_yaw(message->orientation[2]);
     }
   );
 
   get_detection_result_subsciber =
-    node->create_subscription<ninshiki_interfaces::msg::DetectedObjects>(
+    node->create_subscription<DetectedObjects>(
     "ninshiki_py/detection", 10,
-    [this](const ninshiki_interfaces::msg::DetectedObjects::SharedPtr message) {
-      std::vector<ninshiki_interfaces::msg::DetectedObject> temp_detection_result;
+    [this](const DetectedObjects::SharedPtr message) {
+      std::vector<DetectedObject> temp_detection_result;
 
       for (const auto & detected_object : message->detected_objects) {
         temp_detection_result.push_back(detected_object);
       }
 
-      this->head->set_detection_result(temp_detection_result);
+      this->head->detection_result = temp_detection_result;
     }
     );
 }
