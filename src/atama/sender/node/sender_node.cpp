@@ -83,7 +83,7 @@ void SenderNode::process(int function_id)
       case Head::SCAN_MARATHON: head->scan_marathon(); break;
       case Head::SCAN_CUSTOM: head->scan_custom(Head::SCAN_CUSTOM); break;
       case Head::TRACK_OBJECT:
-        head->track_object(head->get_object_name());
+        head->track_object(head->object_name);
         break;
       case Head::MOVE_BY_ANGLE:
         head->move_by_angle(
@@ -110,13 +110,10 @@ bool SenderNode::check_scan()
   }
 
   std::vector<std::string>::iterator it;
-  it = std::find(result_name.begin(), result_name.end(), head->get_object_name());
+  it = std::find(result_name.begin(), result_name.end(), head->object_name);
 
   // Object Found
-  if (it != result_name.end()) {
-    return true;
-  }
-  return false;
+  return it != result_name.end();
 }
 
 bool SenderNode::check_track()
@@ -129,13 +126,10 @@ bool SenderNode::check_track()
   std::vector<std::string>::iterator it;
   it = std::find(
     result_name.begin(),
-    result_name.end(), head->get_object_name());
+    result_name.end(), head->object_name);
 
-  // Object Found
-  if (it != result_name.end()) {
-    return false;
-  }
-  return true;
+  // Object not found
+  return it == result_name.end();
 }
 
 bool SenderNode::check_move_by_angle()

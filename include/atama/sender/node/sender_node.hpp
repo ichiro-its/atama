@@ -49,9 +49,7 @@ struct FunctionParam
 class SenderNode
 {
 public:
-  SenderNode(
-    rclcpp::Node::SharedPtr node,
-    std::shared_ptr<atama::head::Head> head);
+  SenderNode(rclcpp::Node::SharedPtr node, std::shared_ptr<atama::head::Head> head);
 
   void publish_joints();
   // change function name

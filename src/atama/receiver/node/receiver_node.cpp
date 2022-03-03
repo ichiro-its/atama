@@ -37,13 +37,9 @@ namespace atama::receiver
 ReceiverNode::ReceiverNode(rclcpp::Node::SharedPtr node, std::shared_ptr<atama::head::Head> head)
 : node(node), head(head)
 {
-  using kansei_interfaces::msg::Orientation;
   using ninshiki_interfaces::msg::DetectedObject;
-  using ninshiki_interfaces::msg::DetectedObjects;
-  using tachimawari_interfaces::srv::GetJoints;
 
-  get_joints_client = node->create_client<GetJoints>(
-    "/joint/get_joints");
+  get_joints_client = node->create_client<GetJoints>("/joint/get_joints");
 
   get_orientation_subsciber = node->create_subscription<Orientation>(
     "measurement/orientation", 10,

@@ -90,7 +90,7 @@ rclcpp_action::GoalResponse AtamaNode::handle_goal(
         }
       case atama::head::Head::TRACK_OBJECT:
         {
-          head->set_object_name(goal->track_param.object_name);
+          head->object_name = goal->track_param.object_name;
           is_function_exist = true;
           break;
         }

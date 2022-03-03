@@ -52,6 +52,7 @@ public:
     LOOK_TO_POSITION       = 8,
   };
   std::vector<ninshiki_interfaces::msg::DetectedObject> detection_result;
+  std::string object_name = "ball";
 
   int marathon_index;
 
@@ -83,7 +84,6 @@ public:
 
   double get_pan_center() {return pan_center;}
   double get_tilt_center() {return tilt_center;}
-  std::string get_object_name() {return object_name;}
   double get_goal_position_x() {return goal_position_x;}
   double get_goal_position_y() {return goal_position_y;}
   int get_function_id() {return function_id;}
@@ -93,7 +93,6 @@ public:
     double top_limit, double bottom_limit
   );
 
-  void set_object_name(std::string value) {object_name = value;}
   void set_pan_angle_goal(double value) {pan_angle_goal = value;}
   void set_tilt_angle_goal(double value) {tilt_angle_goal = value;}
   void set_goal_position_x(double value) {goal_position_x = value;}
@@ -213,7 +212,6 @@ private:
   double current_pan_angle;
   double current_tilt_angle;
 
-  std::string object_name = "ball";
   int no_object_count;
   int object_count;
   static const int no_object_max_count = 1;
