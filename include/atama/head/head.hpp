@@ -115,6 +115,8 @@ public:
   void scan_vertical() {set_scan_limit(0.0, 0.0, 0.0, -70.0); scan_custom(SCAN_VERTICAL);}
   void scan_marathon() {set_scan_limit(70.0, -70.0, 0.0, -70.0); scan_custom(SCAN_MARATHON);}
   void scan_custom(int scan_type = SCAN_CUSTOM);
+  void scan_one_direction();
+  void scan_two_direction();
 
   double calculate_distance_from_pan_tilt()
   {

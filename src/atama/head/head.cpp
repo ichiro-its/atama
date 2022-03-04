@@ -164,11 +164,12 @@ void Head::tracking()
   tilt_angle = tilt_center + keisan::clamp(tilt_angle - tilt_center, bottom_limit, top_limit);
 
   // set calculation result
-  if (!joints.empty()) {
+  if (!joints.empty() && joints.size() >= 2) {
     joints[0].set_position(pan_angle);
     joints[1].set_position(tilt_angle);
   }
 }
+
 
 void Head::scan(int mode)
 {
@@ -192,9 +193,122 @@ void Head::set_scan_limit(
   scan_bottom_limit = bottom_limit;
 }
 
+void Head::scan_one_direction()
+{
+  if (init_scanning()) {
+    double value_change;
+    scan_speed = 0.8;
+
+    scan_pan_angle = get_pan_angle();
+    scan_tilt_angle = get_tilt_angle();
+
+    if (scan_mode == SCAN_VERTICAL) {
+      value_change = 15.0;
+    } else {
+      value_change = 30.0;
+    }
+
+    if (get_tilt_angle() < (scan_bottom_limit + scan_top_limit) / 2) {
+      scan_position = 0;
+      scan_tilt_angle -= value_change;
+    } else {
+      scan_position = 1;
+      scan_tilt_angle += value_change;
+    }
+  }
+
+  if (scan_mode == SCAN_VERTICAL) {
+    scan_pan_angle = (scan_left_limit + scan_right_limit) / 2;
+    switch (scan_position) {
+      case 0:
+        scan_tilt_angle += scan_speed;
+        if (scan_tilt_angle > scan_top_limit) {
+          scan_position = (scan_position + 1) % 2;
+        }
+        break;
+      case 1:
+        scan_tilt_angle -= scan_speed;
+        if (scan_tilt_angle < scan_bottom_limit) {
+          scan_position = (scan_position + 1) % 2;
+        }
+        break;
+    }
+  } else {
+    scan_tilt_angle = -60.0;
+    switch (scan_position) {
+      case 0:
+        scan_pan_angle += scan_speed;
+        if (scan_pan_angle > scan_left_limit) {
+          scan_position = (scan_position + 1) % 2;
+        }
+
+        break;
+      case 1:
+        scan_pan_angle -= scan_speed;
+        if (scan_pan_angle < scan_right_limit) {
+          scan_position = (scan_position + 1) % 2;
+        }
+
+        break;
+    }
+  }
+}
+
+void Head::scan_two_direction()
+{
+  if (init_scanning()) {
+    scan_speed = 0.6;
+
+    scan_pan_angle = get_pan_angle();
+    scan_tilt_angle = get_tilt_angle();
+
+    scan_position = (scan_mode == SCAN_DOWN) ? 0 : 1;
+
+    if (pan_angle < (scan_left_limit + scan_right_limit) / 2) {
+      scan_direction = 0;
+      scan_pan_angle -= 30.0;
+    } else {
+      scan_direction = 1;
+      scan_pan_angle += 30.0;
+    }
+  }
+
+  switch (scan_position) {
+    case 0:
+      scan_tilt_angle = scan_bottom_limit;
+      scan_pan_angle = keisan::clamp(
+        scan_pan_angle, scan_right_limit + 15.0,
+        scan_left_limit - 15.0);
+      break;
+    case 1:
+      scan_tilt_angle = (scan_bottom_limit + scan_top_limit) * 0.5;
+      break;
+    case 2:
+      scan_tilt_angle = scan_top_limit;
+      break;
+  }
+
+  switch (scan_direction) {
+    case 0:
+      scan_pan_angle += scan_speed;
+      if (scan_pan_angle > scan_left_limit) {
+        scan_position = (scan_position + 1) % 3;
+        scan_direction = 1;
+      }
+      break;
+    case 1:
+      scan_pan_angle -= scan_speed;
+      if (scan_pan_angle < scan_right_limit) {
+        scan_position = (scan_position + 1) % 3;
+        scan_direction = 0;
+      }
+      break;
+  }
+}
+
 void Head::scan_process()
 {
-  for (int i = 0; i < static_cast<int>(joints.size()); i++) {
+  for (size_t i = 0; i < joints.size(); ++i) {
     joints[i].set_pid_gain(20.0, 3.0, 2.0);
   }
 
@@ -202,122 +316,9 @@ void Head::scan_process()
     switch (scan_mode) {
       case SCAN_UP:
       case SCAN_DOWN:
-      case SCAN_CUSTOM:
-        {
-          if (init_scanning()) {
-            scan_speed = 0.6;
-
-            scan_pan_angle = get_pan_angle();
-            scan_tilt_angle = get_tilt_angle();
-
-            scan_position = (scan_mode == SCAN_DOWN) ? 0 : 1;
-
-            if (pan_angle < (scan_left_limit + scan_right_limit) / 2) {
-              scan_direction = 0;
-              scan_pan_angle -= 30.0;
-            } else {
-              scan_direction = 1;
-              scan_pan_angle += 30.0;
-            }
-          }
-
-          switch (scan_position) {
-            case 0:
-              scan_tilt_angle = scan_bottom_limit;
-              scan_pan_angle = keisan::clamp(
-                scan_pan_angle, scan_right_limit + 15.0,
-                scan_left_limit - 15.0);
-              break;
-            case 1:
-              scan_tilt_angle = (scan_bottom_limit + scan_top_limit) * 0.5;
-              break;
-            case 2:
-              scan_tilt_angle = scan_top_limit;
-              break;
-          }
-
-          switch (scan_direction) {
-            case 0:
-              scan_pan_angle += scan_speed;
-              if (scan_pan_angle > scan_left_limit) {
-                scan_position = (scan_position + 1) % 3;
-                scan_direction = 1;
-              }
-              break;
-            case 1:
-              scan_pan_angle -= scan_speed;
-              if (scan_pan_angle < scan_right_limit) {
-                scan_position = (scan_position + 1) % 3;
-                scan_direction = 0;
-              }
-              break;
-          }
-
-          break;
-        }
-
+      case SCAN_CUSTOM: scan_two_direction(); break;
       case SCAN_VERTICAL:
-      case SCAN_HORIZONTAL:
-        {
-          if (init_scanning()) {
-            double value_change;
-            scan_speed = 0.8;
-
-            scan_pan_angle = get_pan_angle();
-            scan_tilt_angle = get_tilt_angle();
-
-            if (scan_mode == SCAN_VERTICAL) {
-              value_change = 15.0;
-            } else {
-              value_change = 30.0;
-            }
-
-            if (get_tilt_angle() < (scan_bottom_limit + scan_top_limit) / 2) {
-              scan_position = 0;
-              scan_tilt_angle -= value_change;
-            } else {
-              scan_position = 1;
-              scan_tilt_angle += value_change;
-            }
-          }
-
-          if (scan_mode == SCAN_VERTICAL) {
-            scan_pan_angle = (scan_left_limit + scan_right_limit) / 2;
-            switch (scan_position) {
-              case 0:
-                scan_tilt_angle += scan_speed;
-                if (scan_tilt_angle > scan_top_limit) {
-                  scan_position = (scan_position + 1) % 2;
-                }
-                break;
-              case 1:
-                scan_tilt_angle -= scan_speed;
-                if (scan_tilt_angle < scan_bottom_limit) {
-                  scan_position = (scan_position + 1) % 2;
-                }
-                break;
-            }
-          } else {
-            scan_tilt_angle = -60.0;
-            switch (scan_position) {
-              case 0:
-                scan_pan_angle += scan_speed;
-                if (scan_pan_angle > scan_left_limit) {
-                  scan_position = (scan_position + 1) % 2;
-                }
-
-                break;
-              case 1:
-                scan_pan_angle -= scan_speed;
-                if (scan_pan_angle < scan_right_limit) {
-                  scan_position = (scan_position + 1) % 2;
-                }
-
-                break;
-            }
-          }
-          break;
-        }
+      case SCAN_HORIZONTAL: scan_one_direction(); break;
     }
 
     pan_angle = pan_center + keisan::clamp(scan_pan_angle, right_limit, left_limit);
@@ -325,7 +326,7 @@ void Head::scan_process()
   }
 
   // set calculation result
-  if (!joints.empty()) {
+  if (!joints.empty() && joints.size() >= 2) {
     joints[0].set_position(pan_angle);
     joints[1].set_position(tilt_angle);
   }
@@ -346,8 +347,8 @@ double Head::calculate_distance_from_pan_tilt(double pan, double tilt)
 {
   double distance = 0.0;
 
-  for (int i = 6; i >= 0; i--) {
-    for (int j = 0; j <= i; j++) {
+  for (int i = 6; i >= 0; --i) {
+    for (int j = 0; j <= i; ++j) {
       double x1 = pow((pan + pan_center + pan_offset), (i - j));
       double x2 = pow((tilt + tilt_center + tilt_offset), j);
       distance += (pan_tilt_to_distance_[i - j][j]) * x1 * x2;
@@ -361,7 +362,7 @@ double Head::calculate_distance_from_tilt(double tilt)
 {
   double distance = 0.0;
 
-  for (int i = 0; i <= 4; i++) {
+  for (int i = 0; i <= 4; ++i) {
     double x2 = pow((tilt + tilt_center + tilt_offset), i);
     distance += (tilt_to_distance_[i]) * x2;
   }
@@ -373,8 +374,8 @@ double Head::calculate_tilt_from_pan_distance(double pan, double distance)
 {
   double tilt = 0.0;
 
-  for (int i = 4; i >= 0; i--) {
-    for (int j = 0; j <= i; j++) {
+  for (int i = 4; i >= 0; --i) {
+    for (int j = 0; j <= i; ++j) {
       double x1 = pow((pan + pan_center + pan_offset), (i - j));
       double x2 = pow(distance, j);
       tilt += (pan_distance_to_tilt_[i - j][j]) * x1 * x2;
@@ -446,8 +447,8 @@ void Head::load_data(std::string file_name)
         }
       } else if (key == "PanTiltToDistance") {
         try {
-          for (int i = 6; i >= 0; i--) {
-            for (int j = 0; j <= i; j++) {
+          for (int i = 6; i >= 0; --i) {
+            for (int j = 0; j <= i; ++j) {
               char buffer[32];
               snprintf(buffer, sizeof(buffer), "pan_%d_tilt_%d", (i - j), j);
               val.at(buffer).get_to(pan_tilt_to_distance_[i - j][j]);
@@ -458,7 +459,7 @@ void Head::load_data(std::string file_name)
         }
       } else if (key == "TiltToDistance") {
         try {
-          for (int i = 0; i <= 4; i++) {
+          for (int i = 0; i <= 4; ++i) {
             char buffer[32];
             snprintf(buffer, sizeof(buffer), "pan_%d_tilt_%d", 0, i);
             val.at(buffer).get_to(tilt_to_distance_[i]);
@@ -468,8 +469,8 @@ void Head::load_data(std::string file_name)
         }
       } else if (key == "PanDistanceToTilt") {
         try {
-          for (int i = 4; i >= 0; i--) {
-            for (int j = 0; j <= i; j++) {
+          for (int i = 4; i >= 0; --i) {
+            for (int j = 0; j <= i; ++j) {
               char buffer[32];
               snprintf(buffer, sizeof(buffer), "pan_%d_distance_%d", (i - j), j);
               val.at(buffer).get_to(pan_distance_to_tilt_[i - j][j]);
