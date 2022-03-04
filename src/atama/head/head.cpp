@@ -394,8 +394,10 @@ void Head::look_to_position(
   float dx = goal_position_x - robot_position_x;
   float dy = goal_position_y - robot_position_y;
 
-  float pan = yaw - keisan::make_degree(atan2(dy, dx)).normalize().degree();
-  float tilt = calculate_tilt_from_pan_distance(keisan::make_degree(atan2(dy, dx)).degree());
+  float pan = yaw -
+    keisan::make_degree(keisan::signed_arctan(dy, dx).degree()).normalize().degree();
+  float tilt = calculate_tilt_from_pan_distance(
+    keisan::make_degree(keisan::signed_arctan(dy, dx).degree()).degree());
 
   move_by_angle(pan - pan_center, tilt);
 }
@@ -528,15 +530,18 @@ void Head::track_object(std::string object_name)
   } else {
     return;
   }
-  keisan::Point2 pos = keisan::Point2(object_center_x, object_center_y);
+  keisan::Point2 pos(object_center_x, object_center_y);
 
   float diagonal = pow(camera_width * camera_width + camera_height * camera_height, 0.5);
 
   int field_of_view = 78;
-  float depth = (diagonal / 2) / tan(keisan::make_degree(field_of_view).radian() / 2);
+  float depth = (diagonal / 2) /
+    keisan::make_degree(keisan::make_degree(field_of_view).radian() / 2).tan();
 
-  float view_h_angle = keisan::make_degree(2 * atan2(camera_width / 2, depth)).degree();
-  float view_v_angle = keisan::make_degree(2 * atan2(camera_height / 2, depth)).degree();
+  float view_h_angle = keisan::make_degree(
+    2 * keisan::signed_arctan(static_cast<float>(camera_width / 2), depth).degree()).degree();
+  float view_v_angle = keisan::make_degree(
+    2 * keisan::signed_arctan(static_cast<float>(camera_height / 2), depth).degree()).degree();
 
   // There is no object with the label we want
   if (filtered_result.empty()) {
@@ -552,7 +557,7 @@ void Head::track_object(std::string object_name)
     if (object_count < object_max_count) {
       object_count++;
     } else {
-      keisan::Point2 center = keisan::Point2(camera_width / 2, camera_height / 2);
+      keisan::Point2 center = keisan::Point2(camera_width, camera_height) / 2;
       keisan::Point2 offset = pos - center;
       offset *= -1;
       offset.x *= (view_v_angle / camera_width);
