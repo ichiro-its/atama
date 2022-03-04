@@ -21,8 +21,8 @@
 #include <bits/stdc++.h>
 
 #include <memory>
+#include <set>
 #include <string>
-#include <vector>
 
 #include "atama/sender/node/sender_node.hpp"
 #include "rclcpp/rclcpp.hpp"
@@ -104,32 +104,24 @@ void SenderNode::process(int function_id)
 
 bool SenderNode::check_scan()
 {
-  std::vector<std::string> result_name;
+  std::set<std::string> result_name;
   for (const auto & name : head->detection_result) {
-    result_name.push_back(name.label);
+    result_name.insert(name.label);
   }
 
-  std::vector<std::string>::iterator it;
-  it = std::find(result_name.begin(), result_name.end(), head->object_name);
-
   // Object Found
-  return it != result_name.end();
+  return result_name.find(head->object_name) != result_name.end();
 }
 
 bool SenderNode::check_track()
 {
-  std::vector<std::string> result_name;
+  std::set<std::string> result_name;
   for (const auto & name : head->detection_result) {
-    result_name.push_back(name.label);
+    result_name.insert(name.label);
   }
 
-  std::vector<std::string>::iterator it;
-  it = std::find(
-    result_name.begin(),
-    result_name.end(), head->object_name);
-
   // Object not found
-  return it == result_name.end();
+  return result_name.find(head->object_name) == result_name.end();
 }
 
 bool SenderNode::check_move_by_angle()

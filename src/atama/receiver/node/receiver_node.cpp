@@ -19,6 +19,7 @@
 // SOFTWARE.
 
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -65,6 +66,9 @@ ReceiverNode::ReceiverNode(rclcpp::Node::SharedPtr node, std::shared_ptr<atama::
 
 bool ReceiverNode::get_joints_data()
 {
+  using tachimawari::joint::Joint;
+  using tachimawari::joint::JointId;
+
   while (!get_joints_client->wait_for_service(1s)) {
     if (rclcpp::ok()) {
       // service not available, waiting again...
@@ -79,16 +83,17 @@ bool ReceiverNode::get_joints_data()
   if (rclcpp::spin_until_future_complete(node, result) ==
     rclcpp::FutureReturnCode::SUCCESS)
   {
-    std::vector<tachimawari::joint::Joint> temp_joints;
+    std::vector<Joint> temp_joints;
+    std::set<uint8_t> joints_id;
+
+    for (std::string id : {"neck_yaw", "neck_pitch"}) {
+      joints_id.insert(JointId::by_name.find(id)->second);
+    }
 
     for (const auto & joint : result.get()->joints) {
-      for (std::string id : {"neck_yaw", "neck_pitch"}) {
-        uint8_t joint_id = tachimawari::joint::JointId::by_name.find(id)->second;
-
-        if (joint.id == joint_id) {
-          temp_joints.push_back(
-            tachimawari::joint::Joint(joint.id, joint.position));
-        }
+      // Joint Id found in joints_id set
+      if (joints_id.find(joint.id) != joints_id.end()) {
+        temp_joints.push_back(Joint(joint.id, joint.position));
       }
     }
 
