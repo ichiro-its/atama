@@ -29,6 +29,7 @@
 #include "ninshiki_interfaces/msg/detected_object.hpp"
 #include "ninshiki_interfaces/msg/detected_objects.hpp"
 #include "rclcpp/rclcpp.hpp"
+#include "shisen_interfaces/msg/camera_config.hpp"
 #include "tachimawari_interfaces/srv/get_joints.hpp"
 
 namespace atama::receiver
@@ -37,6 +38,7 @@ namespace atama::receiver
 using kansei_interfaces::msg::Orientation;
 using ninshiki_interfaces::msg::DetectedObjects;
 using tachimawari_interfaces::srv::GetJoints;
+using shisen_interfaces::msg::CameraConfig;
 
 class ReceiverNode
 {
@@ -55,6 +57,7 @@ private:
   rclcpp::Client<GetJoints>::SharedPtr get_joints_client;
   rclcpp::Subscription<Orientation>::SharedPtr get_orientation_subsciber;
   rclcpp::Subscription<DetectedObjects>::SharedPtr get_detection_result_subsciber;
+  rclcpp::Subscription<CameraConfig>::SharedPtr get_camera_config_subsciber;
   // TODO(nathan): minus subscriber for aruku to get position robot
 };
 

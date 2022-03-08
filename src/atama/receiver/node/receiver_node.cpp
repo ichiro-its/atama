@@ -62,6 +62,16 @@ ReceiverNode::ReceiverNode(rclcpp::Node::SharedPtr node, std::shared_ptr<atama::
       this->head->detection_result = temp_detection_result;
     }
     );
+
+  get_camera_config_subsciber = node->create_subscription<CameraConfig>(
+    "/camera/camera_config", 10,
+    [this](const CameraConfig::SharedPtr message) {
+      this->head->camera_width = message->width;
+      this->head->camera_height = message->height;
+      this->head->view_v_angle = message->v_angle;
+      this->head->view_h_angle = message->h_angle;
+    }
+  );
 }
 
 bool ReceiverNode::get_joints_data()

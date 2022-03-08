@@ -52,7 +52,18 @@ public:
     LOOK_TO_POSITION       = 8,
   };
   std::vector<ninshiki_interfaces::msg::DetectedObject> detection_result;
-  std::string object_name = "ball";
+  std::string object_name;
+
+  double pan_angle_goal;
+  double tilt_angle_goal;
+  double goal_position_x;
+  double goal_position_y;
+  int function_id;
+
+  int camera_width;
+  int camera_height;
+  float view_v_angle;
+  float view_h_angle;
 
   int marathon_index;
 
@@ -65,9 +76,6 @@ public:
 
   double get_pan_angle() {return pan_angle - pan_center;}
   double get_tilt_angle() {return tilt_angle - tilt_center;}
-
-  double get_pan_angle_goal() {return pan_angle_goal;}
-  double get_tilt_angle_goal() {return tilt_angle_goal;}
 
   double get_pan_error() {return pan_error;}
   double get_tilt_error() {return tilt_error;}
@@ -84,20 +92,11 @@ public:
 
   double get_pan_center() {return pan_center;}
   double get_tilt_center() {return tilt_center;}
-  double get_goal_position_x() {return goal_position_x;}
-  double get_goal_position_y() {return goal_position_y;}
-  int get_function_id() {return function_id;}
 
   void set_scan_limit(
     double left_limit, double right_limit,
     double top_limit, double bottom_limit
   );
-
-  void set_pan_angle_goal(double value) {pan_angle_goal = value;}
-  void set_tilt_angle_goal(double value) {tilt_angle_goal = value;}
-  void set_goal_position_x(double value) {goal_position_x = value;}
-  void set_goal_position_y(double value) {goal_position_y = value;}
-  void set_function_id(int value) {function_id = value;}
 
   void move_by_angle(double pan_angle, double tilt_angle);
 
@@ -163,9 +162,6 @@ private:
   double pan_angle;
   double tilt_angle;
 
-  double pan_angle_goal;
-  double tilt_angle_goal;
-
   double pan_center;
   double tilt_center;
 
@@ -221,10 +217,6 @@ private:
 
   std::vector<tachimawari::joint::Joint> joints;
 
-  double goal_position_x;
-  double goal_position_y;
-
-  int function_id;
   clock_t min_time;
 };
 

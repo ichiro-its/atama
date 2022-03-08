@@ -21,6 +21,7 @@ find_package(ninshiki_interfaces REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
+find_package(shisen_interfaces REQUIRED)
 find_package(tachimawari REQUIRED)
 find_package(tachimawari_interfaces REQUIRED)
 
@@ -42,6 +43,7 @@ ament_target_dependencies(${PROJECT_NAME}
   OpenCV
   rclcpp
   rclcpp_action
+  shisen_interfaces
   tachimawari
   tachimawari_interfaces)
 
@@ -75,6 +77,7 @@ ament_export_dependencies(
   OpenCV
   rclcpp
   rclcpp_action
+  shisen_interfaces
   tachimawari
   tachimawari_interfaces)
 ament_export_include_directories("include")

@@ -53,9 +53,15 @@ Head::Head()
 
   no_object_count = 0;
   object_count = 0;
+  object_name = "ball";
 
   joints = {};
   min_time = -1;
+
+  camera_width = -1;
+  camera_height = -1;
+  view_v_angle = -1;
+  view_h_angle = -1;
 }
 
 bool Head::init_scanning()
@@ -510,16 +516,13 @@ void Head::track_object(std::string object_name)
   }
 
   // looking at the center of the object
-  // We pick an object with the biggest confidence
+  // Pick an object with the biggest confidence
   double confidence = 0.0;
   double object_center_x, object_center_y;
-  int camera_width, camera_height;
   if (!filtered_result.empty()) {
     for (const auto & item : detection_result) {
       if (item.score > confidence) {
         confidence = item.score;
-        camera_width = item.img_width;
-        camera_height = item.img_height;
 
         object_center_x = (item.left * camera_width +
           item.right * camera_width) / 2;
@@ -531,17 +534,6 @@ void Head::track_object(std::string object_name)
     return;
   }
   keisan::Point2 pos(object_center_x, object_center_y);
-
-  float diagonal = pow(camera_width * camera_width + camera_height * camera_height, 0.5);
-
-  int field_of_view = 78;
-  float depth = (diagonal / 2) /
-    keisan::make_degree(keisan::make_degree(field_of_view).radian() / 2).tan();
-
-  float view_h_angle = keisan::make_degree(
-    2 * keisan::signed_arctan(static_cast<float>(camera_width / 2), depth).degree()).degree();
-  float view_v_angle = keisan::make_degree(
-    2 * keisan::signed_arctan(static_cast<float>(camera_height / 2), depth).degree()).degree();
 
   // There is no object with the label we want
   if (filtered_result.empty()) {

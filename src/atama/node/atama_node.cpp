@@ -74,7 +74,7 @@ rclcpp_action::GoalResponse AtamaNode::handle_goal(
   bool is_function_exist = false;
 
   if (sender_node) {
-    head->set_function_id(goal->function_id);
+    head->function_id = goal->function_id;
 
     switch (goal->function_id) {
       case atama::head::Head::SCAN_CUSTOM:
@@ -96,15 +96,15 @@ rclcpp_action::GoalResponse AtamaNode::handle_goal(
         }
       case atama::head::Head::MOVE_BY_ANGLE:
         {
-          head->set_pan_angle_goal(goal->move_by_angle_param.pan_angle);
-          head->set_tilt_angle_goal(goal->move_by_angle_param.tilt_angle);
+          head->pan_angle_goal = goal->move_by_angle_param.pan_angle;
+          head->tilt_angle_goal = goal->move_by_angle_param.tilt_angle;
           is_function_exist = true;
           break;
         }
       case atama::head::Head::LOOK_TO_POSITION:
         {
-          head->set_goal_position_x(goal->look_to_param.goal_position_x);
-          head->set_goal_position_y(goal->look_to_param.goal_position_y);
+          head->goal_position_x = goal->look_to_param.goal_position_x;
+          head->goal_position_y = goal->look_to_param.goal_position_y;
           is_function_exist = true;
           break;
         }

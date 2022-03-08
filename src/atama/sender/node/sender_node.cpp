@@ -87,8 +87,8 @@ void SenderNode::process(int function_id)
         break;
       case Head::MOVE_BY_ANGLE:
         head->move_by_angle(
-          head->get_pan_angle_goal(),
-          head->get_tilt_angle_goal());
+          head->pan_angle_goal,
+          head->tilt_angle_goal);
         break;
         // TODO(nathan): implement look_to_position() after
         // robot_position_x, robot_position_y, yaw are obtained
@@ -126,8 +126,8 @@ bool SenderNode::check_track()
 
 bool SenderNode::check_move_by_angle()
 {
-  if (head->get_pan_angle() == head->get_pan_angle_goal() &&
-    head->get_tilt_angle() == head->get_tilt_angle_goal())
+  if (head->get_pan_angle() == head->pan_angle_goal &&
+    head->get_tilt_angle() == head->tilt_angle_goal)
   {
     return true;
   }
@@ -137,7 +137,7 @@ bool SenderNode::check_process_is_finished()
 {
   using atama::head::Head;
 
-  switch (head->get_function_id()) {
+  switch (head->function_id) {
     case Head::SCAN_UP:
     case Head::SCAN_DOWN:
     case Head::SCAN_VERTICAL:
