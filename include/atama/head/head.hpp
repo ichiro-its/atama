@@ -21,9 +21,7 @@
 #ifndef ATAMA__HEAD__HEAD_HPP_
 #define ATAMA__HEAD__HEAD_HPP_
 
-#include <math.h>
-#include <time.h>
-
+#include <chrono>
 #include <memory>
 #include <string>
 #include <vector>
@@ -35,6 +33,7 @@
 
 namespace atama::head
 {
+using tachimawari::joint::Joint;
 
 class Head
 {
@@ -140,15 +139,15 @@ public:
     double robot_position_x, double robot_position_y,
     float yaw);
 
-  void load_data(std::string file_name);
+  void load_data(const std::string & file_name);
 
-  void track_object(std::string object_name);
+  void track_object(const std::string & object_name);
 
   // REQUIRED
   void set_pan_tilt_angle(double pan, double tilt);
 
-  void set_joints(std::vector<tachimawari::joint::Joint> joints) {joints = joints;}
-  std::vector<tachimawari::joint::Joint> get_joints() {return joints;}
+  void set_joints(const std::vector<Joint> & joints) {this->joints = joints;}
+  const std::vector<Joint> & get_joints() {return joints;}
   bool is_joint_empty() {return joints.empty();}
 
 private:
@@ -215,9 +214,10 @@ private:
   static const int no_object_max_count = 1;
   static const int object_max_count = 8;
 
-  std::vector<tachimawari::joint::Joint> joints;
+  std::vector<Joint> joints;
 
-  clock_t min_time;
+  std::chrono::time_point<std::chrono::system_clock> min_time;
+  bool initiate_min_time;
 };
 
 }  // namespace atama::head

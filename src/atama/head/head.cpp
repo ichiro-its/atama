@@ -56,7 +56,7 @@ Head::Head()
   object_name = "ball";
 
   joints = {};
-  min_time = -1;
+  initiate_min_time = true;
 
   camera_width = -1;
   camera_height = -1;
@@ -414,7 +414,7 @@ void Head::set_pan_tilt_angle(double pan, double tilt)
   current_tilt_angle = tilt;
 }
 
-void Head::load_data(std::string file_name)
+void Head::load_data(const std::string & file_name)
 {
   try {
     std::ifstream file(file_name + "/head/" + "head.json");
@@ -494,7 +494,7 @@ void Head::load_data(std::string file_name)
   }
 }
 
-void Head::track_object(std::string object_name)
+void Head::track_object(const std::string & object_name)
 {
   if (!check_time_belief()) {
     return;
@@ -564,10 +564,12 @@ void Head::track_object(std::string object_name)
 
 bool Head::check_time_belief()
 {
-  if (min_time == -1 || clock() > min_time) {
-    min_time = clock() + 500 * CLOCKS_PER_SEC / 1000;
+  if (initiate_min_time || std::chrono::system_clock::now() > min_time) {
+    initiate_min_time = false;
+    min_time = std::chrono::system_clock::now() + std::chrono::milliseconds(500);
     return true;
   }
+
   return false;
 }
 
