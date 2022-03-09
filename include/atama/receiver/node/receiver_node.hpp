@@ -50,8 +50,6 @@ public:
 private:
   rclcpp::Node::SharedPtr node;
 
-  std::string get_node_prefix() const;
-
   std::shared_ptr<atama::head::Head> head;
 
   rclcpp::Client<GetJoints>::SharedPtr get_joints_client;
@@ -59,6 +57,10 @@ private:
   rclcpp::Subscription<DetectedObjects>::SharedPtr get_detection_result_subsciber;
   rclcpp::Subscription<CameraConfig>::SharedPtr get_camera_config_subsciber;
   // TODO(nathan): minus subscriber for aruku to get position robot
+
+  std::string node_prefix;
+
+  const std::string & get_node_prefix() const {return node_prefix;}
 };
 
 }  // namespace atama::receiver

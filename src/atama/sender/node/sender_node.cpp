@@ -36,6 +36,8 @@ namespace atama::sender
 SenderNode::SenderNode(rclcpp::Node::SharedPtr node, std::shared_ptr<atama::head::Head> head)
 : node(node), head(head)
 {
+  node_prefix = "sender";
+
   set_joints_publisher = node->create_publisher<tachimawari_interfaces::msg::SetJoints>(
     "/joint/set_joints", 10);
   set_head_publisher = node->create_publisher<atama_interfaces::msg::Head>(
@@ -90,11 +92,10 @@ void SenderNode::process(int function_id)
           head->pan_angle_goal,
           head->tilt_angle_goal);
         break;
-        // TODO(nathan): implement look_to_position() after
-        // robot_position_x, robot_position_y, yaw are obtained
-        // case Head::LOOK_TO_POSITION:
-        //   head->look_to_position();
-        //   break;
+      // TODO(nathan): implement look_to_position() after
+      // robot_position_x, robot_position_y, yaw are obtained
+      case Head::LOOK_TO_POSITION:
+        break;
     }
   }
 
@@ -102,18 +103,7 @@ void SenderNode::process(int function_id)
   publish_head_data();
 }
 
-bool SenderNode::check_scan()
-{
-  std::set<std::string> result_name;
-  for (const auto & name : head->detection_result) {
-    result_name.insert(name.label);
-  }
-
-  // Object Found
-  return result_name.find(head->object_name) != result_name.end();
-}
-
-bool SenderNode::check_track()
+bool SenderNode::is_detection_result_empty()
 {
   std::set<std::string> result_name;
   for (const auto & name : head->detection_result) {
@@ -126,11 +116,8 @@ bool SenderNode::check_track()
 
 bool SenderNode::check_move_by_angle()
 {
-  if (head->get_pan_angle() == head->pan_angle_goal &&
-    head->get_tilt_angle() == head->tilt_angle_goal)
-  {
-    return true;
-  }
+  return head->get_pan_angle() == head->pan_angle_goal &&
+         head->get_tilt_angle() == head->tilt_angle_goal;
 }
 
 bool SenderNode::check_process_is_finished()
@@ -143,22 +130,13 @@ bool SenderNode::check_process_is_finished()
     case Head::SCAN_VERTICAL:
     case Head::SCAN_HORIZONTAL:
     case Head::SCAN_MARATHON:
-    case Head::SCAN_CUSTOM: return check_scan(); break;
-    case Head::TRACK_OBJECT: return check_track(); break;
+    case Head::SCAN_CUSTOM: return !is_detection_result_empty(); break;
+    case Head::TRACK_OBJECT: return is_detection_result_empty(); break;
     case Head::MOVE_BY_ANGLE: return check_move_by_angle(); break;
-      // TODO(nathan): implement look_to_position() after
-      // robot_position_x, robot_position_y, yaw are obtained
-      // case Head::LOOK_TO_POSITION:
-      //   {
-      //     head->look_to_position();
-      //     break;
-      //   }
+    // TODO(nathan): implement look_to_position() after
+    // robot_position_x, robot_position_y, yaw are obtained
+    case Head::LOOK_TO_POSITION: break;
   }
-}
-
-std::string SenderNode::get_node_prefix() const
-{
-  return "sender";
 }
 
 }  // namespace atama::sender

@@ -38,7 +38,7 @@ using tachimawari::joint::Joint;
 class Head
 {
 public:
-  enum
+  enum FunctionId : int
   {
     SCAN_UP                = 0,
     SCAN_DOWN              = 1,
@@ -57,7 +57,7 @@ public:
   double tilt_angle_goal;
   double goal_position_x;
   double goal_position_y;
-  int function_id;
+  FunctionId function_id;
 
   int camera_width;
   int camera_height;
@@ -112,7 +112,7 @@ public:
   void scan_horizontal() {set_scan_limit(70.0, -70.0, -30.0, -30.0); scan_custom(SCAN_HORIZONTAL);}
   void scan_vertical() {set_scan_limit(0.0, 0.0, 0.0, -70.0); scan_custom(SCAN_VERTICAL);}
   void scan_marathon() {set_scan_limit(70.0, -70.0, 0.0, -70.0); scan_custom(SCAN_MARATHON);}
-  void scan_custom(int scan_type = SCAN_CUSTOM);
+  void scan_custom(FunctionId scan_type = SCAN_CUSTOM);
   void scan_one_direction();
   void scan_two_direction();
 
@@ -147,7 +147,7 @@ public:
   void set_pan_tilt_angle(double pan, double tilt);
 
   void set_joints(const std::vector<Joint> & joints) {this->joints = joints;}
-  const std::vector<Joint> & get_joints() {return joints;}
+  const std::vector<Joint> & get_joints() const {return joints;}
   bool is_joint_empty() {return joints.empty();}
 
 private:

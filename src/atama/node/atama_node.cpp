@@ -61,10 +61,8 @@ AtamaNode::AtamaNode(rclcpp::Node::SharedPtr node)
 void AtamaNode::set_receiver_and_sender_node(std::shared_ptr<atama::head::Head> head)
 {
   this->head = head;
-  receiver_node = std::make_shared<atama::receiver::ReceiverNode>(
-    node, head);
-  sender_node = std::make_shared<atama::sender::SenderNode>(
-    node, head);
+  receiver_node = std::make_shared<atama::receiver::ReceiverNode>(node, head);
+  sender_node = std::make_shared<atama::sender::SenderNode>(node, head);
 }
 
 rclcpp_action::GoalResponse AtamaNode::handle_goal(
@@ -74,7 +72,7 @@ rclcpp_action::GoalResponse AtamaNode::handle_goal(
   bool is_function_exist = false;
 
   if (sender_node) {
-    head->function_id = goal->function_id;
+    head->function_id = atama::head::Head::FunctionId(goal->function_id);
 
     switch (goal->function_id) {
       case atama::head::Head::SCAN_CUSTOM:

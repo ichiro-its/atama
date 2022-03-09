@@ -338,7 +338,7 @@ void Head::scan_process()
   }
 }
 
-void Head::scan_custom(int scan_type)
+void Head::scan_custom(FunctionId scan_type)
 {
   if (!check_time_belief()) {
     return;
@@ -400,10 +400,8 @@ void Head::look_to_position(
   float dx = goal_position_x - robot_position_x;
   float dy = goal_position_y - robot_position_y;
 
-  float pan = yaw -
-    keisan::make_degree(keisan::signed_arctan(dy, dx).degree()).normalize().degree();
-  float tilt = calculate_tilt_from_pan_distance(
-    keisan::make_degree(keisan::signed_arctan(dy, dx).degree()).degree());
+  float pan = yaw - keisan::signed_arctan(dy, dx).normalize().degree();
+  float tilt = calculate_tilt_from_pan_distance(keisan::signed_arctan(dy, dx).degree());
 
   move_by_angle(pan - pan_center, tilt);
 }
@@ -540,14 +538,14 @@ void Head::track_object(const std::string & object_name)
     object_count = 0;
     if (no_object_count < no_object_max_count) {
       tracking();
-      no_object_count++;
+      ++no_object_count;
     } else {
       initialize();
     }
   } else {
     no_object_count = 0;
     if (object_count < object_max_count) {
-      object_count++;
+      ++object_count;
     } else {
       keisan::Point2 center = keisan::Point2(camera_width, camera_height) / 2;
       keisan::Point2 offset = pos - center;
