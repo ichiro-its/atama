@@ -36,8 +36,6 @@ namespace atama::sender
 SenderNode::SenderNode(rclcpp::Node::SharedPtr node, std::shared_ptr<atama::head::Head> head)
 : node(node), head(head)
 {
-  node_prefix = "sender";
-
   set_joints_publisher = node->create_publisher<tachimawari_interfaces::msg::SetJoints>(
     "/joint/set_joints", 10);
   set_head_publisher = node->create_publisher<atama_interfaces::msg::Head>(
@@ -137,6 +135,11 @@ bool SenderNode::check_process_is_finished()
     // robot_position_x, robot_position_y, yaw are obtained
     case Head::LOOK_TO_POSITION: break;
   }
+}
+
+std::string SenderNode::get_node_prefix()
+{
+  return "sender";
 }
 
 }  // namespace atama::sender

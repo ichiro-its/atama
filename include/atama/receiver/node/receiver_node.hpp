@@ -35,11 +35,6 @@
 namespace atama::receiver
 {
 
-using kansei_interfaces::msg::Orientation;
-using ninshiki_interfaces::msg::DetectedObjects;
-using tachimawari_interfaces::srv::GetJoints;
-using shisen_interfaces::msg::CameraConfig;
-
 class ReceiverNode
 {
 public:
@@ -48,6 +43,11 @@ public:
   bool get_joints_data();
 
 private:
+  using Orientation = kansei_interfaces::msg::Orientation;
+  using DetectedObjects = ninshiki_interfaces::msg::DetectedObjects;
+  using GetJoints = tachimawari_interfaces::srv::GetJoints;
+  using CameraConfig = shisen_interfaces::msg::CameraConfig;
+
   rclcpp::Node::SharedPtr node;
 
   std::shared_ptr<atama::head::Head> head;
@@ -58,9 +58,7 @@ private:
   rclcpp::Subscription<CameraConfig>::SharedPtr get_camera_config_subsciber;
   // TODO(nathan): minus subscriber for aruku to get position robot
 
-  std::string node_prefix;
-
-  const std::string & get_node_prefix() const {return node_prefix;}
+  static std::string get_node_prefix();
 };
 
 }  // namespace atama::receiver

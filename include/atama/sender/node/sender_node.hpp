@@ -32,20 +32,6 @@
 namespace atama::sender
 {
 
-struct FunctionParam
-{
-  double left_limit;
-  double right_limit;
-  double top_limit;
-  double bottom_limit;
-  int scan_type;
-  std::string object_name;
-  double pan_angle;
-  double tilt_angle;
-  double goal_position_x;
-  double goal_position_y;
-};
-
 class SenderNode
 {
 public:
@@ -66,12 +52,10 @@ private:
   rclcpp::Publisher<tachimawari_interfaces::msg::SetJoints>::SharedPtr set_joints_publisher;
   rclcpp::Publisher<atama_interfaces::msg::Head>::SharedPtr set_head_publisher;
 
-  std::string node_prefix;
-
   bool is_detection_result_empty();
   bool check_move_by_angle();
 
-  const std::string & get_node_prefix() const {return node_prefix;}
+  static std::string get_node_prefix();
 };
 
 }  // namespace atama::sender

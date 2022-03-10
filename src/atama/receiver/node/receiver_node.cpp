@@ -40,8 +40,6 @@ ReceiverNode::ReceiverNode(rclcpp::Node::SharedPtr node, std::shared_ptr<atama::
 {
   using ninshiki_interfaces::msg::DetectedObject;
 
-  node_prefix = "receiver";
-
   get_joints_client = node->create_client<GetJoints>("/joint/get_joints");
 
   get_orientation_subsciber = node->create_subscription<Orientation>(
@@ -99,7 +97,9 @@ bool ReceiverNode::get_joints_data()
     std::set<uint8_t> joints_id;
 
     for (const std::string & id : {"neck_yaw", "neck_pitch"}) {
-      joints_id.insert(JointId::by_name.find(id)->second);
+      if (JointId::by_name.find(id) != JointId::by_name.end()) {
+        joints_id.insert(JointId::by_name.find(id)->second);
+      }
     }
 
     for (const auto & joint : result.get()->joints) {
@@ -115,6 +115,11 @@ bool ReceiverNode::get_joints_data()
     // Failed to call service
     return false;
   }
+}
+
+std::string ReceiverNode::get_node_prefix()
+{
+  return "receiver";
 }
 
 }  // namespace atama::receiver
