@@ -37,9 +37,9 @@ SenderNode::SenderNode(rclcpp::Node::SharedPtr node, std::shared_ptr<atama::head
 : node(node), head(head)
 {
   set_joints_publisher = node->create_publisher<tachimawari_interfaces::msg::SetJoints>(
-    "/joint/set_joints", 10);
+    get_node_prefix() + "/set_joints", 10);
   set_head_publisher = node->create_publisher<atama_interfaces::msg::Head>(
-    "/head_data/set_head_data", 10);
+    get_node_prefix() + "/set_head_data", 10);
 }
 
 void SenderNode::publish_joints()

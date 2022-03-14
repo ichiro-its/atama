@@ -117,9 +117,4 @@ bool ReceiverNode::get_joints_data()
   }
 }
 
-std::string ReceiverNode::get_node_prefix()
-{
-  return "receiver";
-}
-
 }  // namespace atama::receiver

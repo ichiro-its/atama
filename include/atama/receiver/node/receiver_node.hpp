@@ -57,8 +57,6 @@ private:
   rclcpp::Subscription<DetectedObjects>::SharedPtr get_detection_result_subsciber;
   rclcpp::Subscription<CameraConfig>::SharedPtr get_camera_config_subsciber;
   // TODO(nathan): minus subscriber for aruku to get position robot
-
-  static std::string get_node_prefix();
 };
 
 }  // namespace atama::receiver
