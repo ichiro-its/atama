@@ -24,7 +24,7 @@
 #include <vector>
 
 #include "atama/receiver/node/receiver_node.hpp"
-#include "kansei_interfaces/msg/orientation.hpp"
+#include "kansei_interfaces/msg/axis.hpp"
 #include "ninshiki_interfaces/msg/detected_object.hpp"
 #include "ninshiki_interfaces/msg/detected_objects.hpp"
 #include "rclcpp/rclcpp.hpp"
@@ -35,16 +35,18 @@ using namespace std::chrono_literals;
 namespace atama::receiver
 {
 
-ReceiverNode::ReceiverNode(rclcpp::Node::SharedPtr node, std::shared_ptr<atama::head::Head> head)
-: node(node), head(head)
+ReceiverNode::ReceiverNode(
+  rclcpp::Node::SharedPtr node,
+  std::shared_ptr<atama::head::Head> head, bool & done_get_joints)
+: node(node), head(head), is_done_get_joints_data(&done_get_joints)
 {
   using ninshiki_interfaces::msg::DetectedObject;
 
   get_joints_client = node->create_client<GetJoints>("/joint/get_joints");
 
-  get_orientation_subsciber = node->create_subscription<Orientation>(
+  get_orientation_subsciber = node->create_subscription<Axis>(
     "measurement/orientation", 10,
-    [this](const Orientation::SharedPtr message) {
+    [this](const Axis::SharedPtr message) {
       // this->head->set_yaw(message->orientation[2]);
     }
   );
@@ -70,6 +72,14 @@ ReceiverNode::ReceiverNode(rclcpp::Node::SharedPtr node, std::shared_ptr<atama::
       this->head->camera_height = message->height;
       this->head->view_v_angle = message->v_angle;
       this->head->view_h_angle = message->h_angle;
+    }
+  );
+
+  node_timer = node->create_wall_timer(
+    8ms,
+    [this]() {
+      // Update the variable when joints data is gotten
+      *is_done_get_joints_data = get_joints_data();
     }
   );
 }

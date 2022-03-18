@@ -25,7 +25,7 @@
 #include <string>
 
 #include "atama/head/head.hpp"
-#include "kansei_interfaces/msg/orientation.hpp"
+#include "kansei_interfaces/msg/axis.hpp"
 #include "ninshiki_interfaces/msg/detected_object.hpp"
 #include "ninshiki_interfaces/msg/detected_objects.hpp"
 #include "rclcpp/rclcpp.hpp"
@@ -38,25 +38,30 @@ namespace atama::receiver
 class ReceiverNode
 {
 public:
-  ReceiverNode(rclcpp::Node::SharedPtr node, std::shared_ptr<atama::head::Head> head);
+  ReceiverNode(
+    rclcpp::Node::SharedPtr node,
+    std::shared_ptr<atama::head::Head> head, bool & done_get_joints);
 
   bool get_joints_data();
 
 private:
-  using Orientation = kansei_interfaces::msg::Orientation;
+  using Axis = kansei_interfaces::msg::Axis;
   using DetectedObjects = ninshiki_interfaces::msg::DetectedObjects;
   using GetJoints = tachimawari_interfaces::srv::GetJoints;
   using CameraConfig = shisen_interfaces::msg::CameraConfig;
 
   rclcpp::Node::SharedPtr node;
+  rclcpp::TimerBase::SharedPtr node_timer;
 
   std::shared_ptr<atama::head::Head> head;
 
   rclcpp::Client<GetJoints>::SharedPtr get_joints_client;
-  rclcpp::Subscription<Orientation>::SharedPtr get_orientation_subsciber;
+  rclcpp::Subscription<Axis>::SharedPtr get_orientation_subsciber;
   rclcpp::Subscription<DetectedObjects>::SharedPtr get_detection_result_subsciber;
   rclcpp::Subscription<CameraConfig>::SharedPtr get_camera_config_subsciber;
   // TODO(nathan): minus subscriber for aruku to get position robot
+
+  bool * is_done_get_joints_data;
 };
 
 }  // namespace atama::receiver

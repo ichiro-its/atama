@@ -33,13 +33,92 @@ using namespace std::chrono_literals;
 namespace atama::sender
 {
 
-SenderNode::SenderNode(rclcpp::Node::SharedPtr node, std::shared_ptr<atama::head::Head> head)
-: node(node), head(head)
+SenderNode::SenderNode(
+  rclcpp::Node::SharedPtr node,
+  std::shared_ptr<atama::head::Head> head, bool & done_get_joints)
+: node(node), head(head), is_done_get_joints_data(&done_get_joints)
 {
   set_joints_publisher = node->create_publisher<tachimawari_interfaces::msg::SetJoints>(
     get_node_prefix() + "/set_joints", 10);
   set_head_publisher = node->create_publisher<atama_interfaces::msg::Head>(
     get_node_prefix() + "/set_head_data", 10);
+
+  {
+    using atama_interfaces::srv::RunHead;
+    run_head_service = node->create_service<RunHead>(
+      get_node_prefix() + "/run_head",
+      [this](std::shared_ptr<RunHead::Request> request,
+      std::shared_ptr<RunHead::Response> response) {
+        rclcpp::Rate rcl_rate(8ms);
+
+        // Assume the function is not exist
+        bool is_function_exist = false;
+
+        // Check existence of the function
+        switch (request->function_id) {
+          case atama::head::Head::SCAN_CUSTOM:
+            {
+              this->head->set_scan_limit(
+                request->scan_param.left_limit,
+                request->scan_param.right_limit,
+                request->scan_param.top_limit,
+                request->scan_param.bottom_limit
+              );
+              is_function_exist = true;
+              break;
+            }
+          case atama::head::Head::TRACK_OBJECT:
+            {
+              this->head->object_name = request->track_param.object_name;
+              is_function_exist = true;
+              break;
+            }
+          case atama::head::Head::MOVE_BY_ANGLE:
+            {
+              this->head->pan_angle_goal = request->move_by_angle_param.pan_angle;
+              this->head->tilt_angle_goal = request->move_by_angle_param.tilt_angle;
+              is_function_exist = true;
+              break;
+            }
+          case atama::head::Head::LOOK_TO_POSITION:
+            {
+              this->head->goal_position_x = request->look_to_param.goal_position_x;
+              this->head->goal_position_y = request->look_to_param.goal_position_y;
+              is_function_exist = true;
+              break;
+            }
+          case atama::head::Head::SCAN_UP:
+          case atama::head::Head::SCAN_DOWN:
+          case atama::head::Head::SCAN_VERTICAL:
+          case atama::head::Head::SCAN_HORIZONTAL:
+          case atama::head::Head::SCAN_MARATHON:
+            {
+              is_function_exist = true;
+              break;
+            }
+        }
+
+        // Ensure data joints is already gotten by receiver_node
+        if (*is_done_get_joints_data && is_function_exist) {
+          while (rclcpp::ok()) {
+            rcl_rate.sleep();
+
+            if (check_process_is_finished()) {
+              break;
+            } else {
+              process(request->function_id);
+            }
+          }
+        }
+
+        if (rclcpp::ok()) {
+          response->done_processing = true;
+        } else {
+          response->done_processing = false;
+        }
+      }
+    );
+  }
 }
 
 void SenderNode::publish_joints()
@@ -72,8 +151,6 @@ void SenderNode::publish_head_data()
 
 void SenderNode::process(int function_id)
 {
-  using atama::head::Head;
-
   if (!head->is_joint_empty()) {
     switch (function_id) {
       case Head::SCAN_UP: head->scan_up(); break;
@@ -120,8 +197,6 @@ bool SenderNode::check_move_by_angle()
 
 bool SenderNode::check_process_is_finished()
 {
-  using atama::head::Head;
-
   switch (head->function_id) {
     case Head::SCAN_UP:
     case Head::SCAN_DOWN:
