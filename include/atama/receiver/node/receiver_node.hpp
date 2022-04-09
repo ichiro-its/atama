@@ -33,7 +33,9 @@
 #include "tachimawari_interfaces/msg/current_joints.hpp"
 #include "tachimawari_interfaces/srv/get_joints.hpp"
 
-namespace atama::receiver
+namespace atama
+{
+namespace receiver
 {
 
 class ReceiverNode
@@ -52,7 +54,7 @@ private:
   rclcpp::Node::SharedPtr node;
   rclcpp::TimerBase::SharedPtr node_timer;
 
-  std::shared_ptr<atama::head::Head> head;
+  std::shared_ptr<head::Head> head;
 
   rclcpp::Subscription<CurrentJoints>::SharedPtr current_joints_subscriber;
   rclcpp::Subscription<Axis>::SharedPtr get_orientation_subsciber;
@@ -61,6 +63,7 @@ private:
   // TODO(nathan): minus subscriber for aruku to get position robot
 };
 
-}  // namespace atama::receiver
+}  // namespace receiver
+}  // namespace atama
 
 #endif  // ATAMA__RECEIVER__NODE__RECEIVER_NODE_HPP_

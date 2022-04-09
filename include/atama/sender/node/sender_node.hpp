@@ -30,7 +30,9 @@
 #include "rclcpp/rclcpp.hpp"
 #include "tachimawari_interfaces/msg/set_joints.hpp"
 
-namespace atama::sender
+namespace atama
+{
+namespace sender
 {
 
 class SenderNode
@@ -48,11 +50,11 @@ public:
   bool check_process_is_finished();
 
 private:
-  using Head = atama::head::Head;
+  using Head = head::Head;
 
   rclcpp::Node::SharedPtr node;
 
-  std::shared_ptr<atama::head::Head> head;
+  std::shared_ptr<Head> head;
 
   rclcpp::Publisher<tachimawari_interfaces::msg::SetJoints>::SharedPtr set_joints_publisher;
   rclcpp::Publisher<atama_interfaces::msg::Head>::SharedPtr set_head_publisher;
@@ -65,6 +67,7 @@ private:
   static std::string get_node_prefix();
 };
 
-}  // namespace atama::sender
+}  // namespace sender
+}  // namespace atama
 
 #endif  // ATAMA__SENDER__NODE__SENDER_NODE_HPP_

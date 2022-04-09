@@ -34,7 +34,8 @@ namespace atama
 class AtamaNode
 {
 public:
-  explicit AtamaNode(const rclcpp::Node::SharedPtr & node,
+  explicit AtamaNode(
+    const rclcpp::Node::SharedPtr & node,
     const std::shared_ptr<head::Head> & head);
 
 private:
