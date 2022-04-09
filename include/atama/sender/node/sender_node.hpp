@@ -37,8 +37,8 @@ class SenderNode
 {
 public:
   SenderNode(
-    rclcpp::Node::SharedPtr node,
-    std::shared_ptr<atama::head::Head> head, bool & done_get_joints);
+    const rclcpp::Node::SharedPtr & node = nullptr,
+    const std::shared_ptr<atama::head::Head> & head = nullptr);
 
   void publish_joints();
   // change function name
@@ -58,8 +58,6 @@ private:
   rclcpp::Publisher<atama_interfaces::msg::Head>::SharedPtr set_head_publisher;
 
   rclcpp::Service<atama_interfaces::srv::RunHead>::SharedPtr run_head_service;
-
-  bool * is_done_get_joints_data;
 
   bool is_detection_result_empty();
   bool check_move_by_angle();

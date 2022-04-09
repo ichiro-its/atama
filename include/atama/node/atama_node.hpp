@@ -34,18 +34,15 @@ namespace atama
 class AtamaNode
 {
 public:
-  explicit AtamaNode(rclcpp::Node::SharedPtr node);
-
-  void set_receiver_and_sender_node(std::shared_ptr<atama::head::Head> head);
-
-  bool done_get_joints_data;
+  explicit AtamaNode(const rclcpp::Node::SharedPtr & node,
+    const std::shared_ptr<head::Head> & head);
 
 private:
   rclcpp::Node::SharedPtr node;
   rclcpp::TimerBase::SharedPtr node_timer;
 
-  std::shared_ptr<atama::receiver::ReceiverNode> receiver_node;
-  std::shared_ptr<atama::sender::SenderNode> sender_node;
+  receiver::ReceiverNode receiver_node;
+  sender::SenderNode sender_node;
 };
 
 }  // namespace atama

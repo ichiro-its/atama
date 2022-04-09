@@ -31,18 +31,12 @@ using namespace std::placeholders;
 namespace atama
 {
 
-AtamaNode::AtamaNode(rclcpp::Node::SharedPtr node)
-: done_get_joints_data(false), node(node),
-  receiver_node(nullptr), sender_node(nullptr)
+AtamaNode::AtamaNode(const rclcpp::Node::SharedPtr & node,
+  const std::shared_ptr<head::Head> & head)
+: node(node),
+  receiver_node(receiver::ReceiverNode(node, head)),
+  sender_node(sender::SenderNode(node, head))
 {
-}
-
-void AtamaNode::set_receiver_and_sender_node(std::shared_ptr<atama::head::Head> head)
-{
-  receiver_node = std::make_shared<atama::receiver::ReceiverNode>(
-    node, head, done_get_joints_data);
-  sender_node = std::make_shared<atama::sender::SenderNode>(
-    node, head, done_get_joints_data);
 }
 
 }  // namespace atama

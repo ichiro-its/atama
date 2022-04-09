@@ -36,13 +36,11 @@ namespace atama::receiver
 {
 
 ReceiverNode::ReceiverNode(
-  rclcpp::Node::SharedPtr node,
-  std::shared_ptr<atama::head::Head> head, bool & done_get_joints)
-: node(node), head(head), is_done_get_joints_data(&done_get_joints)
+  const rclcpp::Node::SharedPtr & node,
+  const std::shared_ptr<atama::head::Head> & head)
+: node(node), head(head)
 {
   using ninshiki_interfaces::msg::DetectedObject;
-
-  get_joints_client = node->create_client<GetJoints>("/joint/get_joints");
 
   get_orientation_subsciber = node->create_subscription<Axis>(
     "measurement/orientation", 10,
@@ -63,7 +61,7 @@ ReceiverNode::ReceiverNode(
 
       this->head->detection_result = temp_detection_result;
     }
-    );
+  );
 
   get_camera_config_subsciber = node->create_subscription<CameraConfig>(
     "/camera/camera_config", 10,
@@ -75,56 +73,42 @@ ReceiverNode::ReceiverNode(
     }
   );
 
+  current_joints_subscriber = node->create_subscription<CurrentJoints>(
+    "/joint/current_joints", 10,
+    [this](const CurrentJoints::SharedPtr message) {
+      {
+        using tachimawari::joint::Joint;
+        using tachimawari::joint::JointId;
+
+        std::vector<Joint> temp_joints;
+        std::set<uint8_t> joints_id;
+
+        for (const std::string & id : {"neck_yaw", "neck_pitch"}) {
+          if (JointId::by_name.find(id) != JointId::by_name.end()) {
+            joints_id.insert(JointId::by_name.find(id)->second);
+          }
+        }
+
+        for (const auto & joint : message->joints) {
+          // Joint Id found in joints_id set
+          if (joints_id.find(joint.id) != joints_id.end()) {
+            temp_joints.push_back(Joint(joint.id, joint.position));
+          }
+        }
+
+        this->head->set_joints(temp_joints);
+        // *is_done_get_joints_data = true;
+      }
+    }
+  );
+
   node_timer = node->create_wall_timer(
     8ms,
     [this]() {
       // Update the variable when joints data is gotten
-      *is_done_get_joints_data = get_joints_data();
+      // *is_done_get_joints_data = get_joints_data();
     }
   );
-}
-
-bool ReceiverNode::get_joints_data()
-{
-  using tachimawari::joint::Joint;
-  using tachimawari::joint::JointId;
-
-  while (!get_joints_client->wait_for_service(1s)) {
-    if (rclcpp::ok()) {
-      // service not available, waiting again...
-    } else {
-      // Interrupted while waiting for the service. Exiting.
-      return false;
-    }
-  }
-  auto result = get_joints_client->async_send_request(
-    std::make_shared<tachimawari_interfaces::srv::GetJoints::Request>());
-
-  if (rclcpp::spin_until_future_complete(node, result) ==
-    rclcpp::FutureReturnCode::SUCCESS)
-  {
-    std::vector<Joint> temp_joints;
-    std::set<uint8_t> joints_id;
-
-    for (const std::string & id : {"neck_yaw", "neck_pitch"}) {
-      if (JointId::by_name.find(id) != JointId::by_name.end()) {
-        joints_id.insert(JointId::by_name.find(id)->second);
-      }
-    }
-
-    for (const auto & joint : result.get()->joints) {
-      // Joint Id found in joints_id set
-      if (joints_id.find(joint.id) != joints_id.end()) {
-        temp_joints.push_back(Joint(joint.id, joint.position));
-      }
-    }
-
-    head->set_joints(temp_joints);
-    return true;
-  } else {
-    // Failed to call service
-    return false;
-  }
 }
 
 }  // namespace atama::receiver

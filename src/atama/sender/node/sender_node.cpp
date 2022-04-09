@@ -34,9 +34,9 @@ namespace atama::sender
 {
 
 SenderNode::SenderNode(
-  rclcpp::Node::SharedPtr node,
-  std::shared_ptr<atama::head::Head> head, bool & done_get_joints)
-: node(node), head(head), is_done_get_joints_data(&done_get_joints)
+  const rclcpp::Node::SharedPtr & node,
+  const std::shared_ptr<atama::head::Head> & head)
+: node(node), head(head)
 {
   set_joints_publisher = node->create_publisher<tachimawari_interfaces::msg::SetJoints>(
     get_node_prefix() + "/set_joints", 10);
@@ -99,7 +99,7 @@ SenderNode::SenderNode(
         }
 
         // Ensure data joints is already gotten by receiver_node
-        if (*is_done_get_joints_data && is_function_exist) {
+        if (!this->head->joints.empty() && is_function_exist) {
           while (rclcpp::ok()) {
             rcl_rate.sleep();
 
