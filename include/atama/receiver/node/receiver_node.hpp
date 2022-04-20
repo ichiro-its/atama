@@ -31,7 +31,6 @@
 #include "rclcpp/rclcpp.hpp"
 #include "shisen_interfaces/msg/camera_config.hpp"
 #include "tachimawari_interfaces/msg/current_joints.hpp"
-#include "tachimawari_interfaces/srv/get_joints.hpp"
 
 namespace atama
 {

@@ -28,7 +28,6 @@
 #include "ninshiki_interfaces/msg/detected_object.hpp"
 #include "ninshiki_interfaces/msg/detected_objects.hpp"
 #include "rclcpp/rclcpp.hpp"
-#include "tachimawari_interfaces/srv/get_joints.hpp"
 
 using namespace std::chrono_literals;
 
