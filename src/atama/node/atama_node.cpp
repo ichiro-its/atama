@@ -36,7 +36,7 @@ AtamaNode::AtamaNode(
   const std::shared_ptr<head::Head> & head)
 : node(node)
 {
-  if (node != NULL) {
+  if (node != nullptr) {
     receiver_node = receiver::ReceiverNode(node, head);
     sender_node = sender::SenderNode(node, head);
   }
