@@ -64,6 +64,8 @@ public:
   float view_v_angle;
   float view_h_angle;
 
+  std::vector<Joint> joints;
+
   int marathon_index;
 
   Head();
@@ -213,8 +215,6 @@ private:
   int object_count;
   static const int no_object_max_count = 1;
   static const int object_max_count = 8;
-
-  std::vector<Joint> joints;
 
   std::chrono::time_point<std::chrono::system_clock> min_time;
   bool initiate_min_time;

@@ -28,13 +28,11 @@ int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
 
-  auto node = std::make_shared<rclcpp::Node>("atama_node");
-  auto atama_node = std::make_shared<atama::AtamaNode>(node);
-
   auto head = std::make_shared<atama::head::Head>();
   head->load_data("");
 
-  atama_node->set_receiver_and_sender_node(head);
+  auto node = std::make_shared<rclcpp::Node>("atama_node");
+  auto atama_node = std::make_shared<atama::AtamaNode>(node, head);
 
   rclcpp::spin(node);
   rclcpp::shutdown();

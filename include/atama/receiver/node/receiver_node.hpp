@@ -25,40 +25,44 @@
 #include <string>
 
 #include "atama/head/head.hpp"
-#include "kansei_interfaces/msg/orientation.hpp"
+#include "kansei_interfaces/msg/axis.hpp"
 #include "ninshiki_interfaces/msg/detected_object.hpp"
 #include "ninshiki_interfaces/msg/detected_objects.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "shisen_interfaces/msg/camera_config.hpp"
-#include "tachimawari_interfaces/srv/get_joints.hpp"
+#include "tachimawari_interfaces/msg/current_joints.hpp"
 
-namespace atama::receiver
+namespace atama
+{
+namespace receiver
 {
 
 class ReceiverNode
 {
 public:
-  ReceiverNode(rclcpp::Node::SharedPtr node, std::shared_ptr<atama::head::Head> head);
-
-  bool get_joints_data();
+  ReceiverNode(
+    const rclcpp::Node::SharedPtr & node = nullptr,
+    const std::shared_ptr<atama::head::Head> & head = nullptr);
 
 private:
-  using Orientation = kansei_interfaces::msg::Orientation;
-  using DetectedObjects = ninshiki_interfaces::msg::DetectedObjects;
-  using GetJoints = tachimawari_interfaces::srv::GetJoints;
+  using Axis = kansei_interfaces::msg::Axis;
   using CameraConfig = shisen_interfaces::msg::CameraConfig;
+  using DetectedObjects = ninshiki_interfaces::msg::DetectedObjects;
+  using CurrentJoints = tachimawari_interfaces::msg::CurrentJoints;
 
   rclcpp::Node::SharedPtr node;
+  rclcpp::TimerBase::SharedPtr node_timer;
 
-  std::shared_ptr<atama::head::Head> head;
+  std::shared_ptr<head::Head> head;
 
-  rclcpp::Client<GetJoints>::SharedPtr get_joints_client;
-  rclcpp::Subscription<Orientation>::SharedPtr get_orientation_subsciber;
+  rclcpp::Subscription<CurrentJoints>::SharedPtr current_joints_subscriber;
+  rclcpp::Subscription<Axis>::SharedPtr get_orientation_subsciber;
   rclcpp::Subscription<DetectedObjects>::SharedPtr get_detection_result_subsciber;
   rclcpp::Subscription<CameraConfig>::SharedPtr get_camera_config_subsciber;
   // TODO(nathan): minus subscriber for aruku to get position robot
 };
 
-}  // namespace atama::receiver
+}  // namespace receiver
+}  // namespace atama
 
 #endif  // ATAMA__RECEIVER__NODE__RECEIVER_NODE_HPP_

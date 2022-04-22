@@ -26,16 +26,21 @@
 
 #include "atama/head/head.hpp"
 #include "atama_interfaces/msg/head.hpp"
+#include "atama_interfaces/srv/run_head.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "tachimawari_interfaces/msg/set_joints.hpp"
 
-namespace atama::sender
+namespace atama
+{
+namespace sender
 {
 
 class SenderNode
 {
 public:
-  SenderNode(rclcpp::Node::SharedPtr node, std::shared_ptr<atama::head::Head> head);
+  SenderNode(
+    const rclcpp::Node::SharedPtr & node = nullptr,
+    const std::shared_ptr<atama::head::Head> & head = nullptr);
 
   void publish_joints();
   // change function name
@@ -45,12 +50,16 @@ public:
   bool check_process_is_finished();
 
 private:
+  using Head = head::Head;
+
   rclcpp::Node::SharedPtr node;
 
-  std::shared_ptr<atama::head::Head> head;
+  std::shared_ptr<Head> head;
 
   rclcpp::Publisher<tachimawari_interfaces::msg::SetJoints>::SharedPtr set_joints_publisher;
   rclcpp::Publisher<atama_interfaces::msg::Head>::SharedPtr set_head_publisher;
+
+  rclcpp::Service<atama_interfaces::srv::RunHead>::SharedPtr run_head_service;
 
   bool is_detection_result_empty();
   bool check_move_by_angle();
@@ -58,6 +67,7 @@ private:
   static std::string get_node_prefix();
 };
 
-}  // namespace atama::sender
+}  // namespace sender
+}  // namespace atama
 
 #endif  // ATAMA__SENDER__NODE__SENDER_NODE_HPP_
