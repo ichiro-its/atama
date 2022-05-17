@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef ATAMA__HEAD__HEAD_HPP_
-#define ATAMA__HEAD__HEAD_HPP_
+#ifndef ATAMA__HEAD__PROCESS__HEAD_HPP_
+#define ATAMA__HEAD__PROCESS__HEAD_HPP_
 
 #include <chrono>
 #include <memory>
@@ -31,7 +31,7 @@
 #include "ninshiki_interfaces/msg/detected_objects.hpp"
 #include "tachimawari/joint/model/joint.hpp"
 
-namespace atama::head
+namespace atama
 {
 using tachimawari::joint::Joint;
 
@@ -148,7 +148,7 @@ public:
   // REQUIRED
   void set_pan_tilt_angle(double pan, double tilt);
 
-  void set_joints(const std::vector<Joint> & joints) {this->joints = joints;}
+  void set_joints(std::vector<Joint> joints_param);
   const std::vector<Joint> & get_joints() const {return joints;}
   bool is_joint_empty() {return joints.empty();}
 
@@ -220,6 +220,6 @@ private:
   bool initiate_min_time;
 };
 
-}  // namespace atama::head
+}  // namespace atama
 
-#endif  // ATAMA__HEAD__HEAD_HPP_
+#endif  // ATAMA__HEAD__PROCESS__HEAD_HPP_

@@ -27,9 +27,9 @@
 #include <string>
 #include <vector>
 
-#include "atama/head/head.hpp"
+#include "atama/head/process/head.hpp"
 
-namespace atama::head
+namespace atama
 {
 
 Head::Head()
@@ -571,4 +571,16 @@ bool Head::check_time_belief()
   return false;
 }
 
-}  // namespace atama::head
+void Head::set_joints(std::vector<Joint> joints_param)
+{
+  joints.clear();
+  for (const auto &joint : joints_param)
+  {
+    joints.push_back(Joint(joint.get_id(), joint.get_position()));
+  }
+
+  pan_angle = joints[0].get_position();
+  tilt_angle = joints[1].get_position();
+}
+
+}  // namespace atama

@@ -18,31 +18,39 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef ATAMA__RECEIVER__NODE__RECEIVER_NODE_HPP_
-#define ATAMA__RECEIVER__NODE__RECEIVER_NODE_HPP_
+#ifndef ATAMA__HEAD__NODE__HEAD_NODE_HPP_
+#define ATAMA__HEAD__NODE__HEAD_NODE_HPP_
 
 #include <memory>
 #include <string>
 
-#include "atama/head/head.hpp"
+#include "atama/head/process/head.hpp"
+#include "atama_interfaces/msg/head.hpp"
+#include "atama_interfaces/srv/run_head.hpp"
 #include "kansei_interfaces/msg/axis.hpp"
 #include "ninshiki_interfaces/msg/detected_object.hpp"
 #include "ninshiki_interfaces/msg/detected_objects.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "shisen_interfaces/msg/camera_config.hpp"
 #include "tachimawari_interfaces/msg/current_joints.hpp"
+#include "tachimawari_interfaces/msg/set_joints.hpp"
 
 namespace atama
 {
-namespace receiver
-{
 
-class ReceiverNode
+class HeadNode
 {
 public:
-  ReceiverNode(
-    const rclcpp::Node::SharedPtr & node = nullptr,
-    const std::shared_ptr<atama::head::Head> & head = nullptr);
+  HeadNode(
+    rclcpp::Node::SharedPtr node = nullptr,
+    std::shared_ptr<Head> head = nullptr);
+
+  void publish_joints();
+  // change function name
+  void publish_head_data();
+
+  void process(int function_id);
+  bool check_process_is_finished();
 
 private:
   using Axis = kansei_interfaces::msg::Axis;
@@ -53,16 +61,24 @@ private:
   rclcpp::Node::SharedPtr node;
   rclcpp::TimerBase::SharedPtr node_timer;
 
-  std::shared_ptr<head::Head> head;
+  std::shared_ptr<Head> head;
 
   rclcpp::Subscription<CurrentJoints>::SharedPtr current_joints_subscriber;
   rclcpp::Subscription<Axis>::SharedPtr get_orientation_subsciber;
   rclcpp::Subscription<DetectedObjects>::SharedPtr get_detection_result_subsciber;
   rclcpp::Subscription<CameraConfig>::SharedPtr get_camera_config_subsciber;
   // TODO(nathan): minus subscriber for aruku to get position robot
+
+  rclcpp::Publisher<tachimawari_interfaces::msg::SetJoints>::SharedPtr set_joints_publisher;
+  rclcpp::Publisher<atama_interfaces::msg::Head>::SharedPtr set_head_publisher;
+  rclcpp::Service<atama_interfaces::srv::RunHead>::SharedPtr run_head_service;
+
+  bool is_detection_result_empty();
+  bool check_move_by_angle();
+
+  static std::string get_node_prefix();
 };
 
-}  // namespace receiver
 }  // namespace atama
 
-#endif  // ATAMA__RECEIVER__NODE__RECEIVER_NODE_HPP_
+#endif  // ATAMA__HEAD__NODE__HEAD_NODE_HPP_

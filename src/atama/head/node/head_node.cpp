@@ -18,31 +18,89 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <bits/stdc++.h>
-
 #include <memory>
 #include <set>
 #include <string>
+#include <vector>
 
-#include "atama/sender/node/sender_node.hpp"
+#include "atama/head/node/head_node.hpp"
+#include "kansei_interfaces/msg/axis.hpp"
+#include "ninshiki_interfaces/msg/detected_object.hpp"
+#include "ninshiki_interfaces/msg/detected_objects.hpp"
 #include "rclcpp/rclcpp.hpp"
-#include "tachimawari_interfaces/msg/set_joints.hpp"
 
 using namespace std::chrono_literals;
 
 namespace atama
 {
-namespace sender
-{
 
-SenderNode::SenderNode(
-  const rclcpp::Node::SharedPtr & node,
-  const std::shared_ptr<Head> & head)
+HeadNode::HeadNode(rclcpp::Node::SharedPtr node, std::shared_ptr<Head> head)
 : node(node), head(head)
 {
+  using ninshiki_interfaces::msg::DetectedObject;
+
   if (node != NULL) {
+    get_orientation_subsciber = node->create_subscription<Axis>(
+      "measurement/orientation", 10,
+      [this](const Axis::SharedPtr message) {
+        // this->head->set_yaw(message->orientation[2]);
+      }
+    );
+
+    get_detection_result_subsciber =
+      node->create_subscription<DetectedObjects>(
+      "ninshiki_py/detection", 10,
+      [this](const DetectedObjects::SharedPtr message) {
+        std::vector<DetectedObject> temp_detection_result;
+
+        for (const auto & detected_object : message->detected_objects) {
+          temp_detection_result.push_back(detected_object);
+        }
+
+        this->head->detection_result = temp_detection_result;
+      }
+      );
+
+    get_camera_config_subsciber = node->create_subscription<CameraConfig>(
+      "/camera/camera_config", 10,
+      [this](const CameraConfig::SharedPtr message) {
+        this->head->camera_width = message->width;
+        this->head->camera_height = message->height;
+        this->head->view_v_angle = message->v_angle;
+        this->head->view_h_angle = message->h_angle;
+      }
+    );
+
+    current_joints_subscriber = node->create_subscription<CurrentJoints>(
+      "/joint/current_joints", 10,
+      [this](const CurrentJoints::SharedPtr message) {
+        {
+          using tachimawari::joint::Joint;
+          using tachimawari::joint::JointId;
+
+          std::vector<Joint> temp_joints;
+          std::set<uint8_t> joints_id;
+
+          for (const std::string & id : {"neck_yaw", "neck_pitch"}) {
+            if (JointId::by_name.find(id) != JointId::by_name.end()) {
+              joints_id.insert(JointId::by_name.find(id)->second);
+            }
+          }
+
+          for (const auto & joint : message->joints) {
+            // Joint Id found in joints_id set
+            if (joints_id.find(joint.id) != joints_id.end()) {
+              temp_joints.push_back(Joint(joint.id, joint.position));
+            }
+          }
+
+          this->head->set_joints(temp_joints);
+        }
+      }
+    );
+
     set_joints_publisher = node->create_publisher<tachimawari_interfaces::msg::SetJoints>(
-      get_node_prefix() + "/set_joints", 10);
+      "joint/set_joints", 10);
     set_head_publisher = node->create_publisher<atama_interfaces::msg::Head>(
       get_node_prefix() + "/set_head_data", 10);
 
@@ -59,7 +117,7 @@ SenderNode::SenderNode(
 
           // Check existence of the function
           switch (request->function_id) {
-            case head::Head::SCAN_CUSTOM:
+            case Head::SCAN_CUSTOM:
               {
                 this->head->set_scan_limit(
                   request->scan_param.left_limit,
@@ -70,31 +128,31 @@ SenderNode::SenderNode(
                 is_function_exist = true;
                 break;
               }
-            case head::Head::TRACK_OBJECT:
+            case Head::TRACK_OBJECT:
               {
                 this->head->object_name = request->track_param.object_name;
                 is_function_exist = true;
                 break;
               }
-            case head::Head::MOVE_BY_ANGLE:
+            case Head::MOVE_BY_ANGLE:
               {
                 this->head->pan_angle_goal = request->move_by_angle_param.pan_angle;
                 this->head->tilt_angle_goal = request->move_by_angle_param.tilt_angle;
                 is_function_exist = true;
                 break;
               }
-            case head::Head::LOOK_TO_POSITION:
+            case Head::LOOK_TO_POSITION:
               {
                 this->head->goal_position_x = request->look_to_param.goal_position_x;
                 this->head->goal_position_y = request->look_to_param.goal_position_y;
                 is_function_exist = true;
                 break;
               }
-            case head::Head::SCAN_UP:
-            case head::Head::SCAN_DOWN:
-            case head::Head::SCAN_VERTICAL:
-            case head::Head::SCAN_HORIZONTAL:
-            case head::Head::SCAN_MARATHON:
+            case Head::SCAN_UP:
+            case Head::SCAN_DOWN:
+            case Head::SCAN_VERTICAL:
+            case Head::SCAN_HORIZONTAL:
+            case Head::SCAN_MARATHON:
               {
                 is_function_exist = true;
                 break;
@@ -122,10 +180,18 @@ SenderNode::SenderNode(
         }
       );
     }
+
+    node_timer = node->create_wall_timer(
+      8ms,
+      [this]() {
+        // Update the variable when joints data is gotten
+        // *is_done_get_joints_data = get_joints_data();
+      }
+    );
   }
 }
 
-void SenderNode::publish_joints()
+void HeadNode::publish_joints()
 {
   auto joints_msg = tachimawari_interfaces::msg::SetJoints();
 
@@ -141,7 +207,7 @@ void SenderNode::publish_joints()
   set_joints_publisher->publish(joints_msg);
 }
 
-void SenderNode::publish_head_data()
+void HeadNode::publish_head_data()
 {
   auto pan_tilt_msg = atama_interfaces::msg::Head();
 
@@ -153,7 +219,7 @@ void SenderNode::publish_head_data()
   set_head_publisher->publish(pan_tilt_msg);
 }
 
-void SenderNode::process(int function_id)
+void HeadNode::process(int function_id)
 {
   if (!head->is_joint_empty()) {
     switch (function_id) {
@@ -182,7 +248,7 @@ void SenderNode::process(int function_id)
   publish_head_data();
 }
 
-bool SenderNode::is_detection_result_empty()
+bool HeadNode::is_detection_result_empty()
 {
   std::set<std::string> result_name;
   for (const auto & name : head->detection_result) {
@@ -193,13 +259,13 @@ bool SenderNode::is_detection_result_empty()
   return result_name.find(head->object_name) == result_name.end();
 }
 
-bool SenderNode::check_move_by_angle()
+bool HeadNode::check_move_by_angle()
 {
   return head->get_pan_angle() == head->pan_angle_goal &&
          head->get_tilt_angle() == head->tilt_angle_goal;
 }
 
-bool SenderNode::check_process_is_finished()
+bool HeadNode::check_process_is_finished()
 {
   switch (head->function_id) {
     case Head::SCAN_UP:
@@ -216,10 +282,9 @@ bool SenderNode::check_process_is_finished()
   }
 }
 
-std::string SenderNode::get_node_prefix()
+std::string HeadNode::get_node_prefix()
 {
-  return "sender";
+  return "head";
 }
 
-}  // namespace sender
 }  // namespace atama

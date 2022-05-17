@@ -22,14 +22,21 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include "atama/node/atama_node.hpp"
-#include "atama/head/head.hpp"
+#include "atama/head/process/head.hpp"
 
 int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
 
-  auto head = std::make_shared<atama::head::Head>();
-  head->load_data("");
+  if (argc < 2)
+  {
+    std::cerr << "Please specify the path!" << std::endl;
+    return 0;
+  }
+
+  auto head = std::make_shared<atama::Head>();
+  std::string path = argv[1];
+  head->load_data(path);
 
   auto node = std::make_shared<rclcpp::Node>("atama_node");
   auto atama_node = std::make_shared<atama::AtamaNode>(node, head);
