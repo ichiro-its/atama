@@ -40,6 +40,7 @@ class Head
 public:
   enum FunctionId : int
   {
+    NONE                   = -1,
     SCAN_UP                = 0,
     SCAN_DOWN              = 1,
     SCAN_VERTICAL          = 2,
@@ -58,6 +59,7 @@ public:
   double goal_position_x;
   double goal_position_y;
   FunctionId function_id;
+  FunctionId prev_function_id;
 
   int camera_width;
   int camera_height;

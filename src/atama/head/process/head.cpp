@@ -62,6 +62,9 @@ Head::Head()
   camera_height = -1;
   view_v_angle = -1;
   view_h_angle = -1;
+
+  function_id = NONE;
+  prev_function_id = NONE;
 }
 
 bool Head::init_scanning()
@@ -282,9 +285,6 @@ void Head::scan_two_direction()
   switch (scan_position) {
     case 0:
       scan_tilt_angle = scan_bottom_limit;
-      scan_pan_angle = keisan::clamp(
-        scan_pan_angle, scan_right_limit + 15.0,
-        scan_left_limit - 15.0);
       break;
     case 1:
       scan_tilt_angle = (scan_bottom_limit + scan_top_limit) * 0.5;
@@ -562,13 +562,31 @@ void Head::track_object(const std::string & object_name)
 
 bool Head::check_time_belief()
 {
-  if (initiate_min_time || std::chrono::system_clock::now() > min_time) {
+  // return true for the first time any function that is called
+  if (initiate_min_time)
+  {
     initiate_min_time = false;
-    min_time = std::chrono::system_clock::now() + std::chrono::milliseconds(500);
-    return true;
+    prev_function_id = function_id;
+  }
+  else
+  {
+    // start count 0.5 second for time belief when the function that is called
+    // is different from the previous
+    if (prev_function_id != function_id)
+    {
+      prev_function_id = function_id;
+      min_time = std::chrono::system_clock::now() + std::chrono::milliseconds(500);
+      return false;
+    }
+    // when function that is called is same with previous
+    else
+    {
+      if (std::chrono::system_clock::now() < min_time)
+        return false;
+    }
   }
 
-  return false;
+  return true;
 }
 
 void Head::set_joints(std::vector<Joint> joints_param)
