@@ -26,6 +26,7 @@
 #include <string>
 #include <vector>
 
+#include "atama/head/control/helper/command.hpp"
 #include "keisan/geometry/point_2.hpp"
 #include "ninshiki_interfaces/msg/detected_object.hpp"
 #include "ninshiki_interfaces/msg/detected_objects.hpp"
@@ -38,19 +39,6 @@ using tachimawari::joint::Joint;
 class Head
 {
 public:
-  enum FunctionId : int
-  {
-    NONE                   = -1,
-    SCAN_UP                = 0,
-    SCAN_DOWN              = 1,
-    SCAN_VERTICAL          = 2,
-    SCAN_HORIZONTAL        = 3,
-    SCAN_MARATHON          = 4,
-    SCAN_CUSTOM            = 5,
-    TRACK_OBJECT           = 6,
-    MOVE_BY_ANGLE          = 7,
-    LOOK_TO_POSITION       = 8,
-  };
   std::vector<ninshiki_interfaces::msg::DetectedObject> detection_result;
   std::string object_name;
 
@@ -58,8 +46,8 @@ public:
   double tilt_angle_goal;
   double goal_position_x;
   double goal_position_y;
-  FunctionId function_id;
-  FunctionId prev_function_id;
+  control::Command function_id;
+  control::Command prev_function_id;
 
   int camera_width;
   int camera_height;
@@ -111,12 +99,12 @@ public:
   void reinit_scan() {scan_init = false;}
 
   void scan(int mode);
-  void scan_up() {set_scan_limit(60.0, -60.0, 0.0, -75.0); scan_custom(SCAN_UP);}
-  void scan_down() {set_scan_limit(60.0, -60.0, 0.0, -75.0); scan_custom(SCAN_DOWN);}
-  void scan_horizontal() {set_scan_limit(70.0, -70.0, -30.0, -30.0); scan_custom(SCAN_HORIZONTAL);}
-  void scan_vertical() {set_scan_limit(0.0, 0.0, 0.0, -70.0); scan_custom(SCAN_VERTICAL);}
-  void scan_marathon() {set_scan_limit(70.0, -70.0, 0.0, -70.0); scan_custom(SCAN_MARATHON);}
-  void scan_custom(FunctionId scan_type = SCAN_CUSTOM);
+  void scan_up() {set_scan_limit(60.0, -60.0, 0.0, -75.0); scan_custom(control::SCAN_UP);}
+  void scan_down() {set_scan_limit(60.0, -60.0, 0.0, -75.0); scan_custom(control::SCAN_DOWN);}
+  void scan_horizontal() {set_scan_limit(70.0, -70.0, -30.0, -30.0); scan_custom(control::SCAN_HORIZONTAL);}
+  void scan_vertical() {set_scan_limit(0.0, 0.0, 0.0, -70.0); scan_custom(control::SCAN_VERTICAL);}
+  void scan_marathon() {set_scan_limit(70.0, -70.0, 0.0, -70.0); scan_custom(control::SCAN_MARATHON);}
+  void scan_custom(control::Command scan_type = control::SCAN_CUSTOM);
   void scan_one_direction();
   void scan_two_direction();
 

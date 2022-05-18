@@ -26,6 +26,7 @@ find_package(tachimawari REQUIRED)
 find_package(tachimawari_interfaces REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED
+  "src/${PROJECT_NAME}/head/control/helper/parameter.cpp"
   "src/${PROJECT_NAME}/head/process/head.cpp"
   "src/${PROJECT_NAME}/head/node/head_node.cpp"
   "src/${PROJECT_NAME}/node/atama_node.cpp")
