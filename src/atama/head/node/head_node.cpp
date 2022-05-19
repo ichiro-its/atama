@@ -183,14 +183,6 @@ HeadNode::HeadNode(rclcpp::Node::SharedPtr node, std::shared_ptr<Head> head)
         }
       );
     }
-
-    // node_timer = node->create_wall_timer(
-    //   8ms,
-    //   [this]() {
-    //     // Update the variable when joints data is gotten
-    //     // *is_done_get_joints_data = get_joints_data();
-    //   }
-    // );
   }
 }
 
@@ -253,8 +245,6 @@ void HeadNode::process(int function_id)
 
 bool HeadNode::is_detection_result_empty()
 {
-  std::cout << "++++detection result: " << head->detection_result.size() << std::endl;
-
   std::set<std::string> result_name;
   for (const auto & name : head->detection_result) {
     result_name.insert(name.label);

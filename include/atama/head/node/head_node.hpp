@@ -59,7 +59,6 @@ private:
   using CurrentJoints = tachimawari_interfaces::msg::CurrentJoints;
 
   rclcpp::Node::SharedPtr node;
-  // rclcpp::TimerBase::SharedPtr node_timer;
 
   std::shared_ptr<Head> head;
   int req_function_id;

@@ -95,6 +95,9 @@ void Head::move_by_angle(double pan_angle, double tilt_angle)
   stop_scan();
   this->pan_angle = pan_center + keisan::clamp(pan_angle, right_limit, left_limit);
   this->tilt_angle = tilt_center + keisan::clamp(tilt_angle, bottom_limit, top_limit);
+
+  pan_angle_goal = pan_angle;
+  tilt_angle_goal = tilt_angle;
 }
 
 void Head::tracking(double pan, double tilt)
@@ -392,10 +395,7 @@ double Head::calculate_tilt_from_pan_distance(double pan, double distance)
   return ((tilt < 15.0) ? tilt : 15.0) - tilt_center - tilt_offset;
 }
 
-void Head::look_to_position(
-  double goal_position_x, double goal_position_y,
-  double robot_position_x, double robot_position_y,
-  float yaw)
+void Head::look_to_position(double goal_position_x, double goal_position_y)
 {
   function_id = control::LOOK_TO_POSITION;
   float dx = goal_position_x - robot_position_x;

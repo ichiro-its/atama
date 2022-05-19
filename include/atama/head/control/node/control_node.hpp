@@ -18,34 +18,47 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef ATAMA__HEAD__CONTROL__HELPER__PARAMETER_HPP_
-#define ATAMA__HEAD__CONTROL__HELPER__PARAMETER_HPP_
+#ifndef ATAMA__HEAD__CONTROL__NODE__CONTROL_NODE_HPP_
+#define ATAMA__HEAD__CONTROL__NODE__CONTROL_NODE_HPP_
 
+#include <memory>
 #include <string>
+
+#include "rclcpp/rclcpp.hpp"
+#include "atama_interfaces/msg/run_head.hpp"
+#include "atama_interfaces/msg/status.hpp"
+#include "atama/head/process/head.hpp"
 
 namespace atama::control
 {
 
-  class Parameter
-  {
-  public:
-  // static std::string scan_up();
-  // static std::string scan_down();
-  // static std::string scan_horizontal();
-  // static std::string scan_vertical();
-  // static std::string scan_marathon();
-  static std::string scan_custom(
-    double left_limit, double right_limit,
-    double top_limit, double bottom_limit);
+class ControlNode
+{
+public:
+  using RunHead = atama_interfaces::msg::RunHead;
+  using Status = atama_interfaces::msg::Status;
 
-  static std::string track_object(const std::string &object_name);
-  static std::string move_by_angle(double pan_angle, double tilt_angle);
-  static std::string look_to_position(
-    double goal_position_x, double goal_position_y,
-    double robot_position_x, double robot_position_y,
-    float yaw);
-  };
+  explicit ControlNode(
+    rclcpp::Node::SharedPtr node, std::shared_ptr<Head> head);
 
-} // namespace atama::control
+  void update();
 
-#endif // ATAMA__HEAD__CONTROL__HELPER__PARAMETER_HPP_
+private:
+  std::string get_node_prefix() const;
+
+  void run_head_callback(const RunHead::SharedPtr message);
+  bool is_object_name_not_in_detection_result();
+  bool check_move_by_angle();
+
+  rclcpp::Node::SharedPtr node;
+  std::shared_ptr<Head> head;
+
+  rclcpp::Subscription<RunHead>::SharedPtr run_head_subscriber;
+  rclcpp::Publisher<Status>::SharedPtr status_publisher;
+
+  std::function<bool()> process;
+};
+
+}  // namespace atama::control
+
+#endif  // ATAMA__HEAD__CONTROL__NODE__CONTROL_NODE_HPP_

@@ -27,65 +27,65 @@
 namespace atama::control
 {
   
-std::string Parameter::scan_up()
-{
-  nlohmann::json param = {
-    {"left_limit", 60.0},
-    {"right_limit", -60.0},
-    {"top_limit", 0.0},
-    {"bottom_limit", -75.0},
-  };
+// std::string Parameter::scan_up()
+// {
+//   nlohmann::json param = {
+//     {"left_limit", 60.0},
+//     {"right_limit", -60.0},
+//     {"top_limit", 0.0},
+//     {"bottom_limit", -75.0},
+//   };
 
-  return param.dump();
-}
+//   return param.dump();
+// }
 
-std::string Parameter::scan_down()
-{
-  nlohmann::json param = {
-    {"left_limit", 60.0},
-    {"right_limit", -60.0},
-    {"top_limit", 0.0},
-    {"bottom_limit", -75.0},
-  };
+// std::string Parameter::scan_down()
+// {
+//   nlohmann::json param = {
+//     {"left_limit", 60.0},
+//     {"right_limit", -60.0},
+//     {"top_limit", 0.0},
+//     {"bottom_limit", -75.0},
+//   };
 
-  return param.dump();
-}
+//   return param.dump();
+// }
 
-std::string Parameter::scan_horizontal()
-{
-  nlohmann::json param = {
-    {"left_limit", 70.0},
-    {"right_limit", -70.0},
-    {"top_limit", -30.0},
-    {"bottom_limit", -30.0},
-  };
+// std::string Parameter::scan_horizontal()
+// {
+//   nlohmann::json param = {
+//     {"left_limit", 70.0},
+//     {"right_limit", -70.0},
+//     {"top_limit", -30.0},
+//     {"bottom_limit", -30.0},
+//   };
 
-  return param.dump();
-}
+//   return param.dump();
+// }
 
-std::string Parameter::scan_vertical()
-{
-  nlohmann::json param = {
-    {"left_limit", 0.0},
-    {"right_limit", 0.0},
-    {"top_limit", 0.0},
-    {"bottom_limit", -70.0},
-  };
+// std::string Parameter::scan_vertical()
+// {
+//   nlohmann::json param = {
+//     {"left_limit", 0.0},
+//     {"right_limit", 0.0},
+//     {"top_limit", 0.0},
+//     {"bottom_limit", -70.0},
+//   };
 
-  return param.dump();
-}
+//   return param.dump();
+// }
 
-std::string Parameter::scan_marathon()
-{
-  nlohmann::json param = {
-    {"left_limit", 70.0},
-    {"right_limit", -70.0},
-    {"top_limit", 0.0},
-    {"bottom_limit", -70.0},
-  };
+// std::string Parameter::scan_marathon()
+// {
+//   nlohmann::json param = {
+//     {"left_limit", 70.0},
+//     {"right_limit", -70.0},
+//     {"top_limit", 0.0},
+//     {"bottom_limit", -70.0},
+//   };
 
-  return param.dump();
-}
+//   return param.dump();
+// }
 
 std::string Parameter::scan_custom(
   double left_limit, double right_limit,
@@ -104,7 +104,7 @@ std::string Parameter::scan_custom(
 std::string Parameter::track_object(const std::string &object_name)
 {
   nlohmann::json param = {
-      {"object_name", object_name},
+    {"object_name", object_name},
   };
 
   return param.dump();
@@ -113,8 +113,8 @@ std::string Parameter::track_object(const std::string &object_name)
 std::string Parameter::move_by_angle(double pan_angle, double tilt_angle)
 {
   nlohmann::json param = {
-      {"pan_angle", pan_angle},
-      {"tilt_angle", tilt_angle},
+    {"pan_angle", pan_angle},
+    {"tilt_angle", tilt_angle},
   };
 
   return param.dump();
@@ -126,11 +126,8 @@ std::string Parameter::look_to_position(
   float yaw)
 {
   nlohmann::json param = {
-      {"goal_position_x", goal_position_x},
-      {"goal_position_y", goal_position_y},
-      {"robot_position_x", robot_position_x},
-      {"robot_position_y", robot_position_y},
-      {"yaw", yaw},
+    {"goal_position_x", goal_position_x},
+    {"goal_position_y", goal_position_y},
   };
 
   return param.dump();

@@ -126,10 +126,7 @@ public:
   }
   double calculate_tilt_from_pan_distance(double pan, double distance);
 
-  void look_to_position(
-    double goal_position_x, double goal_position_y,
-    double robot_position_x, double robot_position_y,
-    float yaw);
+  void look_to_position(double goal_position_x, double goal_position_y);
 
   void load_data(const std::string & file_name);
 
@@ -200,6 +197,10 @@ private:
 
   double current_pan_angle;
   double current_tilt_angle;
+
+  double robot_position_x;
+  double robot_position_y;
+  double yaw;
 
   int no_object_count;
   int object_count;
