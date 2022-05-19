@@ -26,7 +26,6 @@
 
 #include "atama/head/process/head.hpp"
 #include "atama_interfaces/msg/head.hpp"
-#include "atama_interfaces/srv/run_head.hpp"
 #include "kansei_interfaces/msg/axis.hpp"
 #include "ninshiki_interfaces/msg/detected_object.hpp"
 #include "ninshiki_interfaces/msg/detected_objects.hpp"
@@ -49,8 +48,8 @@ public:
   // change function name
   void publish_head_data();
 
-  void process(int function_id);
-  bool check_process_is_finished();
+  void update();
+  // bool check_process_is_finished();
 
 private:
   using Axis = kansei_interfaces::msg::Axis;
@@ -71,10 +70,6 @@ private:
 
   rclcpp::Publisher<tachimawari_interfaces::msg::SetJoints>::SharedPtr set_joints_publisher;
   rclcpp::Publisher<atama_interfaces::msg::Head>::SharedPtr set_head_publisher;
-  rclcpp::Service<atama_interfaces::srv::RunHead>::SharedPtr run_head_service;
-
-  bool is_detection_result_empty();
-  bool check_move_by_angle();
 
   static std::string get_node_prefix();
 };

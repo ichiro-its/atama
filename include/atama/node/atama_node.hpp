@@ -23,8 +23,9 @@
 
 #include <memory>
 
-#include "atama/head/process/head.hpp"
+#include "atama/head/control/node/control_node.hpp"
 #include "atama/head/node/head_node.hpp"
+#include "atama/head/process/head.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 namespace atama
@@ -33,13 +34,15 @@ namespace atama
 class AtamaNode
 {
 public:
-  explicit AtamaNode(rclcpp::Node::SharedPtr node, std::shared_ptr<Head> head);
+  explicit AtamaNode(rclcpp::Node::SharedPtr node);
+  void run_head_service(std::shared_ptr<Head> head);
 
 private:
   rclcpp::Node::SharedPtr node;
   rclcpp::TimerBase::SharedPtr node_timer;
 
   std::shared_ptr<HeadNode> head_node;
+  std::shared_ptr<control::ControlNode> head_control_node;
 };
 
 }  // namespace atama

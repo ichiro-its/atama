@@ -49,7 +49,7 @@ HeadNode::HeadNode(rclcpp::Node::SharedPtr node, std::shared_ptr<Head> head)
 
     get_detection_result_subsciber =
       node->create_subscription<DetectedObjects>(
-      "ninshiki_py/detection", 10,
+      "ninshiki_cpp/detection", 10,
       [this](const DetectedObjects::SharedPtr message) {
         std::vector<DetectedObject> temp_detection_result;
 
@@ -104,85 +104,6 @@ HeadNode::HeadNode(rclcpp::Node::SharedPtr node, std::shared_ptr<Head> head)
     set_head_publisher = node->create_publisher<atama_interfaces::msg::Head>(
       get_node_prefix() + "/set_head_data", 10);
 
-    {
-      using atama_interfaces::srv::RunHead;
-      run_head_service = node->create_service<RunHead>(
-        get_node_prefix() + "/run_head",
-        [this](std::shared_ptr<RunHead::Request> request,
-        std::shared_ptr<RunHead::Response> response) {
-          rclcpp::Rate rcl_rate(15ms);
-
-          // Assume the function is not exist
-          bool is_function_exist = false;
-
-          // Check existence of the function
-          switch (request->function_id) {
-            case control::SCAN_CUSTOM:
-              {
-                this->head->set_scan_limit(
-                  request->scan_param.left_limit,
-                  request->scan_param.right_limit,
-                  request->scan_param.top_limit,
-                  request->scan_param.bottom_limit
-                );
-                is_function_exist = true;
-                break;
-              }
-            case control::TRACK_OBJECT:
-              {
-                this->head->object_name = request->track_param.object_name;
-                is_function_exist = true;
-                break;
-              }
-            case control::MOVE_BY_ANGLE:
-              {
-                this->head->pan_angle_goal = request->move_by_angle_param.pan_angle;
-                this->head->tilt_angle_goal = request->move_by_angle_param.tilt_angle;
-                is_function_exist = true;
-                break;
-              }
-            case control::LOOK_TO_POSITION:
-              {
-                this->head->goal_position_x = request->look_to_param.goal_position_x;
-                this->head->goal_position_y = request->look_to_param.goal_position_y;
-                is_function_exist = true;
-                break;
-              }
-            case control::SCAN_UP:
-            case control::SCAN_DOWN:
-            case control::SCAN_VERTICAL:
-            case control::SCAN_HORIZONTAL:
-            case control::SCAN_MARATHON:
-              {
-                is_function_exist = true;
-                break;
-              }
-          }
-
-          if (is_function_exist)
-            req_function_id = request->function_id;
-
-          // Ensure data joints is already gotten by receiver_node
-          if (!this->head->joints.empty() && is_function_exist) {
-            while (rclcpp::ok()) {
-              rcl_rate.sleep();
-
-              if (check_process_is_finished()) {
-                break;
-              } else {
-                process(request->function_id);
-              }
-            }
-          }
-
-          if (rclcpp::ok()) {
-            response->done_processing = true;
-          } else {
-            response->done_processing = false;
-          }
-        }
-      );
-    }
   }
 }
 
@@ -214,67 +135,10 @@ void HeadNode::publish_head_data()
   set_head_publisher->publish(pan_tilt_msg);
 }
 
-void HeadNode::process(int function_id)
+void HeadNode::update()
 {
-  if (!head->is_joint_empty()) {
-    switch (function_id) {
-      case control::SCAN_UP: head->scan_up(); break;
-      case control::SCAN_DOWN: head->scan_down(); break;
-      case control::SCAN_VERTICAL: head->scan_vertical(); break;
-      case control::SCAN_HORIZONTAL: head->scan_horizontal(); break;
-      case control::SCAN_MARATHON: head->scan_marathon(); break;
-      case control::SCAN_CUSTOM: head->scan_custom(control::SCAN_CUSTOM); break;
-      case control::TRACK_OBJECT:
-        head->track_object(head->object_name);
-        break;
-      case control::MOVE_BY_ANGLE:
-        head->move_by_angle(
-          head->pan_angle_goal,
-          head->tilt_angle_goal);
-        break;
-      // TODO(nathan): implement look_to_position() after
-      // robot_position_x, robot_position_y, yaw are obtained
-      case control::LOOK_TO_POSITION:
-        break;
-    }
-  }
-
   publish_joints();
   publish_head_data();
-}
-
-bool HeadNode::is_detection_result_empty()
-{
-  std::set<std::string> result_name;
-  for (const auto & name : head->detection_result) {
-    result_name.insert(name.label);
-  }
-
-  // Object not found
-  return result_name.find(head->object_name) == result_name.end();
-}
-
-bool HeadNode::check_move_by_angle()
-{
-  return head->get_pan_angle() == head->pan_angle_goal &&
-         head->get_tilt_angle() == head->tilt_angle_goal;
-}
-
-bool HeadNode::check_process_is_finished()
-{
-  switch (req_function_id) {
-    case control::SCAN_UP:
-    case control::SCAN_DOWN:
-    case control::SCAN_VERTICAL:
-    case control::SCAN_HORIZONTAL:
-    case control::SCAN_MARATHON:
-    case control::SCAN_CUSTOM: return !is_detection_result_empty(); break;
-    case control::TRACK_OBJECT: return is_detection_result_empty(); break;
-    case control::MOVE_BY_ANGLE: return check_move_by_angle(); break;
-    // TODO(nathan): implement look_to_position() after
-    // robot_position_x, robot_position_y, yaw are obtained
-    case control::LOOK_TO_POSITION: break;
-  }
 }
 
 std::string HeadNode::get_node_prefix()

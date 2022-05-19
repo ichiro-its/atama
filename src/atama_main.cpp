@@ -39,7 +39,8 @@ int main(int argc, char * argv[])
   head->load_data(path);
 
   auto node = std::make_shared<rclcpp::Node>("atama_node");
-  auto atama_node = std::make_shared<atama::AtamaNode>(node, head);
+  auto atama_node = std::make_shared<atama::AtamaNode>(node);
+  atama_node->run_head_service(head);
 
   rclcpp::spin(node);
   rclcpp::shutdown();

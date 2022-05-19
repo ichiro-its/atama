@@ -37,12 +37,14 @@ ControlNode::ControlNode(
   rclcpp::Node::SharedPtr node, std::shared_ptr<Head> head)
 : node(node), head(head), process([]() {return false;})
 {
-  run_head_subscriber = node->create_subscription<RunHead>(
-    get_node_prefix() + "/run_head", 10,
-    std::bind(&ControlNode::run_head_callback, this, _1));
+  if (node != NULL) {
+    run_head_subscriber = node->create_subscription<RunHead>(
+      get_node_prefix() + "/run_head", 10,
+      std::bind(&ControlNode::run_head_callback, this, _1));
 
-  status_publisher = node->create_publisher<Status>(
-    get_node_prefix() + "/status", 10);
+    status_publisher = node->create_publisher<Status>(
+      get_node_prefix() + "/status", 10);
+  }
 }
 
 void ControlNode::run_head_callback(const RunHead::SharedPtr message)
