@@ -79,8 +79,8 @@ bool Head::init_scanning()
 
 void Head::initialize()
 {
-  pan_angle = current_pan_angle;
-  tilt_angle = -current_tilt_angle;
+  pan_angle = 0;
+  tilt_angle = 0;
 
   pan_error = 0;
   pan_error_difference = 0;
@@ -98,6 +98,13 @@ void Head::move_by_angle(double pan_angle, double tilt_angle)
 
   pan_angle_goal = pan_angle;
   tilt_angle_goal = tilt_angle;
+
+  // set calculation result
+  if (!joints.empty() && joints.size() >= 2)
+  {
+    joints[0].set_position(pan_angle);
+    joints[1].set_position(tilt_angle);
+  }
 }
 
 void Head::tracking(double pan, double tilt)
@@ -139,7 +146,7 @@ void Head::tracking()
   stop_scan();
 
   if (tilt_only) {
-    pan_angle = current_pan_angle;
+    pan_angle = joints[0].get_position();
   } else {
     double p_offset = pan_error * pan_p_gain;
     p_offset *= p_offset;
@@ -157,7 +164,7 @@ void Head::tracking()
   }
 
   if (pan_only) {
-    tilt_angle = current_tilt_angle;
+    tilt_angle = joints[1].get_position();
   } else {
     double p_offset = tilt_error * tilt_p_gain;
     p_offset *= p_offset;
@@ -551,8 +558,8 @@ void Head::track_object(const std::string & object_name)
       keisan::Point2 center = keisan::Point2(camera_width, camera_height) / 2;
       keisan::Point2 offset = pos - center;
       offset *= -1;
-      offset.x *= (view_v_angle / camera_width);
-      offset.y *= (view_h_angle / camera_height);
+      offset.x *= (view_h_angle / camera_width);
+      offset.y *= (view_v_angle / camera_height);
 
       tracking(offset.x, offset.y);
     }

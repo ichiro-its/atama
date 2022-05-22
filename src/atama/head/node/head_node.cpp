@@ -51,18 +51,16 @@ HeadNode::HeadNode(rclcpp::Node::SharedPtr node, std::shared_ptr<Head> head)
       node->create_subscription<DetectedObjects>(
       "ninshiki_cpp/detection", 10,
       [this](const DetectedObjects::SharedPtr message) {
-        std::vector<DetectedObject> temp_detection_result;
+        this->head->detection_result.clear();
 
         for (const auto & detected_object : message->detected_objects) {
-          temp_detection_result.push_back(detected_object);
+          this->head->detection_result.push_back(detected_object);
         }
-
-        this->head->detection_result = temp_detection_result;
       }
       );
 
     get_camera_config_subsciber = node->create_subscription<CameraConfig>(
-      "/camera/camera_config", 10,
+      "camera/camera_config", 10,
       [this](const CameraConfig::SharedPtr message) {
         this->head->camera_width = message->width;
         this->head->camera_height = message->height;

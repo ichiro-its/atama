@@ -36,12 +36,11 @@ AtamaNode::AtamaNode(rclcpp::Node::SharedPtr node)
 {
   if (node != nullptr) {
     node_timer = node->create_wall_timer(
-      8ms,
-      [this]() {
-        head_control_node->update();
-        head_node->update();
-      }
-    );
+        8ms,
+        [this]() {
+          head_control_node->update();
+          head_node->update();
+        });
   }
 }
 

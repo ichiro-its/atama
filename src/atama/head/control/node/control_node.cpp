@@ -133,7 +133,7 @@ void ControlNode::run_head_callback(const RunHead::SharedPtr message)
 
         for (auto &[key, val] : parameters.items()) {
           if (key == "object_name") {
-            object_name = val.get<double>();
+            object_name = val.get<std::string>();
           } 
         }
 

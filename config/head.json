@@ -40,14 +40,14 @@
     "top_limit": 30
   },
   "Gain": {
-    "pan_d_gain": 0,
-    "tilt_d_gain": 0,
-    "pan_p_gain": 0.05,
-    "tilt_p_gain": 0.05
+    "pan_p_gain": 0.1,
+    "pan_d_gain": 0.03,
+    "tilt_p_gain": 0.1,
+    "tilt_d_gain": 0.03
   },
   "Center": {
-  "pan_center": 0,
-  "tilt_center": 0
+    "pan_center": 0,
+    "tilt_center": 0
   },
   "PanDistanceToTilt": {
     "pan_1_distance_1": -0.003021888273,
