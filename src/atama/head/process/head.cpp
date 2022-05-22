@@ -49,7 +49,7 @@ Head::Head()
   scan_top_limit = 55;
   scan_bottom_limit = -15;
 
-  scan_speed = 0.5;
+  scan_speed = 0.35;
 
   no_object_count = 0;
   object_count = 0;
@@ -66,6 +66,10 @@ Head::Head()
   function_id = control::NONE;
   prev_function_id = control::NONE;
   detection_result.clear();
+
+  robot_position_x = -1;
+  robot_position_y = -1;
+  yaw = -1;
 }
 
 bool Head::init_scanning()
@@ -217,7 +221,7 @@ void Head::scan_one_direction()
 {
   if (init_scanning()) {
     double value_change;
-    scan_speed = 0.8;
+    scan_speed = 0.35;
 
     scan_pan_angle = get_pan_angle();
     scan_tilt_angle = get_tilt_angle();
@@ -277,7 +281,7 @@ void Head::scan_one_direction()
 void Head::scan_two_direction()
 {
   if (init_scanning()) {
-    scan_speed = 0.6;
+    scan_speed = 0.35;
 
     scan_pan_angle = get_pan_angle();
     scan_tilt_angle = get_tilt_angle();
@@ -404,14 +408,16 @@ double Head::calculate_tilt_from_pan_distance(double pan, double distance)
 
 void Head::look_to_position(double goal_position_x, double goal_position_y)
 {
-  function_id = control::LOOK_TO_POSITION;
-  float dx = goal_position_x - robot_position_x;
-  float dy = goal_position_y - robot_position_y;
+  if (robot_position_x != -1 && robot_position_y != -1 && yaw != -1) {
+    function_id = control::LOOK_TO_POSITION;
+    float dx = goal_position_x - robot_position_x;
+    float dy = goal_position_y - robot_position_y;
 
-  float pan = yaw - keisan::signed_arctan(dy, dx).normalize().degree();
-  float tilt = calculate_tilt_from_pan_distance(keisan::signed_arctan(dy, dx).degree());
+    float pan = yaw - keisan::signed_arctan(dy, dx).normalize().degree();
+    float tilt = calculate_tilt_from_pan_distance(keisan::signed_arctan(dy, dx).degree());
 
-  move_by_angle(pan - pan_center, tilt);
+    move_by_angle(pan - pan_center, tilt);
+  }
 }
 
 void Head::set_pan_tilt_angle(double pan, double tilt)

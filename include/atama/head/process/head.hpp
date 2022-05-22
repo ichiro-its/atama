@@ -56,7 +56,9 @@ public:
 
   std::vector<Joint> joints;
 
-  int marathon_index;
+  double robot_position_x;
+  double robot_position_y;
+  double yaw;
 
   Head();
 
@@ -197,10 +199,6 @@ private:
 
   double current_pan_angle;
   double current_tilt_angle;
-
-  double robot_position_x;
-  double robot_position_y;
-  double yaw;
 
   int no_object_count;
   int object_count;

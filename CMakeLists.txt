@@ -14,6 +14,7 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 find_package(ament_cmake REQUIRED)
+find_package(aruku_interfaces REQUIRED)
 find_package(atama_interfaces REQUIRED)
 find_package(kansei_interfaces REQUIRED)
 find_package(keisan REQUIRED)
@@ -37,6 +38,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   $<INSTALL_INTERFACE:include>)
 
 ament_target_dependencies(${PROJECT_NAME}
+  aruku_interfaces
   atama_interfaces
   kansei_interfaces
   keisan
@@ -71,6 +73,7 @@ if(BUILD_TESTING)
 endif()
 
 ament_export_dependencies(
+  aruku_interfaces
   atama_interfaces
   kansei_interfaces
   keisan

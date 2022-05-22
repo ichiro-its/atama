@@ -40,14 +40,14 @@ HeadNode::HeadNode(rclcpp::Node::SharedPtr node, std::shared_ptr<Head> head)
   using ninshiki_interfaces::msg::DetectedObject;
 
   if (node != NULL) {
-    get_orientation_subsciber = node->create_subscription<Axis>(
+    get_orientation_subscriber = node->create_subscription<Axis>(
       "measurement/orientation", 10,
       [this](const Axis::SharedPtr message) {
-        // this->head->set_yaw(message->orientation[2]);
+        this->head->yaw = message->yaw;
       }
     );
 
-    get_detection_result_subsciber =
+    get_detection_result_subscriber =
       node->create_subscription<DetectedObjects>(
       "ninshiki_cpp/detection", 10,
       [this](const DetectedObjects::SharedPtr message) {
@@ -59,7 +59,7 @@ HeadNode::HeadNode(rclcpp::Node::SharedPtr node, std::shared_ptr<Head> head)
       }
       );
 
-    get_camera_config_subsciber = node->create_subscription<CameraConfig>(
+    get_camera_config_subscriber = node->create_subscription<CameraConfig>(
       "camera/camera_config", 10,
       [this](const CameraConfig::SharedPtr message) {
         this->head->camera_width = message->width;
@@ -94,6 +94,14 @@ HeadNode::HeadNode(rclcpp::Node::SharedPtr node, std::shared_ptr<Head> head)
 
           this->head->set_joints(temp_joints);
         }
+      }
+    );
+
+    get_odometry_subscriber = node->create_subscription<Odometry>(
+      "walking/odometry", 10,
+      [this](const Odometry::SharedPtr message) {
+        this->head->robot_position_x = message->position_x;
+        this->head->robot_position_y = message->position_y;
       }
     );
 

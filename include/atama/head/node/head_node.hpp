@@ -24,6 +24,7 @@
 #include <memory>
 #include <string>
 
+#include "aruku_interfaces/msg/odometry.hpp"
 #include "atama/head/process/head.hpp"
 #include "atama_interfaces/msg/head.hpp"
 #include "kansei_interfaces/msg/axis.hpp"
@@ -54,8 +55,9 @@ public:
 private:
   using Axis = kansei_interfaces::msg::Axis;
   using CameraConfig = shisen_interfaces::msg::CameraConfig;
-  using DetectedObjects = ninshiki_interfaces::msg::DetectedObjects;
   using CurrentJoints = tachimawari_interfaces::msg::CurrentJoints;
+  using DetectedObjects = ninshiki_interfaces::msg::DetectedObjects;
+  using Odometry = aruku_interfaces::msg::Odometry;
 
   rclcpp::Node::SharedPtr node;
 
@@ -63,10 +65,10 @@ private:
   int req_function_id;
 
   rclcpp::Subscription<CurrentJoints>::SharedPtr current_joints_subscriber;
-  rclcpp::Subscription<Axis>::SharedPtr get_orientation_subsciber;
-  rclcpp::Subscription<DetectedObjects>::SharedPtr get_detection_result_subsciber;
-  rclcpp::Subscription<CameraConfig>::SharedPtr get_camera_config_subsciber;
-  // TODO(nathan): minus subscriber for aruku to get position robot
+  rclcpp::Subscription<Axis>::SharedPtr get_orientation_subscriber;
+  rclcpp::Subscription<DetectedObjects>::SharedPtr get_detection_result_subscriber;
+  rclcpp::Subscription<CameraConfig>::SharedPtr get_camera_config_subscriber;
+  rclcpp::Subscription<Odometry>::SharedPtr get_odometry_subscriber;
 
   rclcpp::Publisher<tachimawari_interfaces::msg::SetJoints>::SharedPtr set_joints_publisher;
   rclcpp::Publisher<atama_interfaces::msg::Head>::SharedPtr set_head_publisher;
