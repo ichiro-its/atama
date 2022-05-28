@@ -14,14 +14,15 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 find_package(ament_cmake REQUIRED)
+find_package(aruku REQUIRED)
 find_package(aruku_interfaces REQUIRED)
 find_package(atama_interfaces REQUIRED)
+find_package(kansei REQUIRED)
 find_package(kansei_interfaces REQUIRED)
 find_package(keisan REQUIRED)
 find_package(ninshiki_interfaces REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(rclcpp_action REQUIRED)
 find_package(shisen_interfaces REQUIRED)
 find_package(tachimawari REQUIRED)
 find_package(tachimawari_interfaces REQUIRED)
@@ -38,8 +39,10 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   $<INSTALL_INTERFACE:include>)
 
 ament_target_dependencies(${PROJECT_NAME}
+  aruku
   aruku_interfaces
   atama_interfaces
+  kansei
   kansei_interfaces
   keisan
   ninshiki_interfaces
@@ -73,8 +76,10 @@ if(BUILD_TESTING)
 endif()
 
 ament_export_dependencies(
+  aruku
   aruku_interfaces
   atama_interfaces
+  kansei
   kansei_interfaces
   keisan
   ninshiki_interfaces

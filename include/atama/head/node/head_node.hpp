@@ -24,10 +24,10 @@
 #include <memory>
 #include <string>
 
-#include "aruku_interfaces/msg/odometry.hpp"
+#include "aruku_interfaces/msg/status.hpp"
 #include "atama/head/process/head.hpp"
 #include "atama_interfaces/msg/head.hpp"
-#include "kansei_interfaces/msg/axis.hpp"
+#include "kansei_interfaces/msg/status.hpp"
 #include "ninshiki_interfaces/msg/detected_object.hpp"
 #include "ninshiki_interfaces/msg/detected_objects.hpp"
 #include "rclcpp/rclcpp.hpp"
@@ -41,23 +41,24 @@ namespace atama
 class HeadNode
 {
 public:
-  HeadNode(
-    rclcpp::Node::SharedPtr node = nullptr,
-    std::shared_ptr<Head> head = nullptr);
-
-  void publish_joints();
-  // change function name
-  void publish_head_data();
-
-  void update();
-  // bool check_process_is_finished();
-
-private:
-  using Axis = kansei_interfaces::msg::Axis;
   using CameraConfig = shisen_interfaces::msg::CameraConfig;
   using CurrentJoints = tachimawari_interfaces::msg::CurrentJoints;
   using DetectedObjects = ninshiki_interfaces::msg::DetectedObjects;
-  using Odometry = aruku_interfaces::msg::Odometry;
+  using HeadData = atama_interfaces::msg::Head;
+  using MeasurementStatus = kansei_interfaces::msg::Status;
+  using SetJoints = tachimawari_interfaces::msg::SetJoints;
+  using WalkingStatus = aruku_interfaces::msg::Status;
+
+  static std::string get_node_prefix();
+  static std::string head_topic();
+
+  explicit HeadNode(rclcpp::Node::SharedPtr node, std::shared_ptr<Head> head);
+
+  void update();
+
+private:
+  void publish_joints();
+  void publish_head_data();
 
   rclcpp::Node::SharedPtr node;
 
@@ -65,15 +66,13 @@ private:
   int req_function_id;
 
   rclcpp::Subscription<CurrentJoints>::SharedPtr current_joints_subscriber;
-  rclcpp::Subscription<Axis>::SharedPtr get_orientation_subscriber;
+  rclcpp::Subscription<MeasurementStatus>::SharedPtr measurement_status_subscriber;
   rclcpp::Subscription<DetectedObjects>::SharedPtr get_detection_result_subscriber;
   rclcpp::Subscription<CameraConfig>::SharedPtr get_camera_config_subscriber;
-  rclcpp::Subscription<Odometry>::SharedPtr get_odometry_subscriber;
+  rclcpp::Subscription<WalkingStatus>::SharedPtr walking_status_subscriber;
 
-  rclcpp::Publisher<tachimawari_interfaces::msg::SetJoints>::SharedPtr set_joints_publisher;
-  rclcpp::Publisher<atama_interfaces::msg::Head>::SharedPtr set_head_publisher;
-
-  static std::string get_node_prefix();
+  rclcpp::Publisher<SetJoints>::SharedPtr set_joints_publisher;
+  rclcpp::Publisher<HeadData>::SharedPtr set_head_publisher;
 };
 
 }  // namespace atama

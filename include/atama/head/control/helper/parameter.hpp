@@ -28,7 +28,7 @@ namespace atama::control
 
 class Parameter
 {
-  public:
+public:
   static std::string scan_custom(
     double left_limit, double right_limit,
     double top_limit, double bottom_limit);
@@ -36,7 +36,7 @@ class Parameter
   static std::string track_object(const std::string &object_name);
   static std::string move_by_angle(double pan_angle, double tilt_angle);
   static std::string look_to_position(double goal_position_x, double goal_position_y);
-  };
+};
 
 } // namespace atama::control
 

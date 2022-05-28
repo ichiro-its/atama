@@ -24,9 +24,9 @@
 #include <vector>
 
 #include "atama/head/node/head_node.hpp"
-#include "kansei_interfaces/msg/axis.hpp"
-#include "ninshiki_interfaces/msg/detected_object.hpp"
-#include "ninshiki_interfaces/msg/detected_objects.hpp"
+
+#include "aruku/walking/walking.hpp"
+#include "kansei/measurement/measurement.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 using namespace std::chrono_literals;
@@ -34,88 +34,93 @@ using namespace std::chrono_literals;
 namespace atama
 {
 
+std::string HeadNode::get_node_prefix()
+{
+  return "head";
+}
+
+std::string HeadNode::head_topic()
+{
+  return get_node_prefix() + "/set_head_data";
+}
+
 HeadNode::HeadNode(rclcpp::Node::SharedPtr node, std::shared_ptr<Head> head)
 : node(node), head(head)
 {
-  using ninshiki_interfaces::msg::DetectedObject;
+  measurement_status_subscriber = node->create_subscription<MeasurementStatus>(
+    kansei::measurement::MeasurementNode::status_topic(), 10,
+    [this](const MeasurementStatus::SharedPtr message) {
+      this->head->yaw = message->orientation.yaw;
+    }
+  );
 
-  if (node != NULL) {
-    get_orientation_subscriber = node->create_subscription<Axis>(
-      "measurement/orientation", 10,
-      [this](const Axis::SharedPtr message) {
-        this->head->yaw = message->yaw;
+  get_detection_result_subscriber =
+    node->create_subscription<DetectedObjects>(
+    "ninshiki_cpp/detection", 10,
+    [this](const DetectedObjects::SharedPtr message) {
+      this->head->detection_result.clear();
+
+      for (const auto & detected_object : message->detected_objects) {
+        this->head->detection_result.push_back(detected_object);
       }
+    }
     );
 
-    get_detection_result_subscriber =
-      node->create_subscription<DetectedObjects>(
-      "ninshiki_cpp/detection", 10,
-      [this](const DetectedObjects::SharedPtr message) {
-        this->head->detection_result.clear();
+  get_camera_config_subscriber = node->create_subscription<CameraConfig>(
+    "camera/camera_config", 10,
+    [this](const CameraConfig::SharedPtr message) {
+      this->head->camera_width = message->width;
+      this->head->camera_height = message->height;
+      this->head->view_v_angle = message->v_angle;
+      this->head->view_h_angle = message->h_angle;
+    }
+  );
 
-        for (const auto & detected_object : message->detected_objects) {
-          this->head->detection_result.push_back(detected_object);
-        }
-      }
-      );
+  current_joints_subscriber = node->create_subscription<CurrentJoints>(
+    "/joint/current_joints", 10,
+    [this](const CurrentJoints::SharedPtr message) {
+      {
+        using tachimawari::joint::Joint;
+        using tachimawari::joint::JointId;
 
-    get_camera_config_subscriber = node->create_subscription<CameraConfig>(
-      "camera/camera_config", 10,
-      [this](const CameraConfig::SharedPtr message) {
-        this->head->camera_width = message->width;
-        this->head->camera_height = message->height;
-        this->head->view_v_angle = message->v_angle;
-        this->head->view_h_angle = message->h_angle;
-      }
-    );
+        std::vector<Joint> temp_joints;
+        std::set<uint8_t> joints_id;
 
-    current_joints_subscriber = node->create_subscription<CurrentJoints>(
-      "/joint/current_joints", 10,
-      [this](const CurrentJoints::SharedPtr message) {
-        {
-          using tachimawari::joint::Joint;
-          using tachimawari::joint::JointId;
-
-          std::vector<Joint> temp_joints;
-          std::set<uint8_t> joints_id;
-
-          for (const std::string & id : {"neck_yaw", "neck_pitch"}) {
-            if (JointId::by_name.find(id) != JointId::by_name.end()) {
-              joints_id.insert(JointId::by_name.find(id)->second);
-            }
+        for (const std::string & id : {"neck_yaw", "neck_pitch"}) {
+          if (JointId::by_name.find(id) != JointId::by_name.end()) {
+            joints_id.insert(JointId::by_name.find(id)->second);
           }
-
-          for (const auto & joint : message->joints) {
-            // Joint Id found in joints_id set
-            if (joints_id.find(joint.id) != joints_id.end()) {
-              temp_joints.push_back(Joint(joint.id, joint.position));
-            }
-          }
-
-          this->head->set_joints(temp_joints);
         }
+
+        for (const auto & joint : message->joints) {
+          // Joint Id found in joints_id set
+          if (joints_id.find(joint.id) != joints_id.end()) {
+            temp_joints.push_back(Joint(joint.id, joint.position));
+          }
+        }
+
+        this->head->set_joints(temp_joints);
       }
-    );
+    }
+  );
 
-    get_odometry_subscriber = node->create_subscription<Odometry>(
-      "walking/odometry", 10,
-      [this](const Odometry::SharedPtr message) {
-        this->head->robot_position_x = message->position_x;
-        this->head->robot_position_y = message->position_y;
-      }
-    );
+  walking_status_subscriber = node->create_subscription<WalkingStatus>(
+    aruku::WalkingNode::status_topic(), 10,
+    [this](const WalkingStatus::SharedPtr message) {
+      this->head->robot_position_x = message->odometry.x;
+      this->head->robot_position_y = message->odometry.y;
+    }
+  );
 
-    set_joints_publisher = node->create_publisher<tachimawari_interfaces::msg::SetJoints>(
-      "joint/set_joints", 10);
-    set_head_publisher = node->create_publisher<atama_interfaces::msg::Head>(
-      get_node_prefix() + "/set_head_data", 10);
+  set_joints_publisher = node->create_publisher<SetJoints>(
+    "joint/set_joints", 10);
 
-  }
+  set_head_publisher = node->create_publisher<HeadData>(head_topic(), 10);
 }
 
 void HeadNode::publish_joints()
 {
-  auto joints_msg = tachimawari_interfaces::msg::SetJoints();
+  auto joints_msg = SetJoints();
 
   const auto & joints = head->get_joints();
   auto & joint_msgs = joints_msg.joints;
@@ -145,11 +150,6 @@ void HeadNode::update()
 {
   publish_joints();
   publish_head_data();
-}
-
-std::string HeadNode::get_node_prefix()
-{
-  return "head";
 }
 
 }  // namespace atama
