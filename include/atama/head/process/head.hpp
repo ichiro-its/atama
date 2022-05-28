@@ -136,7 +136,7 @@ public:
 
   void look_to_position(double goal_position_x, double goal_position_y);
 
-  void load_data(const std::string & file_name);
+  void load_config(const std::string & file_name);
 
   void track_object(const std::string & object_name);
 

@@ -425,7 +425,7 @@ void Head::set_pan_tilt_angle(double pan, double tilt)
   current_tilt_angle = tilt;
 }
 
-void Head::load_data(const std::string & file_name)
+void Head::load_config(const std::string & file_name)
 {
   try {
     std::ifstream file(file_name + "head.json");
