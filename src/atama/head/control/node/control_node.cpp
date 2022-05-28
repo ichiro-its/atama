@@ -19,6 +19,7 @@
 // THE SOFTWARE.
 
 #include <memory>
+#include <set>
 #include <string>
 
 #include "atama/head/control/node/control_node.hpp"
@@ -55,19 +56,19 @@ void ControlNode::run_head_callback(const RunHead::SharedPtr message)
     case Command::SCAN_UP:
       {
         process = [this]() {
-          this->head->scan_up();
-          return is_object_name_not_in_detection_result();
-        };
+            this->head->scan_up();
+            return is_object_name_not_in_detection_result();
+          };
 
         break;
       }
-  
+
     case Command::SCAN_DOWN:
       {
         process = [this]() {
-          this->head->scan_down();
-          return is_object_name_not_in_detection_result();
-        };
+            this->head->scan_down();
+            return is_object_name_not_in_detection_result();
+          };
 
         break;
       }
@@ -75,9 +76,9 @@ void ControlNode::run_head_callback(const RunHead::SharedPtr message)
     case Command::SCAN_VERTICAL:
       {
         process = [this]() {
-          this->head->scan_vertical();
-          return is_object_name_not_in_detection_result();
-        };
+            this->head->scan_vertical();
+            return is_object_name_not_in_detection_result();
+          };
 
         break;
       }
@@ -85,19 +86,19 @@ void ControlNode::run_head_callback(const RunHead::SharedPtr message)
     case Command::SCAN_HORIZONTAL:
       {
         process = [this]() {
-          this->head->scan_horizontal();
-          return is_object_name_not_in_detection_result();
-        };
+            this->head->scan_horizontal();
+            return is_object_name_not_in_detection_result();
+          };
 
         break;
       }
-  
+
     case Command::SCAN_MARATHON:
       {
         process = [this]() {
-          this->head->scan_marathon();
-          return is_object_name_not_in_detection_result();
-        };
+            this->head->scan_marathon();
+            return is_object_name_not_in_detection_result();
+          };
 
         break;
       }
@@ -119,10 +120,10 @@ void ControlNode::run_head_callback(const RunHead::SharedPtr message)
         }
 
         process = [this, left_limit, right_limit, top_limit, bottom_limit]() {
-          this->head->set_scan_limit(left_limit, right_limit, top_limit, bottom_limit);
-          this->head->scan_custom();
-          return !is_object_name_not_in_detection_result();
-        };
+            this->head->set_scan_limit(left_limit, right_limit, top_limit, bottom_limit);
+            this->head->scan_custom();
+            return !is_object_name_not_in_detection_result();
+          };
 
         break;
       }
@@ -134,13 +135,13 @@ void ControlNode::run_head_callback(const RunHead::SharedPtr message)
         for (auto &[key, val] : parameters.items()) {
           if (key == "object_name") {
             object_name = val.get<std::string>();
-          } 
+          }
         }
 
         process = [this, object_name]() {
-          this->head->track_object(object_name);
-          return is_object_name_not_in_detection_result();
-        };
+            this->head->track_object(object_name);
+            return is_object_name_not_in_detection_result();
+          };
 
         break;
       }
@@ -158,9 +159,9 @@ void ControlNode::run_head_callback(const RunHead::SharedPtr message)
         }
 
         process = [this, pan, tilt]() {
-          this->head->move_by_angle(pan, tilt);
-          return check_move_by_angle();
-        };
+            this->head->move_by_angle(pan, tilt);
+            return check_move_by_angle();
+          };
 
         break;
       }
@@ -174,13 +175,13 @@ void ControlNode::run_head_callback(const RunHead::SharedPtr message)
             goal_x = val.get<double>();
           } else if (key == "goal_position_y") {
             goal_y = val.get<double>();
-          } 
+          }
         }
 
         process = [this, goal_x, goal_y]() {
-          this->head->look_to_position(goal_x, goal_y);
-          return check_move_by_angle();
-        };
+            this->head->look_to_position(goal_x, goal_y);
+            return check_move_by_angle();
+          };
 
         break;
       }

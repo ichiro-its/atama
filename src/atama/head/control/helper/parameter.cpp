@@ -41,7 +41,7 @@ std::string Parameter::scan_custom(
   return param.dump();
 }
 
-std::string Parameter::track_object(const std::string &object_name)
+std::string Parameter::track_object(const std::string & object_name)
 {
   nlohmann::json param = {
     {"object_name", object_name},
@@ -70,4 +70,4 @@ std::string Parameter::look_to_position(double goal_position_x, double goal_posi
   return param.dump();
 }
 
-} // namespace atama::control
+}  // namespace atama::control

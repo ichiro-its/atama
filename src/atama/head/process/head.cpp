@@ -104,8 +104,7 @@ void Head::move_by_angle(double pan_angle, double tilt_angle)
   tilt_angle_goal = tilt_angle;
 
   // set calculation result
-  if (!joints.empty() && joints.size() >= 2)
-  {
+  if (!joints.empty() && joints.size() >= 2) {
     joints[0].set_position(pan_angle);
     joints[1].set_position(tilt_angle);
   }
@@ -577,26 +576,21 @@ void Head::track_object(const std::string & object_name)
 bool Head::check_time_belief()
 {
   // return true for the first time any function that is called
-  if (initiate_min_time)
-  {
+  if (initiate_min_time) {
     initiate_min_time = false;
     prev_function_id = function_id;
-  }
-  else
-  {
+  } else {
     // start count 0.5 second for time belief when the function that is called
     // is different from the previous
-    if (prev_function_id != function_id)
-    {
+    if (prev_function_id != function_id) {
       prev_function_id = function_id;
       min_time = std::chrono::system_clock::now() + std::chrono::milliseconds(500);
       return false;
-    }
-    // when function that is called is same with previous
-    else
-    {
-      if (std::chrono::system_clock::now() < min_time)
+    } else {
+      // when function that is called is same with previous
+      if (std::chrono::system_clock::now() < min_time) {
         return false;
+      }
     }
   }
 
@@ -606,8 +600,7 @@ bool Head::check_time_belief()
 void Head::set_joints(std::vector<Joint> joints_param)
 {
   joints.clear();
-  for (const auto &joint : joints_param)
-  {
+  for (const auto & joint : joints_param) {
     joints.push_back(Joint(joint.get_id(), joint.get_position()));
   }
 

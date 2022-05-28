@@ -103,9 +103,15 @@ public:
   void scan(int mode);
   void scan_up() {set_scan_limit(60.0, -60.0, 0.0, -75.0); scan_custom(control::SCAN_UP);}
   void scan_down() {set_scan_limit(60.0, -60.0, 0.0, -75.0); scan_custom(control::SCAN_DOWN);}
-  void scan_horizontal() {set_scan_limit(70.0, -70.0, -30.0, -30.0); scan_custom(control::SCAN_HORIZONTAL);}
+  void scan_horizontal()
+  {
+    set_scan_limit(70.0, -70.0, -30.0, -30.0); scan_custom(control::SCAN_HORIZONTAL);
+  }
   void scan_vertical() {set_scan_limit(0.0, 0.0, 0.0, -70.0); scan_custom(control::SCAN_VERTICAL);}
-  void scan_marathon() {set_scan_limit(70.0, -70.0, 0.0, -70.0); scan_custom(control::SCAN_MARATHON);}
+  void scan_marathon()
+  {
+    set_scan_limit(70.0, -70.0, 0.0, -70.0); scan_custom(control::SCAN_MARATHON);
+  }
   void scan_custom(control::Command scan_type = control::SCAN_CUSTOM);
   void scan_one_direction();
   void scan_two_direction();

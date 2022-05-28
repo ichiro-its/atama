@@ -38,6 +38,6 @@ enum Command
   LOOK_TO_POSITION  = 8,
 };
 
-} // namespace atama::control
+}  // namespace atama::control
 
-#endif // ATAMA__HEAD__CONTROL__HELPER__COMMAND_HPP_
+#endif  // ATAMA__HEAD__CONTROL__HELPER__COMMAND_HPP_

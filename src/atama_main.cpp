@@ -19,17 +19,17 @@
 // THE SOFTWARE.
 
 #include <memory>
+#include <string>
 
-#include "rclcpp/rclcpp.hpp"
-#include "atama/node/atama_node.hpp"
 #include "atama/head/process/head.hpp"
+#include "atama/node/atama_node.hpp"
+#include "rclcpp/rclcpp.hpp"
 
 int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
 
-  if (argc < 2)
-  {
+  if (argc < 2) {
     std::cerr << "Please specify the path!" << std::endl;
     return 0;
   }
