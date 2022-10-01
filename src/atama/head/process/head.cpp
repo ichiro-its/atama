@@ -220,7 +220,6 @@ void Head::scan_one_direction()
 {
   if (init_scanning()) {
     double value_change;
-    scan_speed = 0.35;
 
     scan_pan_angle = get_pan_angle();
     scan_tilt_angle = get_tilt_angle();
@@ -280,8 +279,6 @@ void Head::scan_one_direction()
 void Head::scan_two_direction()
 {
   if (init_scanning()) {
-    scan_speed = 0.35;
-
     scan_pan_angle = get_pan_angle();
     scan_tilt_angle = get_tilt_angle();
 
