@@ -455,6 +455,16 @@ void Head::load_config(const std::string & file_name)
         } catch (nlohmann::json::parse_error & ex) {
           std::cerr << "parse error at byte " << ex.byte << std::endl;
         }
+      } else if (key == "Scan") {
+        try {
+          val.at("scan_speed").get_to(scan_speed);
+          val.at("left_limit").get_to(scan_left_limit);
+          val.at("right_limit").get_to(scan_right_limit);
+          val.at("top_limit").get_to(scan_top_limit);
+          val.at("bottom_limit").get_to(scan_bottom_limit);
+        } catch (nlohmann::json::parse_error & ex) {
+          std::cerr << "parse error at byte " << ex.byte << std::endl;
+        }
       } else if (key == "Gain") {
         try {
           val.at("pan_p_gain").get_to(pan_p_gain);
