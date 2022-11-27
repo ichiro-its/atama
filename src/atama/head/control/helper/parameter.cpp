@@ -18,33 +18,56 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef ATAMA__NODE__ATAMA_NODE_HPP_
-#define ATAMA__NODE__ATAMA_NODE_HPP_
+#include <string>
 
-#include <memory>
+#include "atama/head/control/helper/parameter.hpp"
 
-#include "atama/head/control/node/control_node.hpp"
-#include "atama/head/node/head_node.hpp"
-#include "atama/head/process/head.hpp"
-#include "rclcpp/rclcpp.hpp"
+#include "nlohmann/json.hpp"
 
-namespace atama
+namespace atama::control
 {
 
-class AtamaNode
+std::string Parameter::scan_custom(
+  double left_limit, double right_limit,
+  double top_limit, double bottom_limit)
 {
-public:
-  explicit AtamaNode(rclcpp::Node::SharedPtr node);
-  void run_head_service(std::shared_ptr<Head> head);
+  nlohmann::json param = {
+    {"left_limit", left_limit},
+    {"right_limit", right_limit},
+    {"top_limit", top_limit},
+    {"bottom_limit", bottom_limit},
+  };
 
-private:
-  rclcpp::Node::SharedPtr node;
-  rclcpp::TimerBase::SharedPtr node_timer;
+  return param.dump();
+}
 
-  std::shared_ptr<HeadNode> head_node;
-  std::shared_ptr<control::ControlNode> head_control_node;
-};
+std::string Parameter::track_object(const std::string & object_name)
+{
+  nlohmann::json param = {
+    {"object_name", object_name},
+  };
 
-}  // namespace atama
+  return param.dump();
+}
 
-#endif  // ATAMA__NODE__ATAMA_NODE_HPP_
+std::string Parameter::move_by_angle(double pan_angle, double tilt_angle)
+{
+  nlohmann::json param = {
+    {"pan_angle", pan_angle},
+    {"tilt_angle", tilt_angle},
+  };
+
+  return param.dump();
+}
+
+std::string Parameter::look_to_position(double goal_position_x, double goal_position_y)
+{
+  nlohmann::json param = {
+    {"goal_position_x", goal_position_x},
+    {"goal_position_y", goal_position_y},
+  };
+
+  return param.dump();
+}
+
+}  // namespace atama::control

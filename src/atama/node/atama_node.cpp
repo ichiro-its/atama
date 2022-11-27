@@ -31,15 +31,23 @@ using namespace std::placeholders;
 namespace atama
 {
 
-AtamaNode::AtamaNode(
-  const rclcpp::Node::SharedPtr & node,
-  const std::shared_ptr<head::Head> & head)
-: node(node)
+AtamaNode::AtamaNode(rclcpp::Node::SharedPtr node)
+: node(node), head_node(nullptr), head_control_node(nullptr)
 {
   if (node != nullptr) {
-    receiver_node = receiver::ReceiverNode(node, head);
-    sender_node = sender::SenderNode(node, head);
+    node_timer = node->create_wall_timer(
+      8ms,
+      [this]() {
+        head_control_node->update();
+        head_node->update();
+      });
   }
+}
+
+void AtamaNode::run_head_service(std::shared_ptr<Head> head)
+{
+  head_node = std::make_shared<HeadNode>(node, head);
+  head_control_node = std::make_shared<control::ControlNode>(node, head);
 }
 
 }  // namespace atama

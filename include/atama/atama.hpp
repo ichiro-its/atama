@@ -18,10 +18,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef ATAMA__HEAD__HEAD_HPP_
-#define ATAMA__HEAD__HEAD_HPP_
+#ifndef ATAMA__ATAMA_HPP_
+#define ATAMA__ATAMA_HPP_
 
-#include "atama/head/node/head_node.hpp"
-#include "atama/head/process/head.hpp"
+#include "atama/node/atama_node.hpp"
+#include "atama/head/head.hpp"
 
-#endif  // ATAMA__HEAD__HEAD_HPP_
+#endif  // ATAMA__ATAMA_HPP_

@@ -1,4 +1,4 @@
-// Copyright (c) 2021 ICHIRO ITS
+// Copyright (c) 2021 Ichiro ITS
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -18,10 +18,26 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef ATAMA__HEAD__HEAD_HPP_
-#define ATAMA__HEAD__HEAD_HPP_
+#ifndef ATAMA__HEAD__CONTROL__HELPER__COMMAND_HPP_
+#define ATAMA__HEAD__CONTROL__HELPER__COMMAND_HPP_
 
-#include "atama/head/node/head_node.hpp"
-#include "atama/head/process/head.hpp"
+namespace atama::control
+{
 
-#endif  // ATAMA__HEAD__HEAD_HPP_
+enum Command
+{
+  NONE              = -1,
+  SCAN_UP           = 0,
+  SCAN_DOWN         = 1,
+  SCAN_VERTICAL     = 2,
+  SCAN_HORIZONTAL   = 3,
+  SCAN_MARATHON     = 4,
+  SCAN_CUSTOM       = 5,
+  TRACK_OBJECT      = 6,
+  MOVE_BY_ANGLE     = 7,
+  LOOK_TO_POSITION  = 8,
+};
+
+}  // namespace atama::control
+
+#endif  // ATAMA__HEAD__CONTROL__HELPER__COMMAND_HPP_

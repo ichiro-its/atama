@@ -1,4 +1,4 @@
-// Copyright (c) 2021 ICHIRO ITS
+// Copyright (c) 2021 Ichiro ITS
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -18,10 +18,26 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef ATAMA__HEAD__HEAD_HPP_
-#define ATAMA__HEAD__HEAD_HPP_
+#ifndef ATAMA__HEAD__CONTROL__HELPER__PARAMETER_HPP_
+#define ATAMA__HEAD__CONTROL__HELPER__PARAMETER_HPP_
 
-#include "atama/head/node/head_node.hpp"
-#include "atama/head/process/head.hpp"
+#include <string>
 
-#endif  // ATAMA__HEAD__HEAD_HPP_
+namespace atama::control
+{
+
+class Parameter
+{
+public:
+  static std::string scan_custom(
+    double left_limit, double right_limit,
+    double top_limit, double bottom_limit);
+
+  static std::string track_object(const std::string & object_name);
+  static std::string move_by_angle(double pan_angle, double tilt_angle);
+  static std::string look_to_position(double goal_position_x, double goal_position_y);
+};
+
+}  // namespace atama::control
+
+#endif  // ATAMA__HEAD__CONTROL__HELPER__PARAMETER_HPP_

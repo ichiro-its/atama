@@ -14,21 +14,24 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 find_package(ament_cmake REQUIRED)
+find_package(aruku REQUIRED)
+find_package(aruku_interfaces REQUIRED)
 find_package(atama_interfaces REQUIRED)
+find_package(kansei REQUIRED)
 find_package(kansei_interfaces REQUIRED)
 find_package(keisan REQUIRED)
 find_package(ninshiki_interfaces REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(rclcpp_action REQUIRED)
 find_package(shisen_interfaces REQUIRED)
 find_package(tachimawari REQUIRED)
 find_package(tachimawari_interfaces REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED
-  "src/${PROJECT_NAME}/head/head.cpp"
-  "src/${PROJECT_NAME}/receiver/node/receiver_node.cpp"
-  "src/${PROJECT_NAME}/sender/node/sender_node.cpp"
+  "src/${PROJECT_NAME}/head/control/helper/parameter.cpp"
+  "src/${PROJECT_NAME}/head/control/node/control_node.cpp"
+  "src/${PROJECT_NAME}/head/process/head.cpp"
+  "src/${PROJECT_NAME}/head/node/head_node.cpp"
   "src/${PROJECT_NAME}/node/atama_node.cpp")
 
 target_include_directories(${PROJECT_NAME} PUBLIC
@@ -36,7 +39,10 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   $<INSTALL_INTERFACE:include>)
 
 ament_target_dependencies(${PROJECT_NAME}
+  aruku
+  aruku_interfaces
   atama_interfaces
+  kansei
   kansei_interfaces
   keisan
   ninshiki_interfaces
@@ -55,13 +61,13 @@ install(TARGETS ${PROJECT_NAME}
   LIBRARY DESTINATION "lib"
   RUNTIME DESTINATION "bin")
 
-add_executable(atama_main "src/atama_main.cpp")
-target_include_directories(atama_main PUBLIC
+add_executable(main "src/atama_main.cpp")
+target_include_directories(main PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
-target_link_libraries(atama_main ${PROJECT_NAME})
+target_link_libraries(main ${PROJECT_NAME})
 
-install(TARGETS atama_main
+install(TARGETS main
   DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
@@ -70,7 +76,10 @@ if(BUILD_TESTING)
 endif()
 
 ament_export_dependencies(
+  aruku
+  aruku_interfaces
   atama_interfaces
+  kansei
   kansei_interfaces
   keisan
   ninshiki_interfaces

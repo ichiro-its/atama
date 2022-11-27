@@ -1,4 +1,4 @@
-// Copyright (c) 2021 ICHIRO ITS
+// Copyright (c) 2021 Ichiro ITS
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -18,10 +18,47 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef ATAMA__HEAD__HEAD_HPP_
-#define ATAMA__HEAD__HEAD_HPP_
+#ifndef ATAMA__HEAD__CONTROL__NODE__CONTROL_NODE_HPP_
+#define ATAMA__HEAD__CONTROL__NODE__CONTROL_NODE_HPP_
 
-#include "atama/head/node/head_node.hpp"
+#include <memory>
+#include <string>
+
+#include "atama_interfaces/msg/run_head.hpp"
+#include "atama_interfaces/msg/status.hpp"
 #include "atama/head/process/head.hpp"
+#include "rclcpp/rclcpp.hpp"
 
-#endif  // ATAMA__HEAD__HEAD_HPP_
+namespace atama::control
+{
+
+class ControlNode
+{
+public:
+  using RunHead = atama_interfaces::msg::RunHead;
+  using Status = atama_interfaces::msg::Status;
+
+  explicit ControlNode(
+    rclcpp::Node::SharedPtr node, std::shared_ptr<Head> head);
+
+  void update();
+
+private:
+  std::string get_node_prefix() const;
+
+  void run_head_callback(const RunHead::SharedPtr message);
+  bool is_object_name_not_in_detection_result();
+  bool check_move_by_angle();
+
+  rclcpp::Node::SharedPtr node;
+  std::shared_ptr<Head> head;
+
+  rclcpp::Subscription<RunHead>::SharedPtr run_head_subscriber;
+  rclcpp::Publisher<Status>::SharedPtr status_publisher;
+
+  std::function<bool()> process;
+};
+
+}  // namespace atama::control
+
+#endif  // ATAMA__HEAD__CONTROL__NODE__CONTROL_NODE_HPP_
