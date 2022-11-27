@@ -24,7 +24,6 @@
 #include <memory>
 #include <string>
 
-#include "atama_interfaces/msg/run_head.hpp"
 #include "atama_interfaces/msg/status.hpp"
 #include "atama/head/process/head.hpp"
 #include "rclcpp/rclcpp.hpp"
