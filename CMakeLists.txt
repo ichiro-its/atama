@@ -73,7 +73,7 @@ target_include_directories(main PUBLIC
   $<INSTALL_INTERFACE:include>)
 target_link_libraries(scan ${PROJECT_NAME})
 
-install(TARGETS 
+install(TARGETS
   main
   scan
   DESTINATION lib/${PROJECT_NAME})
