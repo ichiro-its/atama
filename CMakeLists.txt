@@ -32,7 +32,9 @@ add_library(${PROJECT_NAME} SHARED
   "src/${PROJECT_NAME}/head/control/node/control_node.cpp"
   "src/${PROJECT_NAME}/head/process/head.cpp"
   "src/${PROJECT_NAME}/head/node/head_node.cpp"
-  "src/${PROJECT_NAME}/node/atama_node.cpp")
+  "src/${PROJECT_NAME}/config/node/config_node.cpp"
+  "src/${PROJECT_NAME}/node/atama_node.cpp"
+  "src/${PROJECT_NAME}/config/utils/config.cpp")
 
 target_include_directories(${PROJECT_NAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -67,7 +69,13 @@ target_include_directories(main PUBLIC
   $<INSTALL_INTERFACE:include>)
 target_link_libraries(main ${PROJECT_NAME})
 
-install(TARGETS main
+add_executable(config "src/config_main.cpp")
+target_include_directories(config PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>)
+target_link_libraries(config ${PROJECT_NAME})
+
+install(TARGETS main config
   DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
