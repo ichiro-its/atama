@@ -22,6 +22,7 @@
 #define ATAMA__NODE__ATAMA_NODE_HPP_
 
 #include <memory>
+#include <string>
 
 #include "atama/config/node/config_node.hpp"
 #include "atama/head/control/node/control_node.hpp"
