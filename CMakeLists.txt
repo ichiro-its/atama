@@ -67,7 +67,15 @@ target_include_directories(main PUBLIC
   $<INSTALL_INTERFACE:include>)
 target_link_libraries(main ${PROJECT_NAME})
 
-install(TARGETS main
+add_executable(scan "src/scan_main.cpp")
+target_include_directories(main PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>)
+target_link_libraries(scan ${PROJECT_NAME})
+
+install(TARGETS
+  main
+  scan
   DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
