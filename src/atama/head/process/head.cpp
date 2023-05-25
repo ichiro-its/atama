@@ -220,7 +220,6 @@ void Head::scan_one_direction()
 {
   if (init_scanning()) {
     double value_change;
-    scan_speed = 0.35;
 
     scan_pan_angle = get_pan_angle();
     scan_tilt_angle = get_tilt_angle();
@@ -280,8 +279,6 @@ void Head::scan_one_direction()
 void Head::scan_two_direction()
 {
   if (init_scanning()) {
-    scan_speed = 0.35;
-
     scan_pan_angle = get_pan_angle();
     scan_tilt_angle = get_tilt_angle();
 
@@ -452,6 +449,16 @@ void Head::load_config(const std::string & file_name)
           val.at("right_limit").get_to(right_limit);
           val.at("top_limit").get_to(top_limit);
           val.at("bottom_limit").get_to(bottom_limit);
+        } catch (nlohmann::json::parse_error & ex) {
+          std::cerr << "parse error at byte " << ex.byte << std::endl;
+        }
+      } else if (key == "Scan") {
+        try {
+          val.at("scan_speed").get_to(scan_speed);
+          val.at("left_limit").get_to(scan_left_limit);
+          val.at("right_limit").get_to(scan_right_limit);
+          val.at("top_limit").get_to(scan_top_limit);
+          val.at("bottom_limit").get_to(scan_bottom_limit);
         } catch (nlohmann::json::parse_error & ex) {
           std::cerr << "parse error at byte " << ex.byte << std::endl;
         }
