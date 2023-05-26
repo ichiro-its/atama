@@ -1,4 +1,4 @@
-// Copyright (c) 2021 Ichiro ITS
+// Copyright (c) 2023 Ichiro ITS
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -18,36 +18,33 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef ATAMA__NODE__ATAMA_NODE_HPP_
-#define ATAMA__NODE__ATAMA_NODE_HPP_
-
 #include <memory>
 #include <string>
 
-#include "atama/config/node/config_node.hpp"
-#include "atama/head/control/node/control_node.hpp"
-#include "atama/head/node/head_node.hpp"
 #include "atama/head/process/head.hpp"
+#include "atama/node/atama_node.hpp"
 #include "rclcpp/rclcpp.hpp"
-namespace atama
+
+int main(int argc, char const * argv[])
 {
+  rclcpp::init(argc, argv);
 
-class AtamaNode
-{
-public:
-  explicit AtamaNode(rclcpp::Node::SharedPtr node);
-  void run_head_service(std::shared_ptr<Head> head);
-  void run_config_service(const std::string & path);
+  if (argc < 2) {
+    std::cerr << "Please specify the path!" << std::endl;
+    return 0;
+  }
 
-private:
-  rclcpp::Node::SharedPtr node;
-  rclcpp::TimerBase::SharedPtr node_timer;
+  auto head = std::make_shared<atama::Head>();
+  std::string path = argv[1];
+  head->load_config(path);
 
-  std::shared_ptr<HeadNode> head_node;
-  std::shared_ptr<control::ControlNode> head_control_node;
-  std::shared_ptr<ConfigNode> configNode;
-};
+  auto node = std::make_shared<rclcpp::Node>("atama_node");
+  auto atama_node = std::make_shared<atama::AtamaNode>(node);
+  atama_node->run_head_service(head);
+  atama_node->run_config_service(path);
 
-}  // namespace atama
+  rclcpp::spin(node);
+  rclcpp::shutdown();
 
-#endif  // ATAMA__NODE__ATAMA_NODE_HPP_
+  return 0;
+}

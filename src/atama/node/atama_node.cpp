@@ -18,11 +18,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include "atama/node/atama_node.hpp"
+
 #include <chrono>
 #include <memory>
 #include <string>
 
-#include "atama/node/atama_node.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 using namespace std::chrono_literals;
@@ -36,8 +37,7 @@ AtamaNode::AtamaNode(rclcpp::Node::SharedPtr node)
 {
   if (node != nullptr) {
     node_timer = node->create_wall_timer(
-      8ms,
-      [this]() {
+      8ms, [this]() {
         head_control_node->update();
         head_node->update();
       });
@@ -48,6 +48,11 @@ void AtamaNode::run_head_service(std::shared_ptr<Head> head)
 {
   head_node = std::make_shared<HeadNode>(node, head);
   head_control_node = std::make_shared<control::ControlNode>(node, head);
+}
+
+void AtamaNode::run_config_service(const std::string & path)
+{
+  configNode = std::make_shared<ConfigNode>(node, path);
 }
 
 }  // namespace atama

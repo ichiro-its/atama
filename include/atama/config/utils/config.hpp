@@ -1,4 +1,4 @@
-// Copyright (c) 2021 Ichiro ITS
+// Copyright (c) 2023 Ichiro ITS
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -18,36 +18,25 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef ATAMA__NODE__ATAMA_NODE_HPP_
-#define ATAMA__NODE__ATAMA_NODE_HPP_
+#ifndef ATAMA__CONFIG__UTILS__CONFIG_HPP_
+#define ATAMA__CONFIG__UTILS__CONFIG_HPP_
 
-#include <memory>
 #include <string>
 
-#include "atama/config/node/config_node.hpp"
-#include "atama/head/control/node/control_node.hpp"
-#include "atama/head/node/head_node.hpp"
-#include "atama/head/process/head.hpp"
-#include "rclcpp/rclcpp.hpp"
+#include "nlohmann/json.hpp"
+
 namespace atama
 {
-
-class AtamaNode
+class Config
 {
 public:
-  explicit AtamaNode(rclcpp::Node::SharedPtr node);
-  void run_head_service(std::shared_ptr<Head> head);
-  void run_config_service(const std::string & path);
+  explicit Config(const std::string & path);
+  std::string get_config();
+  void set_config(const nlohmann::json & config);
 
 private:
-  rclcpp::Node::SharedPtr node;
-  rclcpp::TimerBase::SharedPtr node_timer;
-
-  std::shared_ptr<HeadNode> head_node;
-  std::shared_ptr<control::ControlNode> head_control_node;
-  std::shared_ptr<ConfigNode> configNode;
+  const std::string & path;
 };
-
 }  // namespace atama
 
-#endif  // ATAMA__NODE__ATAMA_NODE_HPP_
+#endif  // ATAMA__CONFIG__UTILS__CONFIG_HPP_
