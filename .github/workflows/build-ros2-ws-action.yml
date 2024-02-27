@@ -72,6 +72,12 @@ jobs:
           repository: ichiro-its/kansei
           path: kansei
 
+      - name: Checkout Aruku
+        uses: actions/checkout@v2.3.4
+        with:
+          repository: ichiro-its/aruku
+          path: aruku
+
       - name: Setup workspace
         uses: ichiro-its/ros2-ws-action/setup@v1.0.1
 
