@@ -56,7 +56,7 @@ HeadNode::HeadNode(rclcpp::Node::SharedPtr node, std::shared_ptr<Head> head)
 
   get_detection_result_subscriber =
     node->create_subscription<DetectedObjects>(
-    "ninshiki_cpp/detection", 10,
+    "ninshiki_cpp/dnn_detection", 10,
     [this](const DetectedObjects::SharedPtr message) {
       this->head->detection_result.clear();
 
@@ -77,13 +77,12 @@ HeadNode::HeadNode(rclcpp::Node::SharedPtr node, std::shared_ptr<Head> head)
   );
 
   current_joints_subscriber = node->create_subscription<CurrentJoints>(
-    "/joint/current_joints", 10,
+    "joint/current_joints", 10,
     [this](const CurrentJoints::SharedPtr message) {
       {
         using tachimawari::joint::Joint;
         using tachimawari::joint::JointId;
 
-        std::vector<Joint> temp_joints;
         std::set<uint8_t> joints_id;
 
         for (const std::string & id : {"neck_yaw", "neck_pitch"}) {
@@ -95,11 +94,13 @@ HeadNode::HeadNode(rclcpp::Node::SharedPtr node, std::shared_ptr<Head> head)
         for (const auto & joint : message->joints) {
           // Joint Id found in joints_id set
           if (joints_id.find(joint.id) != joints_id.end()) {
-            temp_joints.push_back(Joint(joint.id, joint.position));
+            if (joint.id == JointId::NECK_YAW) {
+              this->head->set_pan_angle(joint.position);
+            } else if (joint.id == JointId::NECK_PITCH) {
+              this->head->set_tilt_angle(joint.position);
+            }
           }
         }
-
-        this->head->set_joints(temp_joints);
       }
     }
   );
