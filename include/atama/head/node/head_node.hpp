@@ -65,7 +65,7 @@ private:
   std::shared_ptr<Head> head;
   int req_function_id;
 
-  rclcpp::Subscription<CurrentJoints>::SharedPtr current_joints_subscriber;
+  // rclcpp::Subscription<CurrentJoints>::SharedPtr current_joints_subscriber;
   rclcpp::Subscription<MeasurementStatus>::SharedPtr measurement_status_subscriber;
   rclcpp::Subscription<DetectedObjects>::SharedPtr get_detection_result_subscriber;
   rclcpp::Subscription<CameraConfig>::SharedPtr get_camera_config_subscriber;
