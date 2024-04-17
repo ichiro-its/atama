@@ -622,10 +622,7 @@ void Head::track_object(const std::string & object_name)
     if (object_count < object_max_count) {
       ++object_count;
     } else {
-      keisan::Point2 offset;
-      offset.x = ((object_center_x / static_cast<float>(camera_width)) - 0.5) * view_h_angle;
-      offset.y = ((object_center_y / static_cast<float>(camera_height)) - 0.5) * view_v_angle;
-      offset *= -1;
+      keisan::Point2 offset = calculate_angle_offset_from_pixel(object_center_x, object_center_y);
 
       tracking(offset.x, offset.y);
     }
@@ -693,4 +690,28 @@ keisan::Point2 Head::calculate_object_position_from_pixel(double pixel_x, double
   return object_position_from_pixel;
 }
 
-}  // namespace atama
+void Head::track_pixel(double pixel_x, double pixel_y)
+{
+  if (!check_time_belief()) {
+    return;
+  }
+
+  function_id = control::TRACK_OBJECT;
+  stop_scan();
+
+  keisan::Point2 offset = calculate_angle_offset_from_pixel(pixel_x, pixel_y);
+
+  tracking(offset.x, offset.y);
+}
+
+keisan::Point2 Head::calculate_angle_offset_from_pixel(double pixel_x, double pixel_y)
+{
+  keisan::Point2 offset(-1, -1);
+  offset.x = ((pixel_x / static_cast<float>(camera_width)) - 0.5) * view_h_angle;
+  offset.y = ((pixel_y / static_cast<float>(camera_height)) - 0.5) * view_v_angle;
+  offset *= -1;
+
+  return offset;
+}  
+
+} // namespace atama

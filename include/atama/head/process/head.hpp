@@ -114,6 +114,7 @@ public:
   void set_tilt_angle(double angle) {tilt_angle = angle;}
 
   keisan::Point2 calculate_object_position_from_pixel(double pixel_x, double pixel_y, bool is_ball = false);
+  keisan::Point2 calculate_angle_offset_from_pixel(double pixel_x, double pixel_y);
 
   double calculate_distance_from_pan_tilt()
   {
@@ -144,6 +145,7 @@ public:
   void load_config(const std::string & file_name);
 
   void track_object(const std::string & object_name);
+  void track_pixel(double pixel_x, double pixel_y);
 
   // REQUIRED
   void set_pan_tilt_angle(double pan, double tilt);
