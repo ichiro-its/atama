@@ -26,6 +26,7 @@
 #include "atama/head/node/head_node.hpp"
 
 #include "aruku/walking/walking.hpp"
+#include "tachimawari/joint/joint.hpp"
 #include "kansei/measurement/measurement.hpp"
 #include "rclcpp/rclcpp.hpp"
 
@@ -76,35 +77,6 @@ HeadNode::HeadNode(rclcpp::Node::SharedPtr node, std::shared_ptr<Head> head)
     }
   );
 
-  // current_joints_subscriber = node->create_subscription<CurrentJoints>(
-  //   "joint/current_joints", 10,
-  //   [this](const CurrentJoints::SharedPtr message) {
-  //     {
-  //       using tachimawari::joint::Joint;
-  //       using tachimawari::joint::JointId;
-
-  //       std::set<uint8_t> joints_id;
-
-  //       for (const std::string & id : {"neck_yaw", "neck_pitch"}) {
-  //         if (JointId::by_name.find(id) != JointId::by_name.end()) {
-  //           joints_id.insert(JointId::by_name.find(id)->second);
-  //         }
-  //       }
-
-  //       for (const auto & joint : message->joints) {
-  //         // Joint Id found in joints_id set
-  //         if (joints_id.find(joint.id) != joints_id.end()) {
-  //           if (joint.id == JointId::NECK_YAW) {
-  //             this->head->set_pan_angle(joint.position);
-  //           } else if (joint.id == JointId::NECK_PITCH) {
-  //             this->head->set_tilt_angle(joint.position);
-  //           }
-  //         }
-  //       }
-  //     }
-  //   }
-  // );
-
   walking_status_subscriber = node->create_subscription<WalkingStatus>(
     aruku::WalkingNode::status_topic(), 10,
     [this](const WalkingStatus::SharedPtr message) {
@@ -131,6 +103,8 @@ void HeadNode::publish_joints()
     joint_msgs[i].id = joints[i].get_id();
     joint_msgs[i].position = joints[i].get_position();
   }
+
+  joints_msg.control_type = tachimawari::joint::Middleware::FOR_HEAD;
 
   set_joints_publisher->publish(joints_msg);
 }
