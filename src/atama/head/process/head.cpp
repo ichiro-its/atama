@@ -55,7 +55,11 @@ Head::Head()
   object_count = 0;
   object_name = "ball";
 
-  joints = {};
+  joints = {
+    Joint(tachimawari::joint::JointId::NECK_YAW, 0.0),
+    Joint(tachimawari::joint::JointId::NECK_PITCH, 0.0)
+  };
+
   initiate_min_time = true;
 
   camera_width = -1;
@@ -103,11 +107,7 @@ void Head::move_by_angle(double pan_angle, double tilt_angle)
   pan_angle_goal = pan_angle;
   tilt_angle_goal = tilt_angle;
 
-  // set calculation result
-  if (!joints.empty() && joints.size() >= 2) {
-    joints[0].set_position(pan_angle);
-    joints[1].set_position(tilt_angle);
-  }
+  process();
 }
 
 void Head::tracking(double pan, double tilt)
@@ -186,15 +186,11 @@ void Head::tracking()
   pan_angle = pan_center + keisan::clamp(pan_angle - pan_center, right_limit, left_limit);
   tilt_angle = tilt_center + keisan::clamp(tilt_angle - tilt_center, bottom_limit, top_limit);
 
-  // set calculation result
-  if (!joints.empty() && joints.size() >= 2) {
-    joints[0].set_position(pan_angle);
-    joints[1].set_position(tilt_angle);
-  }
+  process();
 }
 
 
-void Head::scan(int mode)
+void Head::scan(control::Command mode)
 {
   start_scan();
 
@@ -216,66 +212,6 @@ void Head::set_scan_limit(
   scan_bottom_limit = bottom_limit;
 }
 
-void Head::scan_one_direction()
-{
-  if (init_scanning()) {
-    double value_change;
-
-    scan_pan_angle = get_pan_angle();
-    scan_tilt_angle = get_tilt_angle();
-
-    if (scan_mode == control::SCAN_VERTICAL) {
-      value_change = 15.0;
-    } else {
-      value_change = 30.0;
-    }
-
-    if (get_tilt_angle() < (scan_bottom_limit + scan_top_limit) / 2) {
-      scan_position = 0;
-      scan_tilt_angle -= value_change;
-    } else {
-      scan_position = 1;
-      scan_tilt_angle += value_change;
-    }
-  }
-
-  if (scan_mode == control::SCAN_VERTICAL) {
-    scan_pan_angle = (scan_left_limit + scan_right_limit) / 2;
-    switch (scan_position) {
-      case 0:
-        scan_tilt_angle += scan_speed;
-        if (scan_tilt_angle > scan_top_limit) {
-          scan_position = (scan_position + 1) % 2;
-        }
-        break;
-      case 1:
-        scan_tilt_angle -= scan_speed;
-        if (scan_tilt_angle < scan_bottom_limit) {
-          scan_position = (scan_position + 1) % 2;
-        }
-        break;
-    }
-  } else {
-    scan_tilt_angle = -60.0;
-    switch (scan_position) {
-      case 0:
-        scan_pan_angle += scan_speed;
-        if (scan_pan_angle > scan_left_limit) {
-          scan_position = (scan_position + 1) % 2;
-        }
-
-        break;
-      case 1:
-        scan_pan_angle -= scan_speed;
-        if (scan_pan_angle < scan_right_limit) {
-          scan_position = (scan_position + 1) % 2;
-        }
-
-        break;
-    }
-  }
-}
-
 void Head::scan_two_direction()
 {
   if (init_scanning()) {
@@ -286,16 +222,17 @@ void Head::scan_two_direction()
 
     if (pan_angle < (scan_left_limit + scan_right_limit) / 2) {
       scan_direction = 0;
-      scan_pan_angle -= 30.0;
+      scan_pan_angle -= std::fabs(scan_right_limit);
     } else {
       scan_direction = 1;
-      scan_pan_angle += 30.0;
+      scan_pan_angle += std::fabs(scan_right_limit);
     }
   }
 
   switch (scan_position) {
     case 0:
       scan_tilt_angle = scan_bottom_limit;
+      scan_pan_angle = keisan::clamp(scan_pan_angle, -70.0, 70.0);
       break;
     case 1:
       scan_tilt_angle = (scan_bottom_limit + scan_top_limit) * 0.5;
@@ -308,14 +245,14 @@ void Head::scan_two_direction()
   switch (scan_direction) {
     case 0:
       scan_pan_angle += scan_speed;
-      if (scan_pan_angle > scan_left_limit) {
+      if (scan_pan_angle > ((scan_position == 0) ? 70.0 : scan_left_limit)) {
         scan_position = (scan_position + 1) % 3;
         scan_direction = 1;
       }
       break;
     case 1:
       scan_pan_angle -= scan_speed;
-      if (scan_pan_angle < scan_right_limit) {
+      if (scan_pan_angle < ((scan_position == 0) ? -70.0 : scan_right_limit)) {
         scan_position = (scan_position + 1) % 3;
         scan_direction = 0;
       }
@@ -323,7 +260,7 @@ void Head::scan_two_direction()
   }
 }
 
-void Head::scan_process()
+void Head::process()
 {
   for (size_t i = 0; i < joints.size(); ++i) {
     joints[i].set_pid_gain(20.0, 3.0, 2.0);
@@ -333,9 +270,91 @@ void Head::scan_process()
     switch (scan_mode) {
       case control::SCAN_UP:
       case control::SCAN_DOWN:
-      case control::SCAN_CUSTOM: scan_two_direction(); break;
+      case control::SCAN_CUSTOM:
+        scan_two_direction();
+        break;
       case control::SCAN_VERTICAL:
-      case control::SCAN_HORIZONTAL: scan_one_direction(); break;
+        {
+          if (init_scanning()) {
+            scan_pan_angle = get_pan_angle();
+            scan_tilt_angle = get_tilt_angle();
+            
+            scan_left_limit = 0;
+            scan_right_limit = 0;
+
+            if (get_tilt_angle() < (scan_bottom_limit + scan_top_limit) / 2) {
+              scan_position = 0;
+              scan_tilt_angle -= (fabs(scan_top_limit - scan_bottom_limit) / 2);
+            } else {
+              scan_position = 1;
+              scan_tilt_angle += (fabs(scan_top_limit - scan_bottom_limit) / 2);
+            }
+          }
+
+          scan_pan_angle = (scan_left_limit + scan_right_limit) / 2;
+          switch (scan_position) {
+            case 0:
+              {
+                scan_tilt_angle += scan_speed;
+                if (scan_tilt_angle > scan_top_limit) {
+                  scan_position = (scan_position + 1) % 2;
+                }
+
+                break;
+              }
+            case 1:
+              {
+                scan_tilt_angle -= scan_speed;
+                if (scan_tilt_angle < scan_bottom_limit) {
+                  scan_position = (scan_position + 1) % 2;
+                }
+
+                break;
+              }
+          }
+
+          break;
+        }
+      case control::SCAN_HORIZONTAL:
+        {
+          if (init_scanning()) {
+            scan_pan_angle = get_pan_angle();
+            scan_tilt_angle = get_tilt_angle();
+
+            if (pan_angle < (scan_left_limit + scan_right_limit) / 2) {
+              scan_position = 0;
+              scan_pan_angle -= fabs(scan_right_limit);
+            } else {
+              scan_position = 1;
+              scan_pan_angle += fabs(scan_right_limit);
+            }
+          }
+
+          scan_tilt_angle = (scan_bottom_limit + scan_top_limit) / 2;
+
+          switch (scan_position) {
+            case 0:
+              {
+                scan_pan_angle += scan_speed;
+                if (scan_pan_angle > scan_left_limit) {
+                  scan_position = (scan_position + 1) % 2;
+                }
+
+                break;
+              }
+            case 1:
+              {
+                scan_pan_angle -= scan_speed;
+                if (scan_pan_angle < scan_right_limit) {
+                  scan_position = (scan_position + 1) % 2;
+                }
+
+                break;
+              }
+          }
+
+          break;
+        }
     }
 
     pan_angle = pan_center + keisan::clamp(scan_pan_angle, right_limit, left_limit);
@@ -357,7 +376,7 @@ void Head::scan_custom(control::Command scan_type)
 
   function_id = scan_type;
   scan(scan_type);
-  scan_process();
+  process();
 }
 
 double Head::calculate_distance_from_pan_tilt(double pan, double tilt)
@@ -369,7 +388,22 @@ double Head::calculate_distance_from_pan_tilt(double pan, double tilt)
       double x1 = pow((pan + pan_center + pan_offset), (i - j));
       double x2 = pow((tilt + tilt_center + tilt_offset), j);
       distance += (pan_tilt_to_distance_[i - j][j]) * x1 * x2;
-    }
+    }      // action_->playUntilStop(motion_manager_->WALKREADY);
+  }
+
+  return (distance > 0.0) ? distance : 0.0;
+}
+
+double Head::calculate_distance_from_pan_tilt_using_regression(double pan, double tilt)
+{
+  double distance = 0.0;
+  int coef_index = 0;
+  for (int i = 0; i < pan_tilt_to_dist_coefficients_.size(); i++)
+  {
+    double x1 = pow((pan + pan_offset), pan_tilt_to_dist_degress_[i][0]);
+    double x2 = pow((tilt + tilt_offset), pan_tilt_to_dist_degress_[i][1]);
+
+    distance += pan_tilt_to_dist_coefficients_[coef_index++] * x1 * x2;
   }
 
   return (distance > 0.0) ? distance : 0.0;
@@ -435,6 +469,7 @@ void Head::load_config(const std::string & file_name)
           val.at("tilt_center").get_to(tilt_center);
         } catch (nlohmann::json::parse_error & ex) {
           std::cerr << "parse error at byte " << ex.byte << std::endl;
+          throw ex;
         }
       } else if (key == "Offset") {
         try {
@@ -442,6 +477,7 @@ void Head::load_config(const std::string & file_name)
           val.at("tilt_offset").get_to(tilt_offset);
         } catch (nlohmann::json::parse_error & ex) {
           std::cerr << "parse error at byte " << ex.byte << std::endl;
+          throw ex;
         }
       } else if (key == "Limit") {
         try {
@@ -451,6 +487,7 @@ void Head::load_config(const std::string & file_name)
           val.at("bottom_limit").get_to(bottom_limit);
         } catch (nlohmann::json::parse_error & ex) {
           std::cerr << "parse error at byte " << ex.byte << std::endl;
+          throw ex;
         }
       } else if (key == "Scan") {
         try {
@@ -461,6 +498,7 @@ void Head::load_config(const std::string & file_name)
           val.at("bottom_limit").get_to(scan_bottom_limit);
         } catch (nlohmann::json::parse_error & ex) {
           std::cerr << "parse error at byte " << ex.byte << std::endl;
+          throw ex;
         }
       } else if (key == "Gain") {
         try {
@@ -470,6 +508,23 @@ void Head::load_config(const std::string & file_name)
           val.at("tilt_d_gain").get_to(tilt_d_gain);
         } catch (nlohmann::json::parse_error & ex) {
           std::cerr << "parse error at byte " << ex.byte << std::endl;
+          throw ex;
+        }
+      } else if (key == "PanTiltToDistanceRegression") {
+        try {
+          val.at("distance_polynomial_coefficients").get_to(pan_tilt_to_dist_coefficients_);
+          val.at("distance_polynomial_degrees").get_to(pan_tilt_to_dist_degress_);
+        } catch (nlohmann::json::parse_error & ex) {
+          std::cerr << "parse error at byte " << ex.byte << std::endl;
+          throw ex;
+        }
+      } else if (key == "FOVCamera") {
+        try {
+          val.at("horizontal_fov").get_to(horizontal_fov);
+          val.at("vertical_fov").get_to(vertical_fov);
+        } catch (nlohmann::json::parse_error & ex) {
+          std::cerr << "parse error at byte " << ex.byte << std::endl;
+          throw ex;
         }
       } else if (key == "PanTiltToDistance") {
         try {
@@ -482,6 +537,7 @@ void Head::load_config(const std::string & file_name)
           }
         } catch (nlohmann::json::parse_error & ex) {
           std::cerr << "parse error at byte " << ex.byte << std::endl;
+          throw ex;
         }
       } else if (key == "TiltToDistance") {
         try {
@@ -492,6 +548,7 @@ void Head::load_config(const std::string & file_name)
           }
         } catch (nlohmann::json::parse_error & ex) {
           std::cerr << "parse error at byte " << ex.byte << std::endl;
+          throw ex;
         }
       } else if (key == "PanDistanceToTilt") {
         try {
@@ -504,6 +561,7 @@ void Head::load_config(const std::string & file_name)
           }
         } catch (nlohmann::json::parse_error & ex) {
           std::cerr << "parse error at byte " << ex.byte << std::endl;
+          throw ex;
         }
       }
     }
@@ -541,17 +599,14 @@ void Head::track_object(const std::string & object_name)
     for (const auto & item : detection_result) {
       if (item.score > confidence) {
         confidence = item.score;
-
-        object_center_x = (item.left * camera_width +
-          item.right * camera_width) / 2;
-        object_center_y = (item.top * camera_height +
-          item.bottom * camera_height) / 2;
+        
+        object_center_x = item.left + item.right / 2;
+        object_center_y = item.top + item.bottom / 2;
       }
     }
   } else {
     return;
   }
-  keisan::Point2 pos(object_center_x, object_center_y);
 
   // There is no object with the label we want
   if (filtered_result.empty()) {
@@ -567,11 +622,7 @@ void Head::track_object(const std::string & object_name)
     if (object_count < object_max_count) {
       ++object_count;
     } else {
-      keisan::Point2 center = keisan::Point2(camera_width, camera_height) / 2;
-      keisan::Point2 offset = pos - center;
-      offset *= -1;
-      offset.x *= (view_h_angle / camera_width);
-      offset.y *= (view_v_angle / camera_height);
+      keisan::Point2 offset = calculate_angle_offset_from_pixel(object_center_x, object_center_y);
 
       tracking(offset.x, offset.y);
     }
@@ -615,4 +666,52 @@ void Head::set_joints(std::vector<Joint> joints_param)
   tilt_angle = joints[1].get_position();
 }
 
-}  // namespace atama
+keisan::Point2 Head::calculate_object_position_from_pixel(double pixel_x, double pixel_y, bool is_ball)
+{
+  keisan::Point2 object_position_from_pixel = keisan::Point2(-1, -1);
+
+  // calculate object distance from pixels and center distance
+  double horizontal_degree = horizontal_fov * pixel_x;
+  double vertical_degree = vertical_fov * pixel_y;
+  double center_real_distance = is_ball ? Head::calculate_distance_from_pan_tilt_using_regression() : Head::calculate_distance_from_pan_tilt_using_regression() + 7;
+
+  if (Head::calculate_distance_from_pan_tilt_using_regression() > -1) {
+    double camera_height = center_real_distance / keisan::make_radian((90 + Head::get_tilt_angle())).tan();
+    double x_relative_from_camera = camera_height * keisan::make_radian((90 + Head::get_tilt_angle() - vertical_degree)).tan();
+    double y_relative_from_camera = x_relative_from_camera * keisan::make_radian(horizontal_degree).tan();
+    double object_distance_from_camera = sqrt(pow(x_relative_from_camera, 2) + pow(y_relative_from_camera, 2));
+
+    keisan::Angle<double> object_delta_direction = keisan::make_radian((yaw - Head::get_pan_angle() + horizontal_degree));
+
+    object_position_from_pixel.x = object_distance_from_camera * object_delta_direction.cos();
+    object_position_from_pixel.y = object_distance_from_camera * object_delta_direction.sin();
+  }
+
+  return object_position_from_pixel;
+}
+
+void Head::track_pixel(double pixel_x, double pixel_y)
+{
+  if (!check_time_belief()) {
+    return;
+  }
+
+  function_id = control::TRACK_OBJECT;
+  stop_scan();
+
+  keisan::Point2 offset = calculate_angle_offset_from_pixel(pixel_x, pixel_y);
+
+  tracking(offset.x, offset.y);
+}
+
+keisan::Point2 Head::calculate_angle_offset_from_pixel(double pixel_x, double pixel_y)
+{
+  keisan::Point2 offset(-1, -1);
+  offset.x = ((pixel_x / static_cast<float>(camera_width)) - 0.5) * view_h_angle;
+  offset.y = ((pixel_y / static_cast<float>(camera_height)) - 0.5) * view_v_angle;
+  offset *= -1;
+
+  return offset;
+}  
+
+} // namespace atama

@@ -100,27 +100,33 @@ public:
 
   void reinit_scan() {scan_init = false;}
 
-  void scan(int mode);
-  void scan_up() {set_scan_limit(60.0, -60.0, 0.0, -75.0); scan_custom(control::SCAN_UP);}
-  void scan_down() {set_scan_limit(60.0, -60.0, 0.0, -75.0); scan_custom(control::SCAN_DOWN);}
-  void scan_horizontal()
-  {
-    set_scan_limit(70.0, -70.0, -30.0, -30.0); scan_custom(control::SCAN_HORIZONTAL);
-  }
-  void scan_vertical() {set_scan_limit(0.0, 0.0, 0.0, -70.0); scan_custom(control::SCAN_VERTICAL);}
-  void scan_marathon()
-  {
-    set_scan_limit(70.0, -70.0, 0.0, -70.0); scan_custom(control::SCAN_MARATHON);
-  }
+  void scan(control::Command mode);
+  void scan_up() { scan_custom(control::SCAN_UP); }
+  void scan_down() { scan_custom(control::SCAN_DOWN); }
+  void scan_horizontal() { scan_custom(control::SCAN_HORIZONTAL); }
+  void scan_vertical() { scan_custom(control::SCAN_VERTICAL); }
+  void scan_marathon() { scan_custom(control::SCAN_MARATHON); }
   void scan_custom(control::Command scan_type = control::SCAN_CUSTOM);
   void scan_one_direction();
   void scan_two_direction();
+
+  void set_pan_angle(double angle) {pan_angle = angle;}
+  void set_tilt_angle(double angle) {tilt_angle = angle;}
+
+  keisan::Point2 calculate_object_position_from_pixel(double pixel_x, double pixel_y, bool is_ball = false);
+  keisan::Point2 calculate_angle_offset_from_pixel(double pixel_x, double pixel_y);
 
   double calculate_distance_from_pan_tilt()
   {
     return calculate_distance_from_pan_tilt(get_pan_angle(), get_tilt_angle());
   }
   double calculate_distance_from_pan_tilt(double pan, double tilt);
+
+  double calculate_distance_from_pan_tilt_using_regression()
+  {
+    return calculate_distance_from_pan_tilt_using_regression(get_pan_angle(), get_tilt_angle());
+  }
+  double calculate_distance_from_pan_tilt_using_regression(double pan, double tilt);
 
   double calculate_distance_from_tilt()
   {
@@ -139,6 +145,7 @@ public:
   void load_config(const std::string & file_name);
 
   void track_object(const std::string & object_name);
+  void track_pixel(double pixel_x, double pixel_y);
 
   // REQUIRED
   void set_pan_tilt_angle(double pan, double tilt);
@@ -149,7 +156,7 @@ public:
 
 private:
   bool init_scanning();
-  void scan_process();
+  void process();
   bool check_time_belief();
 
   bool pan_only;
@@ -175,6 +182,12 @@ private:
   double pan_d_gain;
   double tilt_p_gain;
   double tilt_d_gain;
+
+  std::vector<double> pan_tilt_to_dist_coefficients_;
+  std::vector<std::vector<int>> pan_tilt_to_dist_degress_;
+
+  double horizontal_fov;
+  double vertical_fov;
 
   double pan_tilt_to_distance_[7][7];
   double tilt_to_distance_[5];
