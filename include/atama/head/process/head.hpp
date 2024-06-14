@@ -116,29 +116,9 @@ public:
   keisan::Point2 calculate_object_position_from_pixel(double pixel_x, double pixel_y, bool is_ball = false);
   keisan::Point2 calculate_angle_offset_from_pixel(double pixel_x, double pixel_y);
 
-  double calculate_distance_from_pan_tilt()
-  {
-    return calculate_distance_from_pan_tilt(get_pan_angle(), get_tilt_angle());
-  }
-  double calculate_distance_from_pan_tilt(double pan, double tilt);
+  double calculate_distance_from_pan_tilt();
 
-  double calculate_distance_from_pan_tilt_using_regression()
-  {
-    return calculate_distance_from_pan_tilt_using_regression(get_pan_angle(), get_tilt_angle());
-  }
-  double calculate_distance_from_pan_tilt_using_regression(double pan, double tilt);
-
-  double calculate_distance_from_tilt()
-  {
-    return calculate_distance_from_tilt(get_tilt_angle());
-  }
-  double calculate_distance_from_tilt(double tilt);
-
-  double calculate_tilt_from_pan_distance(double distance)
-  {
-    return calculate_tilt_from_pan_distance(get_pan_angle(), distance);
-  }
-  double calculate_tilt_from_pan_distance(double pan, double distance);
+  double calculate_tilt_from_pan_distance(double distance);
 
   void look_to_position(double goal_position_x, double goal_position_y);
 
@@ -183,15 +163,12 @@ private:
   double tilt_p_gain;
   double tilt_d_gain;
 
-  std::vector<double> pan_tilt_to_dist_coefficients_;
-  std::vector<std::vector<int>> pan_tilt_to_dist_degress_;
+  std::vector<double> pan_tilt_to_dist_coefficients;
+  std::vector<double> pan_distance_to_tilt_coefficients;
+  std::vector<std::vector<int>> distance_regression_degrees;
 
   double horizontal_fov;
   double vertical_fov;
-
-  double pan_tilt_to_distance_[7][7];
-  double tilt_to_distance_[5];
-  double pan_distance_to_tilt_[5][5];
 
   double pan_error;
   double pan_error_difference;
