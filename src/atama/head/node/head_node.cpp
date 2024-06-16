@@ -115,8 +115,7 @@ void HeadNode::publish_head_data()
 
   pan_tilt_msg.pan_angle = head->get_pan_angle();
   pan_tilt_msg.tilt_angle = head->get_tilt_angle();
-  pan_tilt_msg.distance = head->calculate_distance_from_pan_tilt(
-    head->get_pan_angle(), head->get_tilt_angle());
+  pan_tilt_msg.distance = head->calculate_distance_from_pan_tilt();
 
   set_head_publisher->publish(pan_tilt_msg);
 }

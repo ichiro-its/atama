@@ -376,61 +376,37 @@ void Head::scan_custom(control::Command scan_type)
   process();
 }
 
-double Head::calculate_distance_from_pan_tilt(double pan, double tilt)
+double Head::calculate_distance_from_pan_tilt()
 {
   double distance = 0.0;
-
-  for (int i = 6; i >= 0; --i) {
-    for (int j = 0; j <= i; ++j) {
-      double x1 = pow((pan + pan_center + pan_offset), (i - j));
-      double x2 = pow((tilt + tilt_center + tilt_offset), j);
-      distance += (pan_tilt_to_distance_[i - j][j]) * x1 * x2;
-    }      // action_->playUntilStop(motion_manager_->WALKREADY);
-  }
-
-  return (distance > 0.0) ? distance : 0.0;
-}
-
-double Head::calculate_distance_from_pan_tilt_using_regression(double pan, double tilt)
-{
-  double distance = 0.0;
+  double pan = get_pan_angle();
+  double tilt = get_tilt_angle();
   int coef_index = 0;
-  for (int i = 0; i < pan_tilt_to_dist_coefficients_.size(); i++)
+  for (int i = 0; i < pan_tilt_to_dist_coefficients.size(); i++)
   {
-    double x1 = pow((pan + pan_offset), pan_tilt_to_dist_degress_[i][0]);
-    double x2 = pow((tilt + tilt_offset), pan_tilt_to_dist_degress_[i][1]);
+    double x1 = pow((pan + pan_offset), distance_regression_degrees[i][0]);
+    double x2 = pow((tilt + tilt_offset), distance_regression_degrees[i][1]);
 
-    distance += pan_tilt_to_dist_coefficients_[coef_index++] * x1 * x2;
+    distance += pan_tilt_to_dist_coefficients[coef_index++] * x1 * x2;
   }
 
   return (distance > 0.0) ? distance : 0.0;
 }
 
-double Head::calculate_distance_from_tilt(double tilt)
-{
-  double distance = 0.0;
-
-  for (int i = 0; i <= 4; ++i) {
-    double x2 = pow((tilt + tilt_center + tilt_offset), i);
-    distance += (tilt_to_distance_[i]) * x2;
-  }
-
-  return (distance > 0.0) ? distance : 0.0;
-}
-
-double Head::calculate_tilt_from_pan_distance(double pan, double distance)
+double Head::calculate_tilt_from_pan_distance(double distance)
 {
   double tilt = 0.0;
+  double pan = get_pan_angle();
+  int coef_index = 0;
+  for (int i = 0; i < pan_distance_to_tilt_coefficients.size(); i++)
+  {
+    double x1 = pow((pan + pan_offset), distance_regression_degrees[i][0]);
+    double x2 = pow((tilt + tilt_offset), distance_regression_degrees[i][1]);
 
-  for (int i = 4; i >= 0; --i) {
-    for (int j = 0; j <= i; ++j) {
-      double x1 = pow((pan + pan_center + pan_offset), (i - j));
-      double x2 = pow(distance, j);
-      tilt += (pan_distance_to_tilt_[i - j][j]) * x1 * x2;
-    }
+    tilt += pan_distance_to_tilt_coefficients[coef_index++] * x1 * x2;
   }
 
-  return ((tilt < 15.0) ? tilt : 15.0) - tilt_center - tilt_offset;
+  return tilt;
 }
 
 void Head::look_to_position(double goal_position_x, double goal_position_y)
@@ -441,7 +417,7 @@ void Head::look_to_position(double goal_position_x, double goal_position_y)
     float dy = goal_position_y - robot_position_y;
 
     float pan = yaw - keisan::signed_arctan(dy, dx).normalize().degree();
-    float tilt = calculate_tilt_from_pan_distance(keisan::signed_arctan(dy, dx).degree());
+    float tilt = calculate_tilt_from_pan_distance(std::hypot(dx, dy));
 
     move_by_angle(pan - pan_center, tilt);
   }
@@ -507,10 +483,11 @@ void Head::load_config(const std::string & file_name)
           std::cerr << "parse error at byte " << ex.byte << std::endl;
           throw ex;
         }
-      } else if (key == "PanTiltToDistanceRegression") {
+      } else if (key == "DistanceRegression") {
         try {
-          val.at("distance_polynomial_coefficients").get_to(pan_tilt_to_dist_coefficients_);
-          val.at("distance_polynomial_degrees").get_to(pan_tilt_to_dist_degress_);
+          val.at("distance_polynomial_coefficients").get_to(pan_tilt_to_dist_coefficients);
+          val.at("tilt_polynomial_coefficients").get_to(pan_distance_to_tilt_coefficients);
+          val.at("distance_polynomial_degrees").get_to(distance_regression_degrees);
         } catch (nlohmann::json::parse_error & ex) {
           std::cerr << "parse error at byte " << ex.byte << std::endl;
           throw ex;
@@ -519,43 +496,6 @@ void Head::load_config(const std::string & file_name)
         try {
           val.at("horizontal_fov").get_to(horizontal_fov);
           val.at("vertical_fov").get_to(vertical_fov);
-        } catch (nlohmann::json::parse_error & ex) {
-          std::cerr << "parse error at byte " << ex.byte << std::endl;
-          throw ex;
-        }
-      } else if (key == "PanTiltToDistance") {
-        try {
-          for (int i = 6; i >= 0; --i) {
-            for (int j = 0; j <= i; ++j) {
-              char buffer[32];
-              snprintf(buffer, sizeof(buffer), "pan_%d_tilt_%d", (i - j), j);
-              val.at(buffer).get_to(pan_tilt_to_distance_[i - j][j]);
-            }
-          }
-        } catch (nlohmann::json::parse_error & ex) {
-          std::cerr << "parse error at byte " << ex.byte << std::endl;
-          throw ex;
-        }
-      } else if (key == "TiltToDistance") {
-        try {
-          for (int i = 0; i <= 4; ++i) {
-            char buffer[32];
-            snprintf(buffer, sizeof(buffer), "pan_%d_tilt_%d", 0, i);
-            val.at(buffer).get_to(tilt_to_distance_[i]);
-          }
-        } catch (nlohmann::json::parse_error & ex) {
-          std::cerr << "parse error at byte " << ex.byte << std::endl;
-          throw ex;
-        }
-      } else if (key == "PanDistanceToTilt") {
-        try {
-          for (int i = 4; i >= 0; --i) {
-            for (int j = 0; j <= i; ++j) {
-              char buffer[32];
-              snprintf(buffer, sizeof(buffer), "pan_%d_distance_%d", (i - j), j);
-              val.at(buffer).get_to(pan_distance_to_tilt_[i - j][j]);
-            }
-          }
         } catch (nlohmann::json::parse_error & ex) {
           std::cerr << "parse error at byte " << ex.byte << std::endl;
           throw ex;
@@ -670,9 +610,9 @@ keisan::Point2 Head::calculate_object_position_from_pixel(double pixel_x, double
   // calculate object distance from pixels and center distance
   double horizontal_degree = horizontal_fov * pixel_x;
   double vertical_degree = vertical_fov * pixel_y;
-  double center_real_distance = is_ball ? Head::calculate_distance_from_pan_tilt_using_regression() : Head::calculate_distance_from_pan_tilt_using_regression() + 7;
+  double center_real_distance = is_ball ? Head::calculate_distance_from_pan_tilt() : Head::calculate_distance_from_pan_tilt() + 7;
 
-  if (Head::calculate_distance_from_pan_tilt_using_regression() > -1) {
+  if (Head::calculate_distance_from_pan_tilt() > -1) {
     double camera_height = center_real_distance / keisan::make_radian((90 + Head::get_tilt_angle())).tan();
     double x_relative_from_camera = camera_height * keisan::make_radian((90 + Head::get_tilt_angle() - vertical_degree)).tan();
     double y_relative_from_camera = x_relative_from_camera * keisan::make_radian(horizontal_degree).tan();
