@@ -218,14 +218,14 @@ void Head::scan_two_direction()
     scan_pan_angle = get_pan_angle();
     scan_tilt_angle = get_tilt_angle();
 
-    scan_position = (scan_mode == control::SCAN_DOWN) ? 0 : 1;
+    scan_position = (scan_mode == control::SCAN_DOWN) ? 0 : 2;
 
-    if (pan_angle < (scan_left_limit + scan_right_limit) / 2) {
+    if (pan_angle <= (scan_left_limit + scan_right_limit) / 2) {
       scan_direction = 0;
-      scan_pan_angle -= std::fabs(scan_right_limit);
+      scan_pan_angle = scan_right_limit;
     } else {
       scan_direction = 1;
-      scan_pan_angle += std::fabs(scan_right_limit);
+      scan_pan_angle = scan_left_limit;
     }
   }
 
@@ -278,9 +278,6 @@ void Head::process()
           if (init_scanning()) {
             scan_pan_angle = get_pan_angle();
             scan_tilt_angle = get_tilt_angle();
-            
-            scan_left_limit = 0;
-            scan_right_limit = 0;
 
             if (get_tilt_angle() < (scan_bottom_limit + scan_top_limit) / 2) {
               scan_position = 0;
