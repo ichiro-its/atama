@@ -24,7 +24,6 @@
 #include <memory>
 #include <string>
 
-#include "atama/config/utils/config.hpp"
 #include "atama_interfaces/srv/get_config.hpp"
 #include "atama_interfaces/srv/save_config.hpp"
 #include "rclcpp/rclcpp.hpp"
@@ -40,7 +39,6 @@ private:
   std::shared_ptr<rclcpp::Node> node;
   rclcpp::Service<atama_interfaces::srv::GetConfig>::SharedPtr get_config_service;
   rclcpp::Service<atama_interfaces::srv::SaveConfig>::SharedPtr set_config_service;
-  Config config;
 };
 }  // namespace atama
 
