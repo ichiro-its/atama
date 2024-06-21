@@ -39,7 +39,11 @@ ConfigNode::ConfigNode(std::shared_ptr<rclcpp::Node> node, const std::string & p
     [this, path](
       atama_interfaces::srv::GetConfig::Request::SharedPtr request,
       atama_interfaces::srv::GetConfig::Response::SharedPtr response) {
-      response->json = jitsuyo::load_config(path, "/head.json").dump();
+      nlohmann::json data;
+      if (!jitsuyo::load_config(path, "/head.json", data)) {
+        return;
+      }
+      response->json = data.dump();
     });
 
   set_config_service = node->create_service<atama_interfaces::srv::SaveConfig>(
