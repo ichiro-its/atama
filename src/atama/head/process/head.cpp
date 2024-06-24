@@ -28,6 +28,7 @@
 #include <vector>
 
 #include "atama/head/process/head.hpp"
+#include "jitsuyo/config.hpp"
 
 namespace atama
 {
@@ -431,79 +432,115 @@ void Head::set_pan_tilt_angle(double pan, double tilt)
 
 void Head::load_config(const std::string & file_name)
 {
-  try {
-    std::ifstream file(file_name + "head.json");
-    nlohmann::json walking_data = nlohmann::json::parse(file);
+  nlohmann::json walking_data;
+  if (!jitsuyo::load_config(file_name, "head.json", walking_data)) {
+    throw std::runtime_error("Failed to load config file `" + file_name + "head.json`");
+  }
 
-    for (auto &[key, val] : walking_data.items()) {
-      if (key == "Center") {
-        try {
-          val.at("pan_center").get_to(pan_center);
-          val.at("tilt_center").get_to(tilt_center);
-        } catch (nlohmann::json::parse_error & ex) {
-          std::cerr << "parse error at byte " << ex.byte << std::endl;
-          throw ex;
-        }
-      } else if (key == "Offset") {
-        try {
-          val.at("pan_offset").get_to(pan_offset);
-          val.at("tilt_offset").get_to(tilt_offset);
-        } catch (nlohmann::json::parse_error & ex) {
-          std::cerr << "parse error at byte " << ex.byte << std::endl;
-          throw ex;
-        }
-      } else if (key == "Limit") {
-        try {
-          val.at("left_limit").get_to(left_limit);
-          val.at("right_limit").get_to(right_limit);
-          val.at("top_limit").get_to(top_limit);
-          val.at("bottom_limit").get_to(bottom_limit);
-        } catch (nlohmann::json::parse_error & ex) {
-          std::cerr << "parse error at byte " << ex.byte << std::endl;
-          throw ex;
-        }
-      } else if (key == "Scan") {
-        try {
-          val.at("scan_speed").get_to(scan_speed);
-          val.at("left_limit").get_to(scan_left_limit);
-          val.at("right_limit").get_to(scan_right_limit);
-          val.at("top_limit").get_to(scan_top_limit);
-          val.at("bottom_limit").get_to(scan_bottom_limit);
-        } catch (nlohmann::json::parse_error & ex) {
-          std::cerr << "parse error at byte " << ex.byte << std::endl;
-          throw ex;
-        }
-      } else if (key == "Gain") {
-        try {
-          val.at("pan_p_gain").get_to(pan_p_gain);
-          val.at("pan_d_gain").get_to(pan_d_gain);
-          val.at("tilt_p_gain").get_to(tilt_p_gain);
-          val.at("tilt_d_gain").get_to(tilt_d_gain);
-        } catch (nlohmann::json::parse_error & ex) {
-          std::cerr << "parse error at byte " << ex.byte << std::endl;
-          throw ex;
-        }
-      } else if (key == "DistanceRegression") {
-        try {
-          val.at("distance_polynomial_coefficients").get_to(pan_tilt_to_dist_coefficients);
-          val.at("tilt_polynomial_coefficients").get_to(pan_distance_to_tilt_coefficients);
-          val.at("distance_polynomial_degrees").get_to(distance_regression_degrees);
-        } catch (nlohmann::json::parse_error & ex) {
-          std::cerr << "parse error at byte " << ex.byte << std::endl;
-          throw ex;
-        }
-      } else if (key == "FOVCamera") {
-        try {
-          val.at("horizontal_fov").get_to(horizontal_fov);
-          val.at("vertical_fov").get_to(vertical_fov);
-        } catch (nlohmann::json::parse_error & ex) {
-          std::cerr << "parse error at byte " << ex.byte << std::endl;
-          throw ex;
-        }
-      }
+  bool valid_config = true;
+
+  nlohmann::json center_section;
+  if (jitsuyo::assign_val(walking_data, "Center", center_section)) {
+    bool valid_section = true;
+    valid_section &= jitsuyo::assign_val(center_section, "pan_center", pan_center);
+    valid_section &= jitsuyo::assign_val(center_section, "tilt_center", tilt_center);
+
+    if (!valid_section) {
+      std::cout << "Error found at section `Center`" << std::endl;
+      valid_config = false;
     }
-  } catch (nlohmann::json::parse_error & ex) {
-    // TODO(nathan): will be used for logging
+  } else {
+    valid_config = false;
+  }
+
+  nlohmann::json offset_section;
+  if (jitsuyo::assign_val(walking_data, "Offset", offset_section)) {
+    bool valid_section = true;
+    valid_section &= jitsuyo::assign_val(offset_section, "pan_offset", pan_offset);
+    valid_section &= jitsuyo::assign_val(offset_section, "tilt_offset", tilt_offset);
+    if (!valid_section) {
+      std::cout << "Error found at section `Offset`" << std::endl;
+      valid_config = false;
+    }
+  } else {
+    valid_config = false;
+  }
+
+  nlohmann::json limit_section;
+  if (jitsuyo::assign_val(walking_data, "Limit", limit_section)) {
+    bool valid_section = true;
+    valid_section &= jitsuyo::assign_val(limit_section, "left_limit", left_limit);
+    valid_section &= jitsuyo::assign_val(limit_section, "right_limit", right_limit);
+    valid_section &= jitsuyo::assign_val(limit_section, "top_limit", top_limit);
+    valid_section &= jitsuyo::assign_val(limit_section, "bottom_limit", bottom_limit);
+    if (!valid_section) {
+      std::cout << "Error found at section `Limit`" << std::endl;
+      valid_config = false;
+    }
+  } else {
+    valid_config = false;
+  }
+
+  nlohmann::json scan_section;
+  if (jitsuyo::assign_val(walking_data, "Scan", scan_section)) {
+    bool valid_section = true;
+    valid_section &= jitsuyo::assign_val(scan_section, "scan_speed", scan_speed);
+    valid_section &= jitsuyo::assign_val(scan_section, "left_limit", scan_left_limit);
+    valid_section &= jitsuyo::assign_val(scan_section, "right_limit", scan_right_limit);
+    valid_section &= jitsuyo::assign_val(scan_section, "top_limit", scan_top_limit);
+    valid_section &= jitsuyo::assign_val(scan_section, "bottom_limit", scan_bottom_limit);
+    if (!valid_section) {
+      std::cout << "Error found at section `Scan`" << std::endl;
+      valid_config = false;
+    }
+  } else {
+    valid_config = false;
+  }
+
+  nlohmann::json gain_section;
+  if (jitsuyo::assign_val(walking_data, "Gain", gain_section)) {
+    bool valid_section = true;
+    valid_section &= jitsuyo::assign_val(gain_section, "pan_p_gain", pan_p_gain);
+    valid_section &= jitsuyo::assign_val(gain_section, "pan_d_gain", pan_d_gain);
+    valid_section &= jitsuyo::assign_val(gain_section, "tilt_p_gain", tilt_p_gain);
+    valid_section &= jitsuyo::assign_val(gain_section, "tilt_d_gain", tilt_d_gain);
+    if (!valid_section) {
+      std::cout << "Error found at section `Gain`" << std::endl;
+      valid_config = false;
+    }
+  } else {
+    valid_config = false;
+  }
+
+  nlohmann::json distance_regression_section;
+  if (jitsuyo::assign_val(walking_data, "DistanceRegression", distance_regression_section)) {
+    bool valid_section = true;
+    valid_section &= jitsuyo::assign_val(distance_regression_section, "distance_polynomial_coefficients", pan_tilt_to_dist_coefficients);
+    valid_section &= jitsuyo::assign_val(distance_regression_section, "tilt_polynomial_coefficients", pan_distance_to_tilt_coefficients);
+    valid_section &= jitsuyo::assign_val(distance_regression_section, "distance_polynomial_degrees", distance_regression_degrees);
+    if (!valid_section) {
+      std::cout << "Error found at section `DistanceRegression`" << std::endl;
+      valid_config = false;
+    }
+  } else {
+    valid_config = false;
+  }
+
+  nlohmann::json fov_section;
+  if (jitsuyo::assign_val(walking_data, "FOVCamera", fov_section)) {
+    bool valid_section = true;
+    valid_section &= jitsuyo::assign_val(fov_section, "horizontal_fov", horizontal_fov);
+    valid_section &= jitsuyo::assign_val(fov_section, "vertical_fov", vertical_fov);
+    if (!valid_section) {
+      std::cout << "Error found at section `FOVCamera`" << std::endl;
+      valid_config = false;
+    }
+  } else {
+    valid_config = false;
+  }
+
+  if (!valid_config) {
+    throw std::runtime_error("Failed to load config file `" + file_name + "head.json`");
   }
 }
 

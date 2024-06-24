@@ -26,34 +26,38 @@
 
 #include "atama_interfaces/srv/get_config.hpp"
 #include "atama_interfaces/srv/save_config.hpp"
+#include "jitsuyo/config.hpp"
+
 namespace atama
 {
 ConfigNode::ConfigNode(std::shared_ptr<rclcpp::Node> node, const std::string & path)
-: node(node), config(path)
+: node(node)
 {
   // get config
   get_config_service = node->create_service<atama_interfaces::srv::GetConfig>(
     "/atama_app/config/get_config",
-    [this](
+    [this, path](
       atama_interfaces::srv::GetConfig::Request::SharedPtr request,
       atama_interfaces::srv::GetConfig::Response::SharedPtr response) {
-      response->json = this->config.get_config();
+      nlohmann::json data;
+      if (!jitsuyo::load_config(path, "/head.json", data)) {
+        return;
+      }
+      response->json = data.dump();
     });
 
   set_config_service = node->create_service<atama_interfaces::srv::SaveConfig>(
     "/atama_app/config/save_config",
-    [this](
+    [this, path](
       atama_interfaces::srv::SaveConfig::Request::SharedPtr request,
       atama_interfaces::srv::SaveConfig::Response::SharedPtr response) {
-      try {
-        nlohmann::json json = nlohmann::json::parse(request->json);
+      nlohmann::json json = nlohmann::json::parse(request->json);
+      response->status = false;
 
-        this->config.set_config({json});
-        response->status = true;
-      } catch (...) {
-        response->status = false;
+      if (!jitsuyo::save_config(path, "/head.json", json)) {
+        return;
       }
-      ;
+      response->status = true;
     });
 }
 }  // namespace atama
