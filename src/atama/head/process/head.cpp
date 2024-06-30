@@ -397,7 +397,7 @@ double Head::calculate_tilt_from_pan_distance(double distance)
   for (int i = 0; i < pan_distance_to_tilt_coefficients.size(); i++)
   {
     double x1 = pow((pan + pan_offset), distance_regression_degrees[i][0]);
-    double x2 = pow((tilt + tilt_offset), distance_regression_degrees[i][1]);
+    double x2 = pow((distance), distance_regression_degrees[i][1]);
 
     tilt += pan_distance_to_tilt_coefficients[coef_index++] * x1 * x2;
   }
