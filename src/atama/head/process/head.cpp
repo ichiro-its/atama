@@ -281,7 +281,7 @@ void Head::process()
             scan_tilt_angle = get_tilt_angle();
 
             scan_position = 1;
-            scan_tilt_angle += (fabs(scan_top_limit - scan_bottom_limit) / 2);
+            scan_tilt_angle += fabs(scan_top_limit - scan_bottom_limit);
           }
 
           scan_pan_angle = (scan_left_limit + scan_right_limit) / 2;
