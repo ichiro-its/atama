@@ -601,8 +601,6 @@ void Head::track_object(const std::string & object_name)
       tracking(offset.x, offset.y);
     }
   }
-
-  detection_result.clear();
 }
 
 bool Head::check_time_belief()
