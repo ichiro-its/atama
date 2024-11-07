@@ -26,6 +26,7 @@
 #include "atama/head/node/head_node.hpp"
 
 #include "aruku/walking/walking.hpp"
+#include "tachimawari/joint/joint.hpp"
 #include "kansei/measurement/measurement.hpp"
 #include "rclcpp/rclcpp.hpp"
 
@@ -56,7 +57,7 @@ HeadNode::HeadNode(rclcpp::Node::SharedPtr node, std::shared_ptr<Head> head)
 
   get_detection_result_subscriber =
     node->create_subscription<DetectedObjects>(
-    "ninshiki_cpp/detection", 10,
+    "ninshiki_cpp/dnn_detection", 10,
     [this](const DetectedObjects::SharedPtr message) {
       this->head->detection_result.clear();
 
@@ -73,34 +74,6 @@ HeadNode::HeadNode(rclcpp::Node::SharedPtr node, std::shared_ptr<Head> head)
       this->head->camera_height = message->height;
       this->head->view_v_angle = message->v_angle;
       this->head->view_h_angle = message->h_angle;
-    }
-  );
-
-  current_joints_subscriber = node->create_subscription<CurrentJoints>(
-    "/joint/current_joints", 10,
-    [this](const CurrentJoints::SharedPtr message) {
-      {
-        using tachimawari::joint::Joint;
-        using tachimawari::joint::JointId;
-
-        std::vector<Joint> temp_joints;
-        std::set<uint8_t> joints_id;
-
-        for (const std::string & id : {"neck_yaw", "neck_pitch"}) {
-          if (JointId::by_name.find(id) != JointId::by_name.end()) {
-            joints_id.insert(JointId::by_name.find(id)->second);
-          }
-        }
-
-        for (const auto & joint : message->joints) {
-          // Joint Id found in joints_id set
-          if (joints_id.find(joint.id) != joints_id.end()) {
-            temp_joints.push_back(Joint(joint.id, joint.position));
-          }
-        }
-
-        this->head->set_joints(temp_joints);
-      }
     }
   );
 
@@ -131,6 +104,8 @@ void HeadNode::publish_joints()
     joint_msgs[i].position = joints[i].get_position();
   }
 
+  joints_msg.control_type = tachimawari::joint::Middleware::FOR_HEAD;
+
   set_joints_publisher->publish(joints_msg);
 }
 
@@ -140,8 +115,7 @@ void HeadNode::publish_head_data()
 
   pan_tilt_msg.pan_angle = head->get_pan_angle();
   pan_tilt_msg.tilt_angle = head->get_tilt_angle();
-  pan_tilt_msg.distance = head->calculate_distance_from_pan_tilt(
-    head->get_pan_angle(), head->get_tilt_angle());
+  pan_tilt_msg.distance = head->calculate_distance_from_pan_tilt();
 
   set_head_publisher->publish(pan_tilt_msg);
 }

@@ -17,6 +17,7 @@ find_package(ament_cmake REQUIRED)
 find_package(aruku REQUIRED)
 find_package(aruku_interfaces REQUIRED)
 find_package(atama_interfaces REQUIRED)
+find_package(jitsuyo REQUIRED)
 find_package(kansei REQUIRED)
 find_package(kansei_interfaces REQUIRED)
 find_package(keisan REQUIRED)
@@ -33,8 +34,7 @@ add_library(${PROJECT_NAME} SHARED
   "src/${PROJECT_NAME}/head/process/head.cpp"
   "src/${PROJECT_NAME}/head/node/head_node.cpp"
   "src/${PROJECT_NAME}/config/node/config_node.cpp"
-  "src/${PROJECT_NAME}/node/atama_node.cpp"
-  "src/${PROJECT_NAME}/config/utils/config.cpp")
+  "src/${PROJECT_NAME}/node/atama_node.cpp")
 
 target_include_directories(${PROJECT_NAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -44,6 +44,7 @@ ament_target_dependencies(${PROJECT_NAME}
   aruku
   aruku_interfaces
   atama_interfaces
+  jitsuyo
   kansei
   kansei_interfaces
   keisan
@@ -96,6 +97,7 @@ ament_export_dependencies(
   aruku
   aruku_interfaces
   atama_interfaces
+  jitsuyo
   kansei
   kansei_interfaces
   keisan
