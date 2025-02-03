@@ -32,10 +32,11 @@ enum Command
   SCAN_VERTICAL     = 2,
   SCAN_HORIZONTAL   = 3,
   SCAN_MARATHON     = 4,
-  SCAN_CUSTOM       = 5,
-  TRACK_OBJECT      = 6,
-  MOVE_BY_ANGLE     = 7,
-  LOOK_TO_POSITION  = 8,
+  SCAN_TRIANGLE     = 5,
+  SCAN_CUSTOM       = 6,
+  TRACK_OBJECT      = 7,
+  MOVE_BY_ANGLE     = 8,
+  LOOK_TO_POSITION  = 9,
 };
 
 }  // namespace atama::control

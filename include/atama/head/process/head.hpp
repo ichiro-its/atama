@@ -106,6 +106,7 @@ public:
   void scan_horizontal() { scan_custom(control::SCAN_HORIZONTAL); }
   void scan_vertical() { scan_custom(control::SCAN_VERTICAL); }
   void scan_marathon() { scan_custom(control::SCAN_MARATHON); }
+  void scan_triangle() { scan_custom(control::SCAN_TRIANGLE); }
   void scan_custom(control::Command scan_type = control::SCAN_CUSTOM);
   void scan_one_direction();
   void scan_two_direction();
