@@ -75,6 +75,9 @@ Head::Head()
   robot_position_x = -1;
   robot_position_y = -1;
   yaw = -1;
+
+  triangle_bottom_limit = -15;
+  scan_turn_count = 0;
 }
 
 bool Head::init_scanning()
@@ -360,50 +363,50 @@ void Head::process()
             scan_pan_angle = get_pan_angle();
             scan_tilt_angle = get_tilt_angle();
 
-            scan_position = 0;
+            double tilt_comp = keisan::map(scan_tilt_angle, -5.0, -55.0, -5.0, -15.0);
+            triangle_bottom_limit = scan_tilt_angle + tilt_comp;
+            scan_turn_count = 0;
 
-            if (pan_angle <= (scan_left_limit + scan_right_limit) / 2) {
-              scan_direction = 0;
-              scan_pan_angle = scan_right_limit;
-            } else {
-              scan_direction = 1;
-              scan_pan_angle = scan_left_limit;
-            }
+            scan_position = 1;
+            scan_direction = 1;
           }
 
           switch (scan_direction) {
             case 0:
-              scan_pan_angle += scan_speed;
+              scan_pan_angle += scan_speed * 2;
               if (scan_pan_angle > scan_left_limit) {
                 scan_direction = 1;
-                scan_position = (scan_position + 1) % 4;
+                scan_position = (scan_position + 1) % 3;
+                scan_turn_count++;
               } else if (scan_position == 0 && scan_pan_angle > 0) {
                 scan_position = 1;
+                scan_turn_count++;
               }
               break;
             case 1:
-              scan_pan_angle -= scan_speed;
+              scan_pan_angle -= scan_speed * 2;
               if (scan_pan_angle < scan_right_limit) {
                 scan_direction = 0;
-                scan_position = (scan_position + 1) % 4;
+                scan_position = (scan_position + 1) % 3;
+                scan_turn_count++;
               } else if (scan_position == 0 && scan_pan_angle < 0) {
                 scan_position = 1;
+                scan_turn_count++;
               }
               break;
           }
 
           switch (scan_position) {
             case 0:
-            case 4:
-              if (scan_tilt_angle > scan_bottom_limit) {
-                scan_tilt_angle -= scan_speed * (scan_top_limit - scan_bottom_limit) / (scan_left_limit);
+              if (scan_tilt_angle > triangle_bottom_limit) {
+                scan_tilt_angle -= scan_speed * 2 * (scan_top_limit - triangle_bottom_limit) / (scan_left_limit);
               } else {
-                scan_tilt_angle = scan_bottom_limit;
+                scan_tilt_angle = triangle_bottom_limit;
               }
               break;
             case 1:
               if (scan_tilt_angle < scan_top_limit) {
-                scan_tilt_angle += scan_speed * (scan_top_limit - scan_bottom_limit) / (scan_left_limit);
+                scan_tilt_angle += scan_speed * 2 * (scan_top_limit - triangle_bottom_limit) / (scan_left_limit);
               } else {
                 scan_tilt_angle = scan_top_limit;
               }
@@ -434,6 +437,12 @@ void Head::scan_custom(control::Command scan_type)
   function_id = scan_type;
   scan(scan_type);
   process();
+}
+
+bool Head::scan_triangle()
+{
+  scan_custom(control::SCAN_TRIANGLE);
+  return scan_turn_count >= 3;
 }
 
 double Head::calculate_distance_from_pan_tilt()
