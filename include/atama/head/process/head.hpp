@@ -60,6 +60,8 @@ public:
   double robot_position_y;
   double yaw;
 
+  int marathon_index;
+
   Head();
 
   void start_scan() {is_started_scanning = true;}
@@ -107,6 +109,7 @@ public:
   void scan_vertical() { scan_custom(control::SCAN_VERTICAL); }
   void scan_marathon() { scan_custom(control::SCAN_MARATHON); }
   void scan_custom(control::Command scan_type = control::SCAN_CUSTOM);
+  void scan_custom_limit(double left_limit, double right_limit, double top_limit, double bottom_limit);
   void scan_one_direction();
   void scan_two_direction();
 

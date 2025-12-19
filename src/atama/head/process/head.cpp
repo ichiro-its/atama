@@ -18,16 +18,16 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <nlohmann/json.hpp>
+#include "atama/head/process/head.hpp"
 
 #include <cmath>
 #include <fstream>
 #include <memory>
+#include <nlohmann/json.hpp>
 #include <sstream>
 #include <string>
 #include <vector>
 
-#include "atama/head/process/head.hpp"
 #include "jitsuyo/config.hpp"
 
 namespace atama
@@ -75,6 +75,8 @@ Head::Head()
   robot_position_x = -1;
   robot_position_y = -1;
   yaw = -1;
+
+  marathon_index = -1;
 }
 
 bool Head::init_scanning()
@@ -353,6 +355,71 @@ void Head::process()
 
           break;
         }
+
+      case control::SCAN_MARATHON:
+        {
+          if (init_scanning()) {
+            scan_left_limit = 70.0;
+            scan_right_limit = -70.0;
+            scan_top_limit = 0.0;
+            scan_bottom_limit = -70.0;
+
+            scan_pan_angle = get_pan_angle();
+            scan_tilt_angle = get_tilt_angle();
+
+            scan_position = 0;
+            marathon_index = -1;
+          }
+
+          switch (scan_position) {
+            // Scan vertical middle
+            case 0:
+              {
+                marathon_index = scan_position;
+                scan_tilt_angle += scan_speed;
+                scan_pan_angle = 0.0;
+
+                if (scan_tilt_angle > scan_top_limit) {
+                  scan_position = 1;
+                  scan_tilt_angle = scan_bottom_limit;
+                }
+
+                break;
+              }
+
+            // Scan vertical right
+            case 1:
+              {
+                marathon_index = scan_position;
+                scan_tilt_angle += scan_speed;
+                scan_pan_angle = scan_right_limit;
+
+                if (scan_tilt_angle > scan_top_limit) {
+                  scan_position = 2;
+                  scan_tilt_angle = scan_bottom_limit;
+                }
+
+                break;
+              }
+
+            // Scan vertical left
+            case 2:
+              {
+                marathon_index = scan_position;
+                scan_tilt_angle += scan_speed;
+                scan_pan_angle = scan_left_limit;
+
+                if (scan_tilt_angle > scan_top_limit) {
+                  scan_position = 0;
+                  scan_tilt_angle = scan_bottom_limit;
+                }
+
+                break;
+              }
+          }
+
+          break;
+        }
     }
 
     pan_angle = pan_center + keisan::clamp(scan_pan_angle, right_limit, left_limit);
@@ -375,6 +442,16 @@ void Head::scan_custom(control::Command scan_type)
   function_id = scan_type;
   scan(scan_type);
   process();
+}
+
+void Head::scan_custom_limit(double left_limit, double right_limit, double top_limit, double bottom_limit)
+{
+  scan_left_limit = left_limit;
+  scan_right_limit = right_limit;
+  scan_top_limit = top_limit;
+  scan_bottom_limit = bottom_limit;
+
+  scan_custom();
 }
 
 double Head::calculate_distance_from_pan_tilt()
@@ -573,7 +650,7 @@ void Head::track_object(const std::string & object_name)
     for (const auto & item : detection_result) {
       if (item.score > confidence) {
         confidence = item.score;
-        
+
         object_center_x = item.left + item.right / 2;
         object_center_y = item.top + item.bottom / 2;
       }
@@ -684,6 +761,6 @@ keisan::Point2 Head::calculate_angle_offset_from_pixel(double pixel_x, double pi
   offset *= -1;
 
   return offset;
-}  
+}
 
 } // namespace atama
