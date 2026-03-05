@@ -647,7 +647,7 @@ void Head::track_object(const std::string & object_name)
   double confidence = 0.0;
   double object_center_x, object_center_y;
   if (!filtered_result.empty()) {
-    for (const auto & item : detection_result) {
+    for (const auto & item : filtered_result) {
       if (item.score > confidence) {
         confidence = item.score;
 
