@@ -507,7 +507,7 @@ void Head::look_to_position_regression(double goal_position_x, double goal_posit
   }
 }
 
-void Head::look_to_position_ipm(double goal_position_x, double goal_position_y)
+void Head::look_to_position(double goal_position_x, double goal_position_y)
 {
   if (robot_position_x != -1 && robot_position_y != -1 && yaw != -1) {
     function_id = control::LOOK_TO_POSITION;

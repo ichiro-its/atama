@@ -179,7 +179,7 @@ void ControlNode::run_head_callback(const RunHead::SharedPtr message)
         }
 
         process = [this, goal_x, goal_y]() {
-            this->head->look_to_position_ipm(goal_x, goal_y);
+            this->head->look_to_position(goal_x, goal_y);
             return check_move_by_angle();
           };
 
