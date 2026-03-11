@@ -88,9 +88,9 @@ HeadNode::HeadNode(rclcpp::Node::SharedPtr node, std::shared_ptr<Head> head)
   camera_pose_subscriber = node->create_subscription<PoseStamped>(
     "gyakuenki_cpp/corrected_camera_pose", 10,
     [this](const geometry_msgs::msg::PoseStamped::SharedPtr message) {
-      this->head->camera_pose.x = message->pose.position.x;
-      this->head->camera_pose.y = message->pose.position.y;
-      this->head->camera_pose.z = message->pose.position.z;
+      this->head->camera_pose.x = message->pose.position.x * 100;
+      this->head->camera_pose.y = message->pose.position.y * 100;
+      this->head->camera_pose.z = message->pose.position.z * 100;
     }
   );
 
