@@ -420,6 +420,63 @@ void Head::process()
 
           break;
         }
+
+      case control::SCAN_TRIANGLE:
+        {
+          if (init_scanning()) {
+            scan_pan_angle = get_pan_angle();
+            scan_tilt_angle = get_tilt_angle();
+
+            scan_position = 1;
+            scan_direction = 1;
+          }
+
+          switch (scan_direction) {
+            // scan left
+            case 0:
+              scan_pan_angle += scan_speed;
+              if (scan_pan_angle > scan_left_limit) {
+                scan_direction = 1;
+                scan_position = (scan_position + 1) % 3;
+              } else if (scan_position == 0 && scan_pan_angle > 0) {
+                scan_position = 1;
+              }
+              break;
+            // scan right
+            case 1:
+              scan_pan_angle -= scan_speed;
+              if (scan_pan_angle < scan_right_limit) {
+                scan_direction = 0;
+                scan_position = (scan_position + 1) % 3;
+              } else if (scan_position == 0 && scan_pan_angle < 0) {
+                scan_position = 1;
+              }
+              break;
+          }
+
+          switch (scan_position) {
+            // tilt down
+            case 0:
+              if (scan_tilt_angle > bottom_limit) {
+                scan_tilt_angle -= scan_speed * (scan_top_limit - bottom_limit) / scan_left_limit;
+              } else {
+                scan_tilt_angle = bottom_limit;
+              }
+              break;
+            // tilt up
+            case 1:
+              if (scan_tilt_angle < scan_top_limit) {
+                scan_tilt_angle += scan_speed * (scan_top_limit - bottom_limit) / scan_left_limit;
+              } else {
+                scan_tilt_angle = scan_top_limit;
+              }
+              break;
+            // Stay on top
+            case 2:
+              scan_tilt_angle = scan_top_limit;
+              break;
+          }
+        }
     }
 
     pan_angle = pan_center + keisan::clamp(scan_pan_angle, right_limit, left_limit);
