@@ -489,7 +489,7 @@ double Head::calculate_tilt_from_pan_distance(double distance)
 
 double Head::calculate_tilt_from_camera_height(double distance)
 {
-  double tilt = -std::atan2(camera_pose.z, distance - camera_pose.x) * 180.0 / M_PI;
+  double tilt = -keisan::signed_arctan(camera_pose.z, distance - camera_pose.x).normalize().degree();
   return tilt + tilt_offset;
 }
 
