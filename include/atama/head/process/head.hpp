@@ -112,7 +112,7 @@ public:
   void scan_custom_limit(double left_limit, double right_limit, double top_limit, double bottom_limit);
   void scan_one_direction();
   void scan_two_direction();
-  void scan_triangle() { scan_custom(control::SCAN_TRIANGLE; }
+  void scan_triangle() { scan_custom(control::SCAN_TRIANGLE); }
 
   void set_pan_angle(double angle) {pan_angle = angle;}
   void set_tilt_angle(double angle) {tilt_angle = angle;}
