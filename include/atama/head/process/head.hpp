@@ -28,6 +28,7 @@
 
 #include "atama/head/control/helper/command.hpp"
 #include "keisan/geometry/point_2.hpp"
+#include "keisan/geometry/point_3.hpp"
 #include "ninshiki_interfaces/msg/detected_object.hpp"
 #include "ninshiki_interfaces/msg/detected_objects.hpp"
 #include "tachimawari/joint/model/joint.hpp"
@@ -59,6 +60,8 @@ public:
   double robot_position_x;
   double robot_position_y;
   double yaw;
+
+  keisan::Point3 camera_pose;
 
   int marathon_index;
 
@@ -123,7 +126,9 @@ public:
   double calculate_distance_from_pan_tilt();
 
   double calculate_tilt_from_pan_distance(double distance);
+  double calculate_tilt_from_camera_height(double distance);
 
+  void look_to_position_regression(double goal_position_x, double goal_position_y);
   void look_to_position(double goal_position_x, double goal_position_y);
 
   void load_config(const std::string & file_name);

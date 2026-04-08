@@ -23,6 +23,7 @@
 
 #include <memory>
 #include <string>
+#include <geometry_msgs/msg/pose_stamped.hpp>
 
 #include "aruku_interfaces/msg/status.hpp"
 #include "atama/head/process/head.hpp"
@@ -48,6 +49,7 @@ public:
   using MeasurementStatus = kansei_interfaces::msg::Status;
   using SetJoints = tachimawari_interfaces::msg::SetJoints;
   using WalkingStatus = aruku_interfaces::msg::Status;
+  using PoseStamped = geometry_msgs::msg::PoseStamped;
 
   static std::string get_node_prefix();
   static std::string head_topic();
@@ -69,6 +71,7 @@ private:
   rclcpp::Subscription<DetectedObjects>::SharedPtr get_detection_result_subscriber;
   rclcpp::Subscription<CameraConfig>::SharedPtr get_camera_config_subscriber;
   rclcpp::Subscription<WalkingStatus>::SharedPtr walking_status_subscriber;
+  rclcpp::Subscription<PoseStamped>::SharedPtr camera_pose_subscriber;
 
   rclcpp::Publisher<SetJoints>::SharedPtr set_joints_publisher;
   rclcpp::Publisher<HeadData>::SharedPtr set_head_publisher;

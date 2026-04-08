@@ -544,7 +544,13 @@ double Head::calculate_tilt_from_pan_distance(double distance)
   return tilt;
 }
 
-void Head::look_to_position(double goal_position_x, double goal_position_y)
+double Head::calculate_tilt_from_camera_height(double distance)
+{
+  double tilt = -keisan::signed_arctan(camera_pose.z, distance - camera_pose.x).normalize().degree();
+  return tilt + tilt_offset;
+}
+
+void Head::look_to_position_regression(double goal_position_x, double goal_position_y)
 {
   if (robot_position_x != -1 && robot_position_y != -1 && yaw != -1) {
     function_id = control::LOOK_TO_POSITION;
@@ -553,6 +559,23 @@ void Head::look_to_position(double goal_position_x, double goal_position_y)
 
     float pan = yaw - keisan::signed_arctan(dy, dx).normalize().degree();
     float tilt = calculate_tilt_from_pan_distance(std::hypot(dx, dy));
+
+    move_by_angle(pan - pan_center, tilt);
+  }
+}
+
+void Head::look_to_position(double goal_position_x, double goal_position_y)
+{
+  if (robot_position_x != -1 && robot_position_y != -1 && yaw != -1) {
+    function_id = control::LOOK_TO_POSITION;
+
+    double dx = goal_position_x - robot_position_x;
+    double dy = goal_position_y - robot_position_y;
+
+    double distance = std::hypot(dx, dy);
+
+    double pan = yaw - keisan::signed_arctan(dy, dx).normalize().degree();
+    double tilt = calculate_tilt_from_camera_height(distance);
 
     move_by_angle(pan - pan_center, tilt);
   }
