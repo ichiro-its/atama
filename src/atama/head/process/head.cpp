@@ -481,12 +481,12 @@ void Head::process()
         double mid_tilt = (scan_top_limit + scan_bottom_limit) / 2.0;
 
         std::vector<std::pair<double, double>> scan_points = {
-          {mid_pan, scan_top_limit},           // top-center
-          {scan_right_limit, scan_top_limit},  // top-right
-          {scan_right_limit, mid_tilt},        // middle-right
-          {mid_pan, scan_bottom_limit},        // bottom-center
-          {scan_left_limit, mid_tilt},         // middle-left
-          {scan_left_limit, scan_top_limit}    // top-left
+          {mid_pan, scan_top_limit},                       // top-center
+          {scan_right_limit, scan_top_limit},              // top-right
+          {(scan_right_limit + mid_pan) / 2.0, mid_tilt},  // middle-right
+          {mid_pan, scan_bottom_limit},                    // bottom-center
+          {(scan_left_limit + mid_pan) / 2.0, mid_tilt},   // middle-left
+          {scan_left_limit, scan_top_limit}                // top-left
         };
 
         if (now < scan_stare_time) {
