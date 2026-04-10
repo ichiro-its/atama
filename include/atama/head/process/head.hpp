@@ -67,34 +67,35 @@ public:
 
   Head();
 
-  void start_scan() {is_started_scanning = true;}
-  void stop_scan() {is_started_scanning = false; scan_init = false;}
+  void start_scan() { is_started_scanning = true; }
+  void stop_scan()
+  {
+    is_started_scanning = false;
+    scan_init = false;
+  }
 
   void initialize();
 
-  double get_pan_angle() {return pan_angle - pan_center;}
-  double get_tilt_angle() {return tilt_angle - tilt_center;}
+  double get_pan_angle() { return pan_angle - pan_center; }
+  double get_tilt_angle() { return tilt_angle - tilt_center; }
 
-  double get_pan_error() {return pan_error;}
-  double get_tilt_error() {return tilt_error;}
+  double get_pan_error() { return pan_error; }
+  double get_tilt_error() { return tilt_error; }
 
-  double get_left_limit() {return left_limit;}
-  double get_right_limit() {return right_limit;}
-  double get_top_limit() {return top_limit;}
-  double get_bottom_limit() {return bottom_limit;}
+  double get_left_limit() { return left_limit; }
+  double get_right_limit() { return right_limit; }
+  double get_top_limit() { return top_limit; }
+  double get_bottom_limit() { return bottom_limit; }
 
-  double get_scan_left_limit() {return scan_left_limit;}
-  double get_scan_right_limit() {return scan_right_limit;}
-  double get_scan_top_limit() {return scan_top_limit;}
-  double get_scan_bottom_limit() {return scan_bottom_limit;}
+  double get_scan_left_limit() { return scan_left_limit; }
+  double get_scan_right_limit() { return scan_right_limit; }
+  double get_scan_top_limit() { return scan_top_limit; }
+  double get_scan_bottom_limit() { return scan_bottom_limit; }
 
-  double get_pan_center() {return pan_center;}
-  double get_tilt_center() {return tilt_center;}
+  double get_pan_center() { return pan_center; }
+  double get_tilt_center() { return tilt_center; }
 
-  void set_scan_limit(
-    double left_limit, double right_limit,
-    double top_limit, double bottom_limit
-  );
+  void set_scan_limit(double left_limit, double right_limit, double top_limit, double bottom_limit);
 
   void move_by_angle(double pan_angle, double tilt_angle);
 
@@ -103,7 +104,7 @@ public:
   void tracking_tilt_only(double tilt);
   void tracking();
 
-  void reinit_scan() {scan_init = false;}
+  void reinit_scan() { scan_init = false; }
 
   void scan(control::Command mode);
   void scan_up() { scan_custom(control::SCAN_UP); }
@@ -112,15 +113,18 @@ public:
   void scan_vertical() { scan_custom(control::SCAN_VERTICAL); }
   void scan_marathon() { scan_custom(control::SCAN_MARATHON); }
   void scan_custom(control::Command scan_type = control::SCAN_CUSTOM);
-  void scan_custom_limit(double left_limit, double right_limit, double top_limit, double bottom_limit);
+  void scan_custom_limit(
+    double left_limit, double right_limit, double top_limit, double bottom_limit);
   void scan_one_direction();
   void scan_two_direction();
   void scan_triangle() { scan_custom(control::SCAN_TRIANGLE); }
+  void scan_stop_stare() { scan_custom(control::SCAN_STOP_STARE); }
 
-  void set_pan_angle(double angle) {pan_angle = angle;}
-  void set_tilt_angle(double angle) {tilt_angle = angle;}
+  void set_pan_angle(double angle) { pan_angle = angle; }
+  void set_tilt_angle(double angle) { tilt_angle = angle; }
 
-  keisan::Point2 calculate_object_position_from_pixel(double pixel_x, double pixel_y, bool is_ball = false);
+  keisan::Point2 calculate_object_position_from_pixel(
+    double pixel_x, double pixel_y, bool is_ball = false);
   keisan::Point2 calculate_angle_offset_from_pixel(double pixel_x, double pixel_y);
 
   double calculate_distance_from_pan_tilt();
@@ -140,8 +144,8 @@ public:
   void set_pan_tilt_angle(double pan, double tilt);
 
   void set_joints(std::vector<Joint> joints_param);
-  const std::vector<Joint> & get_joints() const {return joints;}
-  bool is_joint_empty() {return joints.empty();}
+  const std::vector<Joint> & get_joints() const { return joints; }
+  bool is_joint_empty() { return joints.empty(); }
 
 private:
   bool init_scanning();
@@ -209,6 +213,9 @@ private:
   int object_count;
   static const int no_object_max_count = 1;
   static const int object_max_count = 8;
+
+  double scan_stare_duration = 0.4;
+  std::chrono::time_point<std::chrono::system_clock> scan_stare_time;
 
   std::chrono::time_point<std::chrono::system_clock> min_time;
   bool initiate_min_time;

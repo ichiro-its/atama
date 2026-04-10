@@ -24,19 +24,19 @@
 namespace atama::control
 {
 
-enum Command
-{
-  NONE              = -1,
-  SCAN_UP           = 0,
-  SCAN_DOWN         = 1,
-  SCAN_VERTICAL     = 2,
-  SCAN_HORIZONTAL   = 3,
-  SCAN_MARATHON     = 4,
-  SCAN_TRIANGLE     = 5,
-  SCAN_CUSTOM       = 6,
-  TRACK_OBJECT      = 7,
-  MOVE_BY_ANGLE     = 8,
-  LOOK_TO_POSITION  = 9,
+enum Command {
+  NONE = -1,
+  SCAN_UP = 0,
+  SCAN_DOWN = 1,
+  SCAN_VERTICAL = 2,
+  SCAN_HORIZONTAL = 3,
+  SCAN_MARATHON = 4,
+  SCAN_TRIANGLE = 5,
+  SCAN_STOP_STARE = 6,
+  SCAN_CUSTOM = 7,
+  TRACK_OBJECT = 8,
+  MOVE_BY_ANGLE = 9,
+  LOOK_TO_POSITION = 10,
 };
 
 }  // namespace atama::control

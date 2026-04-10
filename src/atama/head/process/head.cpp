@@ -58,8 +58,7 @@ Head::Head()
 
   joints = {
     Joint(tachimawari::joint::JointId::NECK_YAW, 0.0),
-    Joint(tachimawari::joint::JointId::NECK_PITCH, 0.0)
-  };
+    Joint(tachimawari::joint::JointId::NECK_PITCH, 0.0)};
 
   initiate_min_time = true;
 
@@ -192,7 +191,6 @@ void Head::tracking()
   process();
 }
 
-
 void Head::scan(control::Command mode)
 {
   start_scan();
@@ -206,8 +204,7 @@ void Head::scan(control::Command mode)
 }
 
 void Head::set_scan_limit(
-  double left_limit, double right_limit,
-  double top_limit, double bottom_limit)
+  double left_limit, double right_limit, double top_limit, double bottom_limit)
 {
   scan_left_limit = left_limit;
   scan_right_limit = right_limit;
@@ -276,207 +273,237 @@ void Head::process()
       case control::SCAN_CUSTOM:
         scan_two_direction();
         break;
-      case control::SCAN_VERTICAL:
-        {
-          if (init_scanning()) {
-            scan_pan_angle = get_pan_angle();
-            scan_tilt_angle = get_tilt_angle();
+      case control::SCAN_VERTICAL: {
+        if (init_scanning()) {
+          scan_pan_angle = get_pan_angle();
+          scan_tilt_angle = get_tilt_angle();
 
-            if (get_tilt_angle() < (scan_bottom_limit + scan_top_limit) / 2) {
-              scan_position = 0;
-              scan_tilt_angle -= (fabs(scan_top_limit - scan_bottom_limit) / 2);
-            } else {
-              scan_position = 1;
-              scan_tilt_angle += (fabs(scan_top_limit - scan_bottom_limit) / 2);
-            }
-          }
-
-          scan_pan_angle = (scan_left_limit + scan_right_limit) / 2;
-          switch (scan_position) {
-            case 0:
-              {
-                scan_tilt_angle += scan_speed;
-                if (scan_tilt_angle > scan_top_limit) {
-                  scan_position = (scan_position + 1) % 2;
-                }
-
-                break;
-              }
-            case 1:
-              {
-                scan_tilt_angle -= scan_speed;
-                if (scan_tilt_angle < scan_bottom_limit) {
-                  scan_position = (scan_position + 1) % 2;
-                }
-
-                break;
-              }
-          }
-
-          break;
-        }
-      case control::SCAN_HORIZONTAL:
-        {
-          if (init_scanning()) {
-            scan_pan_angle = get_pan_angle();
-            scan_tilt_angle = get_tilt_angle();
-
-            if (pan_angle < (scan_left_limit + scan_right_limit) / 2) {
-              scan_position = 0;
-              scan_pan_angle -= fabs(scan_right_limit);
-            } else {
-              scan_position = 1;
-              scan_pan_angle += fabs(scan_right_limit);
-            }
-          }
-
-          scan_tilt_angle = (scan_bottom_limit + scan_top_limit) / 2;
-
-          switch (scan_position) {
-            case 0:
-              {
-                scan_pan_angle += scan_speed;
-                if (scan_pan_angle > scan_left_limit) {
-                  scan_position = (scan_position + 1) % 2;
-                }
-
-                break;
-              }
-            case 1:
-              {
-                scan_pan_angle -= scan_speed;
-                if (scan_pan_angle < scan_right_limit) {
-                  scan_position = (scan_position + 1) % 2;
-                }
-
-                break;
-              }
-          }
-
-          break;
-        }
-
-      case control::SCAN_MARATHON:
-        {
-          if (init_scanning()) {
-            scan_left_limit = 70.0;
-            scan_right_limit = -70.0;
-            scan_top_limit = 0.0;
-            scan_bottom_limit = -70.0;
-
-            scan_pan_angle = get_pan_angle();
-            scan_tilt_angle = get_tilt_angle();
-
+          if (get_tilt_angle() < (scan_bottom_limit + scan_top_limit) / 2) {
             scan_position = 0;
-            marathon_index = -1;
+            scan_tilt_angle -= (fabs(scan_top_limit - scan_bottom_limit) / 2);
+          } else {
+            scan_position = 1;
+            scan_tilt_angle += (fabs(scan_top_limit - scan_bottom_limit) / 2);
+          }
+        }
+
+        scan_pan_angle = (scan_left_limit + scan_right_limit) / 2;
+        switch (scan_position) {
+          case 0: {
+            scan_tilt_angle += scan_speed;
+            if (scan_tilt_angle > scan_top_limit) {
+              scan_position = (scan_position + 1) % 2;
+            }
+
+            break;
+          }
+          case 1: {
+            scan_tilt_angle -= scan_speed;
+            if (scan_tilt_angle < scan_bottom_limit) {
+              scan_position = (scan_position + 1) % 2;
+            }
+
+            break;
+          }
+        }
+
+        break;
+      }
+      case control::SCAN_HORIZONTAL: {
+        if (init_scanning()) {
+          scan_pan_angle = get_pan_angle();
+          scan_tilt_angle = get_tilt_angle();
+
+          if (pan_angle < (scan_left_limit + scan_right_limit) / 2) {
+            scan_position = 0;
+            scan_pan_angle -= fabs(scan_right_limit);
+          } else {
+            scan_position = 1;
+            scan_pan_angle += fabs(scan_right_limit);
+          }
+        }
+
+        scan_tilt_angle = (scan_bottom_limit + scan_top_limit) / 2;
+
+        switch (scan_position) {
+          case 0: {
+            scan_pan_angle += scan_speed;
+            if (scan_pan_angle > scan_left_limit) {
+              scan_position = (scan_position + 1) % 2;
+            }
+
+            break;
+          }
+          case 1: {
+            scan_pan_angle -= scan_speed;
+            if (scan_pan_angle < scan_right_limit) {
+              scan_position = (scan_position + 1) % 2;
+            }
+
+            break;
+          }
+        }
+
+        break;
+      }
+
+      case control::SCAN_MARATHON: {
+        if (init_scanning()) {
+          scan_left_limit = 70.0;
+          scan_right_limit = -70.0;
+          scan_top_limit = 0.0;
+          scan_bottom_limit = -70.0;
+
+          scan_pan_angle = get_pan_angle();
+          scan_tilt_angle = get_tilt_angle();
+
+          scan_position = 0;
+          marathon_index = -1;
+        }
+
+        switch (scan_position) {
+          // Scan vertical middle
+          case 0: {
+            marathon_index = scan_position;
+            scan_tilt_angle += scan_speed;
+            scan_pan_angle = 0.0;
+
+            if (scan_tilt_angle > scan_top_limit) {
+              scan_position = 1;
+              scan_tilt_angle = scan_bottom_limit;
+            }
+
+            break;
           }
 
-          switch (scan_position) {
-            // Scan vertical middle
-            case 0:
-              {
-                marathon_index = scan_position;
-                scan_tilt_angle += scan_speed;
-                scan_pan_angle = 0.0;
+          // Scan vertical right
+          case 1: {
+            marathon_index = scan_position;
+            scan_tilt_angle += scan_speed;
+            scan_pan_angle = scan_right_limit;
 
-                if (scan_tilt_angle > scan_top_limit) {
-                  scan_position = 1;
-                  scan_tilt_angle = scan_bottom_limit;
-                }
+            if (scan_tilt_angle > scan_top_limit) {
+              scan_position = 2;
+              scan_tilt_angle = scan_bottom_limit;
+            }
 
-                break;
-              }
-
-            // Scan vertical right
-            case 1:
-              {
-                marathon_index = scan_position;
-                scan_tilt_angle += scan_speed;
-                scan_pan_angle = scan_right_limit;
-
-                if (scan_tilt_angle > scan_top_limit) {
-                  scan_position = 2;
-                  scan_tilt_angle = scan_bottom_limit;
-                }
-
-                break;
-              }
-
-            // Scan vertical left
-            case 2:
-              {
-                marathon_index = scan_position;
-                scan_tilt_angle += scan_speed;
-                scan_pan_angle = scan_left_limit;
-
-                if (scan_tilt_angle > scan_top_limit) {
-                  scan_position = 0;
-                  scan_tilt_angle = scan_bottom_limit;
-                }
-
-                break;
-              }
+            break;
           }
 
+          // Scan vertical left
+          case 2: {
+            marathon_index = scan_position;
+            scan_tilt_angle += scan_speed;
+            scan_pan_angle = scan_left_limit;
+
+            if (scan_tilt_angle > scan_top_limit) {
+              scan_position = 0;
+              scan_tilt_angle = scan_bottom_limit;
+            }
+
+            break;
+          }
+        }
+
+        break;
+      }
+
+      case control::SCAN_TRIANGLE: {
+        if (init_scanning()) {
+          scan_pan_angle = get_pan_angle();
+          scan_tilt_angle = get_tilt_angle();
+
+          scan_position = 1;
+          scan_direction = 1;
+        }
+
+        switch (scan_direction) {
+          // scan left
+          case 0:
+            scan_pan_angle += scan_speed;
+            if (scan_pan_angle > scan_left_limit) {
+              scan_direction = 1;
+              scan_position = (scan_position + 1) % 3;
+            } else if (scan_position == 0 && scan_pan_angle > 0) {
+              scan_position = 1;
+            }
+            break;
+          // scan right
+          case 1:
+            scan_pan_angle -= scan_speed;
+            if (scan_pan_angle < scan_right_limit) {
+              scan_direction = 0;
+              scan_position = (scan_position + 1) % 3;
+            } else if (scan_position == 0 && scan_pan_angle < 0) {
+              scan_position = 1;
+            }
+            break;
+        }
+
+        switch (scan_position) {
+          // tilt down
+          case 0:
+            if (scan_tilt_angle > bottom_limit) {
+              scan_tilt_angle -= scan_speed * (scan_top_limit - bottom_limit) / scan_left_limit;
+            } else {
+              scan_tilt_angle = bottom_limit;
+            }
+            break;
+          // tilt up
+          case 1:
+            if (scan_tilt_angle < scan_top_limit) {
+              scan_tilt_angle += scan_speed * (scan_top_limit - bottom_limit) / scan_left_limit;
+            } else {
+              scan_tilt_angle = scan_top_limit;
+            }
+            break;
+          // Stay on top
+          case 2:
+            scan_tilt_angle = scan_top_limit;
+            break;
+        }
+      }
+
+      case control::SCAN_STOP_STARE: {
+        if (init_scanning()) {
+          scan_pan_angle = get_pan_angle();
+          scan_tilt_angle = get_tilt_angle();
+
+          scan_position = 1;
+          scan_stare_time = std::chrono::system_clock::now() +
+                            std::chrono::duration_cast<std::chrono::system_clock::duration>(
+                              std::chrono::duration<double>(scan_stare_duration));
+        }
+
+        auto now = std::chrono::system_clock::now();
+
+        double mid_pan = (scan_left_limit + scan_right_limit) / 2.0;
+        double mid_tilt = (scan_top_limit + scan_bottom_limit) / 2.0;
+
+        std::vector<std::pair<double, double>> scan_points = {
+          {mid_pan, scan_top_limit},           // top-center
+          {scan_right_limit, scan_top_limit},  // top-right
+          {scan_right_limit, mid_tilt},        // middle-right
+          {mid_pan, scan_bottom_limit},        // bottom-center
+          {scan_left_limit, mid_tilt},         // middle-left
+          {scan_left_limit, scan_top_limit}    // top-left
+        };
+
+        if (now < scan_stare_time) {
+          // stay at current point
+          scan_pan_angle = scan_points[scan_position].first;
+          scan_tilt_angle = scan_points[scan_position].second;
           break;
         }
+        // move to next point
+        scan_position = (scan_position + 1) % scan_points.size();
 
-      case control::SCAN_TRIANGLE:
-        {
-          if (init_scanning()) {
-            scan_pan_angle = get_pan_angle();
-            scan_tilt_angle = get_tilt_angle();
+        scan_pan_angle = scan_points[scan_position].first;
+        scan_tilt_angle = scan_points[scan_position].second;
 
-            scan_position = 1;
-            scan_direction = 1;
-          }
-
-          switch (scan_direction) {
-            // scan left
-            case 0:
-              scan_pan_angle += scan_speed;
-              if (scan_pan_angle > scan_left_limit) {
-                scan_direction = 1;
-                scan_position = (scan_position + 1) % 3;
-              } else if (scan_position == 0 && scan_pan_angle > 0) {
-                scan_position = 1;
-              }
-              break;
-            // scan right
-            case 1:
-              scan_pan_angle -= scan_speed;
-              if (scan_pan_angle < scan_right_limit) {
-                scan_direction = 0;
-                scan_position = (scan_position + 1) % 3;
-              } else if (scan_position == 0 && scan_pan_angle < 0) {
-                scan_position = 1;
-              }
-              break;
-          }
-
-          switch (scan_position) {
-            // tilt down
-            case 0:
-              if (scan_tilt_angle > bottom_limit) {
-                scan_tilt_angle -= scan_speed * (scan_top_limit - bottom_limit) / scan_left_limit;
-              } else {
-                scan_tilt_angle = bottom_limit;
-              }
-              break;
-            // tilt up
-            case 1:
-              if (scan_tilt_angle < scan_top_limit) {
-                scan_tilt_angle += scan_speed * (scan_top_limit - bottom_limit) / scan_left_limit;
-              } else {
-                scan_tilt_angle = scan_top_limit;
-              }
-              break;
-            // Stay on top
-            case 2:
-              scan_tilt_angle = scan_top_limit;
-              break;
-          }
-        }
+        scan_stare_time = now + std::chrono::duration_cast<std::chrono::system_clock::duration>(
+                                  std::chrono::duration<double>(scan_stare_duration));
+      }
     }
 
     pan_angle = pan_center + keisan::clamp(scan_pan_angle, right_limit, left_limit);
@@ -501,7 +528,8 @@ void Head::scan_custom(control::Command scan_type)
   process();
 }
 
-void Head::scan_custom_limit(double left_limit, double right_limit, double top_limit, double bottom_limit)
+void Head::scan_custom_limit(
+  double left_limit, double right_limit, double top_limit, double bottom_limit)
 {
   scan_left_limit = left_limit;
   scan_right_limit = right_limit;
@@ -517,8 +545,7 @@ double Head::calculate_distance_from_pan_tilt()
   double pan = get_pan_angle();
   double tilt = get_tilt_angle();
   int coef_index = 0;
-  for (int i = 0; i < pan_tilt_to_dist_coefficients.size(); i++)
-  {
+  for (int i = 0; i < pan_tilt_to_dist_coefficients.size(); i++) {
     double x1 = pow((pan + pan_offset), distance_regression_degrees[i][0]);
     double x2 = pow((tilt + tilt_offset), distance_regression_degrees[i][1]);
 
@@ -533,8 +560,7 @@ double Head::calculate_tilt_from_pan_distance(double distance)
   double tilt = 0.0;
   double pan = get_pan_angle();
   int coef_index = 0;
-  for (int i = 0; i < pan_distance_to_tilt_coefficients.size(); i++)
-  {
+  for (int i = 0; i < pan_distance_to_tilt_coefficients.size(); i++) {
     double x1 = pow((pan + pan_offset), distance_regression_degrees[i][0]);
     double x2 = pow((distance), distance_regression_degrees[i][1]);
 
@@ -546,7 +572,8 @@ double Head::calculate_tilt_from_pan_distance(double distance)
 
 double Head::calculate_tilt_from_camera_height(double distance)
 {
-  double tilt = -keisan::signed_arctan(camera_pose.z, distance - camera_pose.x).normalize().degree();
+  double tilt =
+    -keisan::signed_arctan(camera_pose.z, distance - camera_pose.x).normalize().degree();
   return tilt + tilt_offset;
 }
 
@@ -646,6 +673,7 @@ void Head::load_config(const std::string & file_name)
     valid_section &= jitsuyo::assign_val(scan_section, "right_limit", scan_right_limit);
     valid_section &= jitsuyo::assign_val(scan_section, "top_limit", scan_top_limit);
     valid_section &= jitsuyo::assign_val(scan_section, "bottom_limit", scan_bottom_limit);
+    valid_section &= jitsuyo::assign_val(scan_section, "stare_duration", scan_stare_duration);
     if (!valid_section) {
       std::cout << "Error found at section `Scan`" << std::endl;
       valid_config = false;
@@ -672,9 +700,14 @@ void Head::load_config(const std::string & file_name)
   nlohmann::json distance_regression_section;
   if (jitsuyo::assign_val(walking_data, "DistanceRegression", distance_regression_section)) {
     bool valid_section = true;
-    valid_section &= jitsuyo::assign_val(distance_regression_section, "distance_polynomial_coefficients", pan_tilt_to_dist_coefficients);
-    valid_section &= jitsuyo::assign_val(distance_regression_section, "tilt_polynomial_coefficients", pan_distance_to_tilt_coefficients);
-    valid_section &= jitsuyo::assign_val(distance_regression_section, "distance_polynomial_degrees", distance_regression_degrees);
+    valid_section &= jitsuyo::assign_val(
+      distance_regression_section, "distance_polynomial_coefficients",
+      pan_tilt_to_dist_coefficients);
+    valid_section &= jitsuyo::assign_val(
+      distance_regression_section, "tilt_polynomial_coefficients",
+      pan_distance_to_tilt_coefficients);
+    valid_section &= jitsuyo::assign_val(
+      distance_regression_section, "distance_polynomial_degrees", distance_regression_degrees);
     if (!valid_section) {
       std::cout << "Error found at section `DistanceRegression`" << std::endl;
       valid_config = false;
@@ -795,22 +828,29 @@ void Head::set_joints(std::vector<Joint> joints_param)
   tilt_angle = joints[1].get_position();
 }
 
-keisan::Point2 Head::calculate_object_position_from_pixel(double pixel_x, double pixel_y, bool is_ball)
+keisan::Point2 Head::calculate_object_position_from_pixel(
+  double pixel_x, double pixel_y, bool is_ball)
 {
   keisan::Point2 object_position_from_pixel = keisan::Point2(-1, -1);
 
   // calculate object distance from pixels and center distance
   double horizontal_degree = horizontal_fov * pixel_x;
   double vertical_degree = vertical_fov * pixel_y;
-  double center_real_distance = is_ball ? Head::calculate_distance_from_pan_tilt() : Head::calculate_distance_from_pan_tilt() + 7;
+  double center_real_distance = is_ball ? Head::calculate_distance_from_pan_tilt()
+                                        : Head::calculate_distance_from_pan_tilt() + 7;
 
   if (Head::calculate_distance_from_pan_tilt() > -1) {
-    double camera_height = center_real_distance / keisan::make_radian((90 + Head::get_tilt_angle())).tan();
-    double x_relative_from_camera = camera_height * keisan::make_radian((90 + Head::get_tilt_angle() - vertical_degree)).tan();
-    double y_relative_from_camera = x_relative_from_camera * keisan::make_radian(horizontal_degree).tan();
-    double object_distance_from_camera = sqrt(pow(x_relative_from_camera, 2) + pow(y_relative_from_camera, 2));
+    double camera_height =
+      center_real_distance / keisan::make_radian((90 + Head::get_tilt_angle())).tan();
+    double x_relative_from_camera =
+      camera_height * keisan::make_radian((90 + Head::get_tilt_angle() - vertical_degree)).tan();
+    double y_relative_from_camera =
+      x_relative_from_camera * keisan::make_radian(horizontal_degree).tan();
+    double object_distance_from_camera =
+      sqrt(pow(x_relative_from_camera, 2) + pow(y_relative_from_camera, 2));
 
-    keisan::Angle<double> object_delta_direction = keisan::make_radian((yaw - Head::get_pan_angle() + horizontal_degree));
+    keisan::Angle<double> object_delta_direction =
+      keisan::make_radian((yaw - Head::get_pan_angle() + horizontal_degree));
 
     object_position_from_pixel.x = object_distance_from_camera * object_delta_direction.cos();
     object_position_from_pixel.y = object_distance_from_camera * object_delta_direction.sin();
@@ -843,4 +883,4 @@ keisan::Point2 Head::calculate_angle_offset_from_pixel(double pixel_x, double pi
   return offset;
 }
 
-} // namespace atama
+}  // namespace atama
