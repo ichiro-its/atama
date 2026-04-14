@@ -424,8 +424,8 @@ void Head::process()
       case control::SCAN_TRIANGLE:
         {
           if (init_scanning()) {
-            scan_pan_angle = get_pan_angle();
-            scan_tilt_angle = get_tilt_angle();
+            scan_pan_angle = 0.0;
+            scan_tilt_angle = scan_bottom_limit;
 
             scan_position = 1;
             scan_direction = 1;
@@ -725,14 +725,21 @@ void Head::track_object(const std::string & object_name)
   // looking at the center of the object
   // Pick an object with the biggest confidence
   double confidence = 0.0;
-  double object_center_x, object_center_y;
+  keisan::Point2 object_center = {0.0, 0.0};
+
   if (!filtered_result.empty()) {
     for (const auto & item : filtered_result) {
+      if (object_name == "goalpost") {
+        object_center.x += (item.left + item.right / 2) / filtered_result.size();
+        object_center.y += (item.top + item.bottom) / filtered_result.size();
+        continue;
+      }
+
       if (item.score > confidence) {
         confidence = item.score;
 
-        object_center_x = item.left + item.right / 2;
-        object_center_y = item.top + item.bottom / 2;
+        object_center.x = item.left + item.right / 2;
+        object_center.y = item.top + item.bottom / 2;
       }
     }
   } else {
@@ -753,7 +760,7 @@ void Head::track_object(const std::string & object_name)
     if (object_count < object_max_count) {
       ++object_count;
     } else {
-      keisan::Point2 offset = calculate_angle_offset_from_pixel(object_center_x, object_center_y);
+      keisan::Point2 offset = calculate_angle_offset_from_pixel(object_center.x, object_center.y);
 
       tracking(offset.x, offset.y);
     }
