@@ -739,7 +739,7 @@ void Head::track_object(const std::string & object_name)
         confidence = item.score;
 
         object_center.x = item.left + item.right / 2;
-        object_center.y = item.top + item.bottom / 2;
+        object_center.y = (object_name == "robot") ? item.top + item.bottom : item.top + item.bottom / 2;
       }
     }
   } else {
