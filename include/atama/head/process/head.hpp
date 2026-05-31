@@ -130,6 +130,7 @@ public:
 
   void look_to_position_regression(double goal_position_x, double goal_position_y);
   void look_to_position(double goal_position_x, double goal_position_y);
+  void look_to_distance(double goal_distance_x, double goal_distance_y);
 
   void load_config(const std::string & file_name);
 

@@ -424,8 +424,8 @@ void Head::process()
       case control::SCAN_TRIANGLE:
         {
           if (init_scanning()) {
-            scan_pan_angle = 0.0;
-            scan_tilt_angle = scan_bottom_limit;
+            scan_pan_angle = get_pan_angle();
+            scan_tilt_angle = get_tilt_angle();
 
             scan_position = 1;
             scan_direction = 1;
@@ -575,6 +575,20 @@ void Head::look_to_position(double goal_position_x, double goal_position_y)
     double distance = std::hypot(dx, dy);
 
     double pan = yaw - keisan::signed_arctan(dy, dx).normalize().degree();
+    double tilt = calculate_tilt_from_camera_height(distance);
+
+    move_by_angle(pan - pan_center, tilt);
+  }
+}
+
+void Head::look_to_distance(double goal_distance_x, double goal_distance_y)
+{
+  double distance = std::hypot(goal_distance_x, goal_distance_y);
+
+  if (distance > 0) {
+    function_id = control::LOOK_TO_POSITION;
+
+    double pan = keisan::signed_arctan(goal_distance_y, goal_distance_x).normalize().degree();
     double tilt = calculate_tilt_from_camera_height(distance);
 
     move_by_angle(pan - pan_center, tilt);
