@@ -588,7 +588,7 @@ void Head::look_to_distance(double goal_distance_x, double goal_distance_y)
   if (distance > 0) {
     function_id = control::LOOK_TO_POSITION;
 
-    double pan = keisan::signed_arctan(goal_distance_y, goal_distance_x).normalize().degree();
+    double pan = -keisan::signed_arctan(goal_distance_y, goal_distance_x).normalize().degree();
     double tilt = calculate_tilt_from_camera_height(distance);
 
     move_by_angle(pan - pan_center, tilt);
