@@ -749,6 +749,12 @@ void Head::track_object(const std::string & object_name)
         continue;
       }
 
+      if (object_name == "X-Intersection") {
+        object_center.x += (item.left + item.right / 2) / filtered_result.size();
+        object_center.y += (item.top + item.bottom / 2) / filtered_result.size();
+        continue;
+      }
+
       if (item.score > confidence) {
         confidence = item.score;
 
