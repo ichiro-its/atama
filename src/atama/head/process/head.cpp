@@ -427,7 +427,7 @@ void Head::process()
             scan_pan_angle = get_pan_angle();
             scan_tilt_angle = get_tilt_angle();
 
-            scan_position = 1;
+            scan_position = 2;
             scan_direction = 1;
           }
 
