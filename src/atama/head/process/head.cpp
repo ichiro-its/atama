@@ -427,7 +427,7 @@ void Head::process()
             scan_pan_angle = get_pan_angle();
             scan_tilt_angle = get_tilt_angle();
 
-            scan_position = 1;
+            scan_position = 2;
             scan_direction = 1;
           }
 
@@ -746,6 +746,12 @@ void Head::track_object(const std::string & object_name)
       if (object_name == "goalpost") {
         object_center.x += (item.left + item.right / 2) / filtered_result.size();
         object_center.y += (item.top + item.bottom) / filtered_result.size();
+        continue;
+      }
+
+      if (object_name == "X-Intersection") {
+        object_center.x += (item.left + item.right / 2) / filtered_result.size();
+        object_center.y += (item.top + item.bottom / 2) / filtered_result.size();
         continue;
       }
 
